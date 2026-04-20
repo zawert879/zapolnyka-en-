@@ -1,0 +1,12 @@
+# Глобальный конфиг игры (YAML-формат)
+# Логин/пароль берутся из .env (EN_LOGIN / EN_PASSWORD)
+
+domain: tech.en.cx
+gameId: 82000
+defaultFormat: yml
+
+levels:
+  - 1-sectors/conf.yml
+  - 2-bonuses/conf.yml
+  - 3-combo/conf.yml
+  - 4-full-level/conf.yml

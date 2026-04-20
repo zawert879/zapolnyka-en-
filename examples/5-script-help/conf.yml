@@ -1,0 +1,5 @@
+level: 1
+codes: codes.json
+body: task.html
+clean: true
+autopass: 1800

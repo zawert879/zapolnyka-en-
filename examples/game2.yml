@@ -1,0 +1,10 @@
+# Вторая игра — другой домен и gameId
+# Логин/пароль берутся из .env (EN_LOGIN / EN_PASSWORD)
+
+domain: quest.en.cx
+gameId: 95000
+defaultFormat: yml
+
+levels:
+  - 5-script-help/conf.yml
+  - 6-many-sectors/conf.yml

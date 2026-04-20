@@ -1,0 +1,15 @@
+level: 2
+codes: codes.json
+body: task.html
+clean: true
+
+# Порог: закрыть 3 из 5 секторов для прохождения
+sectorsToClose: 3
+
+# Автопереход: 45 минут, штраф +10 минут
+autopass: 2700
+autopassPenalty: 600
+
+hints:
+  - time: 900
+    text: Обратите внимание на вывески магазинов

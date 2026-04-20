@@ -1,0 +1,8 @@
+{
+  "domain": "quest.en.cx",
+  "gameId": 95000,
+  "levels": [
+    "5-script-help/conf.json",
+    "6-many-sectors/conf.json"
+  ]
+}

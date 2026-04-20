@@ -1,0 +1,10 @@
+{
+  "domain": "tech.en.cx",
+  "gameId": 82000,
+  "levels": [
+    "1-sectors/conf.json",
+    "2-bonuses/conf.json",
+    "3-combo/conf.json",
+    "4-full-level/conf.json"
+  ]
+}

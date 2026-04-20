@@ -1,0 +1,30 @@
+[
+  {
+    "name": "кошка",
+    "type": "секторбонус",
+    "answers": ["кошка", "кот"],
+    "time": 0,
+    "help": "<script>(window.__q=window.__q||[]).push('КОШКА');if(window.__drain)window.__drain();</script>"
+  },
+  {
+    "name": "собака",
+    "type": "секторбонус",
+    "answers": ["собака", "пёс"],
+    "time": 0,
+    "help": "<script>(window.__q=window.__q||[]).push('СОБАКА');if(window.__drain)window.__drain();</script>"
+  },
+  {
+    "name": "попугай",
+    "type": "секторбонус",
+    "answers": ["попугай"],
+    "time": 0,
+    "help": "<script>(window.__q=window.__q||[]).push('ПОПУГАЙ');if(window.__drain)window.__drain();</script>"
+  },
+  {
+    "name": "рыбка",
+    "type": "секторбонус",
+    "answers": ["рыбка", "рыба"],
+    "time": 0,
+    "help": "<script>(window.__q=window.__q||[]).push('РЫБКА');if(window.__drain)window.__drain();</script>"
+  }
+]

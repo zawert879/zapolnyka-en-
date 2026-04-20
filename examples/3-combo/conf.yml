@@ -1,0 +1,4 @@
+level: 3
+codes: codes.json
+body: task.html
+clean: true

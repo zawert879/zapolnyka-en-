@@ -1,0 +1,23 @@
+<h2 style="color:#e0c97f;margin:0 0 12px">Найди всех питомцев</h2>
+
+<p>Введённые коды будут появляться на странице в реальном времени.</p>
+
+<p id="found-list" style="color:#0F0;font-size:18px;min-height:30px"></p>
+
+<script>
+(function(){
+  window.__q = window.__q || [];
+  var el = document.getElementById('found-list');
+  window.__drain = function() {
+    while (window.__q.length) {
+      var word = window.__q.shift();
+      el.innerHTML += (el.innerHTML ? ', ' : '') + word;
+    }
+  };
+  window.__drain();
+})();
+</script>
+
+<p style="color:#aaa">4 сектора.</p>
+
+<div style="background:#fff59d;color:#000;padding:10px 14px;border-radius:6px;font-weight:bold;margin:14px 0;border-left:4px solid #f9a825">ФО: название животного строчными буквами</div>
