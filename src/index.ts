@@ -8,6 +8,7 @@ dotenv.config()
 import { CodesParser, type Code } from './Entities/CodesParser'
 import { Zapolnyaka } from './Entities/Zapolnyaka'
 import { Playwright } from './Entities/Playwright'
+import { Validator } from './Entities/Validator'
 import { Config } from './config'
 import { type Data } from './data'
 import { parseConfigFile } from './utils'
@@ -27,7 +28,8 @@ type PreparedLevel = {
 
 program.command('go')
   .argument('<game>', 'path to game.json')
-  .action(async (gamePath: string) => {
+  .option('-c, --check', 'только валидация без заливки')
+  .action(async (gamePath: string, opts: { check?: boolean }) => {
     // === PHASE 1: validate everything upfront ===
     const gameAbsPath = path.resolve(process.cwd(), gamePath)
     if (!fs.existsSync(gameAbsPath)) {
@@ -127,22 +129,26 @@ program.command('go')
       process.exit(1)
     }
 
-    console.log(`\n=== все ${prepared.length} уровней валидны — запуск браузера ===`)
+    const checkOnly = Boolean(opts.check)
+    console.log(`\n=== все ${prepared.length} уровней валидны — запуск браузера${checkOnly ? ' (только проверка)' : ''} ===`)
 
     // === PHASE 2: browser work ===
     const playwright = new Playwright()
-    let loggedIn = false
+    const firstLevel = prepared[0]
+    const authZapolnyaka = new Zapolnyaka(playwright, firstLevel.config)
+    await authZapolnyaka.auth()
 
-    for (const p of prepared) {
-      console.log(`\n=== уровень ${p.config.level} (${p.relPath}) ===`)
-      const zapolnyaka = new Zapolnyaka(playwright, p.config)
-      if (!loggedIn) {
-        await zapolnyaka.auth()
-        loggedIn = true
+    if (!checkOnly) {
+      for (const p of prepared) {
+        console.log(`\n=== уровень ${p.config.level} (${p.relPath}) ===`)
+        const zapolnyaka = new Zapolnyaka(playwright, p.config)
+        await zapolnyaka.processLevel(p.codes, p.body)
       }
-
-      await zapolnyaka.processLevel(p.codes, p.body)
     }
+
+    // === PHASE 3: validation ===
+    const validator = new Validator(playwright, game.domain, game.gameId)
+    await validator.run(prepared)
 
     await playwright.stop()
   })

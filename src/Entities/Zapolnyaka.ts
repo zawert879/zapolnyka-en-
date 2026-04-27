@@ -147,7 +147,7 @@ export class Zapolnyaka {
   async setSectorsToClose(page: Page, required: number) {
     const { gameId, level } = this._config
     await page.goto(`https://${this._config.domain}/Administration/Games/LevelEditor.aspx?gid=${gameId}&level=${level}&swanswers=1`)
-    await page.waitForSelector('input[name="txtRequiredSectorsCount"]')
+    await page.waitForSelector('input[name="txtRequiredSectorsCount"]', { state: 'attached' })
 
     await page.evaluate((n: number) => {
       const input = document.querySelector('input[name="txtRequiredSectorsCount"]') as HTMLInputElement | null

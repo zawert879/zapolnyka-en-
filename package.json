@@ -6,9 +6,13 @@
   "bin": "dist/index.js",
   "scripts": {
     "build": "rimraf dist && tsc",
+    "go": "ts-node src/index.ts go",
+    "game": "ts-node src/index.ts game",
+    "level": "ts-node src/index.ts level",
     "start": "node --inspect ./dist/src/index.js",
     "start:dev": "ts-node src/index.ts",
     "dev": "yarn start:dev",
+    "gen-olimp": "ts-node src/olimp-gen.ts",
     "lint": "eslint ."
   },
   "devDependencies": {
