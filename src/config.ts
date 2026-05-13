@@ -18,7 +18,8 @@ export namespace Config {
   // Per-level config — no auth, no gameId (they come from game.json)
   export const Level = z.object({
     level: z.number(),
-    codes: z.string(), // path to codes.json
+    devLevel: z.number().optional(), // номер уровня в dev-режиме (используется если game.isDev = true)
+    codes: z.string().optional(), // path to codes.json
     body: z.string().optional(),
     clean: z.boolean().optional(),
     autopass: z.number().optional(),
@@ -37,6 +38,7 @@ export namespace Config {
     gameId: z.number(),
     levels: z.array(z.string()),
     defaultFormat: z.enum(['json', 'yml']).optional(), // default config format for `new` command
+    isDev: z.boolean().optional(), // dev-режим: вместо level используется devLevel из conf
   })
 
   // Fully merged config passed to Zapolnyaka — auth + one level
@@ -46,7 +48,7 @@ export namespace Config {
     domain: z.string(),
     gameId: z.number(),
     level: z.number(),
-    codes: z.string(),
+    codes: z.string().optional(),
     body: z.string().optional(),
     clean: z.boolean().optional(),
     autopass: z.number().optional(),

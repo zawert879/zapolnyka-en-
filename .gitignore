@@ -138,6 +138,11 @@ conf.json
 qqq.csv
 data/
 
+# Go build artifacts
+*.exe
+go_app/.zapolnyaka.json
+go_app/testrun/
+
 # Playwright MCP logs
 .playwright-mcp/
 

@@ -85,18 +85,19 @@ program.command('go')
       }
 
       // codes
-      const codesPath = path.resolve(levelDir, levelConf.codes)
-      if (!fs.existsSync(codesPath)) {
-        errors.push(`[${levelRelPath}] файл с кодами не найден: ${levelConf.codes}`)
-        continue
-      }
-
-      let codes: Code[]
-      try {
-        codes = codesParser.go(codesPath)
-      } catch (e) {
-        errors.push(`[${levelRelPath}] невалидный codes:\n${(e as Error).message}`)
-        continue
+      let codes: Code[] = []
+      if (levelConf.codes) {
+        const codesPath = path.resolve(levelDir, levelConf.codes)
+        if (!fs.existsSync(codesPath)) {
+          errors.push(`[${levelRelPath}] файл с кодами не найден: ${levelConf.codes}`)
+          continue
+        }
+        try {
+          codes = codesParser.go(codesPath)
+        } catch (e) {
+          errors.push(`[${levelRelPath}] невалидный codes:\n${(e as Error).message}`)
+          continue
+        }
       }
 
       // body (optional)
@@ -111,16 +112,21 @@ program.command('go')
         body = fs.readFileSync(bodyPath, { encoding: 'utf-8' })
       }
 
+      const { devLevel, level: originalLevel, ...restConf } = levelConf
+      const effectiveLevel = game.isDev ? (devLevel ?? originalLevel) : originalLevel
+
       const fullConfig = {
         login,
         password,
         domain: game.domain,
         gameId: game.gameId,
-        ...levelConf,
+        ...restConf,
+        level: effectiveLevel,
       }
 
+      const devNote = game.isDev && devLevel !== undefined ? ` [dev→${devLevel}]` : ''
       prepared.push({ relPath: levelRelPath, config: fullConfig, codes, body })
-      console.log(`  [${levelRelPath}] OK — уровень ${levelConf.level}, кодов ${codes.length}${body !== undefined ? `, тело ${body.length} симв.` : ''}`)
+      console.log(`  [${levelRelPath}] OK — уровень ${originalLevel}${devNote}, кодов ${codes.length}${body !== undefined ? `, тело ${body.length} симв.` : ''}`)
     }
 
     if (errors.length > 0) {

@@ -26,12 +26,29 @@ export class Zapolnyaka {
     await page.goto(`https://${this._config.domain}/Login.aspx?return=%2fDefault.aspx&lang=ru`)
     await page.getByPlaceholder('логин или id').fill(this._config.login)
     await page.getByPlaceholder('пароль').fill(this._config.password)
-    await page.getByRole('button', { name: 'Вход' }).click()
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'load' }),
+      page.getByRole('button', { name: 'Вход' }).click(),
+    ])
+  }
+
+  private async gotoSafe(page: Page, url: string): Promise<void> {
+    const MAX_RETRIES = 3
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      await page.goto(url)
+      if (!page.url().includes('NotHumanRequest')) return
+
+      console.warn(`\n⚠ бот-детект — логинимся и ждём 30 мин (попытка ${attempt}/${MAX_RETRIES})`)
+      await this.auth()
+      await timeout(30 * 60 * 1000)
+    }
+
+    throw new Error(`Бот-детект: не удалось открыть ${url} после ${MAX_RETRIES} попыток`)
   }
 
   async openLevel(level: number): Promise<Page> {
     const page = await this._playwright.mainPage()
-    await page.goto(`https://${this._config.domain}/Administration/Games/LevelEditor.aspx?gid=${this._config.gameId}&level=${level}&swanswers=1`)
+    await this.gotoSafe(page, `https://${this._config.domain}/Administration/Games/LevelEditor.aspx?gid=${this._config.gameId}&level=${level}&swanswers=1`)
     return page
   }
 
@@ -124,7 +141,7 @@ export class Zapolnyaka {
   // Set "Название уровня" и/или "Комментарий к уровню"
   async setLevelNameAndComment(page: Page, name?: string, comment?: string) {
     const { gameId, level } = this._config
-    await page.goto(`https://${this._config.domain}/Administration/Games/NameCommentEdit.aspx?gid=${gameId}&level=${level}`)
+    await this.gotoSafe(page, `https://${this._config.domain}/Administration/Games/NameCommentEdit.aspx?gid=${gameId}&level=${level}`)
     await page.waitForSelector('input[name="txtLevelName"]')
 
     await page.evaluate(({ n, c }: { n?: string; c?: string }) => {
@@ -146,7 +163,7 @@ export class Zapolnyaka {
   // Pass a positive N for «выполнить N секторов», or 0/undefined-path (handled by caller) for «все».
   async setSectorsToClose(page: Page, required: number) {
     const { gameId, level } = this._config
-    await page.goto(`https://${this._config.domain}/Administration/Games/LevelEditor.aspx?gid=${gameId}&level=${level}&swanswers=1`)
+    await this.gotoSafe(page, `https://${this._config.domain}/Administration/Games/LevelEditor.aspx?gid=${gameId}&level=${level}&swanswers=1`)
     await page.waitForSelector('input[name="txtRequiredSectorsCount"]', { state: 'attached' })
 
     await page.evaluate((n: number) => {
@@ -182,6 +199,7 @@ export class Zapolnyaka {
     console.log(`cleanLevel: deleting ${tids.length} tasks`)
     for (const tid of tids) {
       await this.fetchUrl(page, `${base}/Administration/Games/TaskEdit.aspx?gid=${gameId}&level=${level}&action=TaskDelete&tid=${tid}`)
+      await timeout(1000)
     }
 
     // 2. Delete bonuses
@@ -189,6 +207,7 @@ export class Zapolnyaka {
     console.log(`cleanLevel: deleting ${bids.length} bonuses`)
     for (const bid of bids) {
       await this.fetchUrl(page, `${base}/Administration/Games/BonusEdit.aspx?gid=${gameId}&level=${level}&bonus=${bid}&action=delete`)
+      await timeout(1000)
     }
 
     // 3. Delete sectors
@@ -196,6 +215,7 @@ export class Zapolnyaka {
     console.log(`cleanLevel: deleting ${sids.length} sectors`)
     for (const sid of sids) {
       await this.fetchUrl(page, `${base}/Administration/Games/LevelEditor.aspx?gid=${gameId}&level=${level}&swanswers=1&delsector=${sid}`)
+      await timeout(1000)
     }
 
     // 4. Delete hints — penalty hints need `&penalty=1` in the delete URL,
@@ -205,6 +225,7 @@ export class Zapolnyaka {
     for (const h of hints) {
       const penaltyParam = h.penalty ? '&penalty=1' : ''
       await this.fetchUrl(page, `${base}/Administration/Games/PromptEdit.aspx?gid=${gameId}&level=${level}&prid=${h.prid}${penaltyParam}&action=PromptDelete`)
+      await timeout(1000)
     }
 
     // 5. Reset autopass to 0:00:00 (effectively disables it)
@@ -212,9 +233,22 @@ export class Zapolnyaka {
   }
 
   private async fetchUrl(page: Page, url: string): Promise<void> {
-    await page.evaluate(async (u: string) => {
-      await fetch(u, { credentials: 'include' })
-    }, url)
+    const MAX_RETRIES = 3
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      const { finalUrl } = await page.evaluate(async (u: string) => {
+        const r = await fetch(u, { credentials: 'include' })
+        return { finalUrl: r.url }
+      }, url)
+
+      if (!finalUrl.includes('NotHumanRequest')) return
+
+      console.warn(`\n⚠ бот-детект — логинимся и ждём 30 мин (попытка ${attempt}/${MAX_RETRIES})`)
+      await this.auth()
+      await timeout(30 * 60 * 1000)
+    }
+
+    console.warn(`\n✗ не удалось выполнить запрос после ${MAX_RETRIES} попыток: ${url}`)
   }
 
   // Submit a form by clicking the button via direct DOM .click() (not playwright's locator),
@@ -230,7 +264,7 @@ export class Zapolnyaka {
   }
 
   private async listIds(page: Page, url: string, hrefContains: string, paramName: string): Promise<string[]> {
-    await page.goto(url)
+    await this.gotoSafe(page, url)
     return page.evaluate(({ hrefContains, paramName }: { hrefContains: string; paramName: string }) => {
       const links = Array.from(document.querySelectorAll('a'))
       const ids = new Set<string>()
@@ -247,7 +281,7 @@ export class Zapolnyaka {
   }
 
   private async listHints(page: Page, editorUrl: string): Promise<Array<{ prid: string; penalty: boolean }>> {
-    await page.goto(editorUrl)
+    await this.gotoSafe(page, editorUrl)
     return page.evaluate(() => {
       const links = Array.from(document.querySelectorAll('a')) as HTMLAnchorElement[]
       const seen = new Map<string, boolean>()
@@ -269,7 +303,7 @@ export class Zapolnyaka {
 
   private async listSectorIds(page: Page): Promise<string[]> {
     const { gameId, level } = this._config
-    await page.goto(`https://${this._config.domain}/Administration/Games/LevelEditor.aspx?gid=${gameId}&level=${level}&swanswers=1`)
+    await this.gotoSafe(page, `https://${this._config.domain}/Administration/Games/LevelEditor.aspx?gid=${gameId}&level=${level}&swanswers=1`)
     return page.evaluate(() => {
       const inputs = Array.from(document.querySelectorAll('input[id^="hdnSectorNames_"]')) as HTMLInputElement[]
       const ids: string[] = []
@@ -283,7 +317,7 @@ export class Zapolnyaka {
 
   async setTaskBody(page: Page, body: string) {
     const { gameId, level } = this._config
-    await page.goto(`https://${this._config.domain}/Administration/Games/TaskEdit.aspx?gid=${gameId}&level=${level}`)
+    await this.gotoSafe(page, `https://${this._config.domain}/Administration/Games/TaskEdit.aspx?gid=${gameId}&level=${level}`)
     await page.waitForSelector('textarea[name="inputTask"]')
 
     // Set body and uncheck "перенос строк" (chkReplaceNlToBr) in one evaluate —
@@ -309,7 +343,7 @@ export class Zapolnyaka {
 
   async setAutopass(page: Page, seconds: number, penaltySeconds?: number) {
     const { gameId, level } = this._config
-    await page.goto(`https://${this._config.domain}/Administration/Games/LevelEditor.aspx?gid=${gameId}&level=${level}&swautopass=1`)
+    await this.gotoSafe(page, `https://${this._config.domain}/Administration/Games/LevelEditor.aspx?gid=${gameId}&level=${level}&swautopass=1`)
     await page.waitForSelector('input[name="txtApHours"]')
 
     const { h, m, s } = secondsToHms(seconds)
@@ -356,7 +390,7 @@ export class Zapolnyaka {
 
   async addHint(page: Page, seconds: number, text: string) {
     const { gameId, level } = this._config
-    await page.goto(`https://${this._config.domain}/Administration/Games/PromptEdit.aspx?gid=${gameId}&level=${level}`)
+    await this.gotoSafe(page, `https://${this._config.domain}/Administration/Games/PromptEdit.aspx?gid=${gameId}&level=${level}`)
     await page.waitForSelector('textarea[name="NewPrompt"]')
 
     const { h, m, s } = secondsToHms(seconds)
@@ -374,7 +408,7 @@ export class Zapolnyaka {
 
   async addPenaltyHint(page: Page, seconds: number, text: string, penaltySeconds?: number, comment?: string) {
     const { gameId, level } = this._config
-    await page.goto(`https://${this._config.domain}/Administration/Games/PromptEdit.aspx?gid=${gameId}&level=${level}&penalty=1`)
+    await this.gotoSafe(page, `https://${this._config.domain}/Administration/Games/PromptEdit.aspx?gid=${gameId}&level=${level}&penalty=1`)
     await page.waitForSelector('textarea[name="NewPrompt"]')
 
     const { h, m, s } = secondsToHms(seconds)

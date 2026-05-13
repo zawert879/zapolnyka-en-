@@ -1,0 +1,1493 @@
+- generic [active] [ref=e1]:
+  - table [ref=e2]:
+    - rowgroup [ref=e3]:
+      - row "Encounter - международная сеть активных городских игр world.en.cx" [ref=e4]:
+        - cell "Encounter - международная сеть активных городских игр" [ref=e5]:
+          - link "Encounter - международная сеть активных городских игр" [ref=e6] [cursor=pointer]:
+            - /url: /
+            - img "Encounter - международная сеть активных городских игр" [ref=e7]
+        - cell "world.en.cx" [ref=e8]:
+          - paragraph [ref=e10]:
+            - img "world.en.cx" [ref=e11]
+  - table [ref=e12]:
+    - rowgroup [ref=e13]:
+      - row "<< Игры>> Cеть>> Медиа>> Связь>> Форум" [ref=e14]:
+        - cell [ref=e15]
+        - cell "<< Игры>> Cеть>> Медиа>> Связь>> Форум" [ref=e16]:
+          - list:
+            - listitem [ref=e17]:
+              - link "<<" [ref=e19] [cursor=pointer]:
+                - /url: /Default.aspx
+                - img "<<" [ref=e21]
+            - listitem [ref=e22]:
+              - link "Игры>>" [ref=e24] [cursor=pointer]:
+                - /url: /SiteMap.aspx?mnid=Games
+                - text: Игры
+                - img ">>" [ref=e26]
+            - listitem [ref=e27]:
+              - link "Cеть>>" [ref=e29] [cursor=pointer]:
+                - /url: /SiteMap.aspx?mnid=network
+                - text: Cеть
+                - img ">>" [ref=e31]
+            - listitem [ref=e32]:
+              - link "Медиа>>" [ref=e34] [cursor=pointer]:
+                - /url: /SiteMap.aspx?mnid=Media
+                - text: Медиа
+                - img ">>" [ref=e36]
+            - listitem [ref=e37]:
+              - link "Связь>>" [ref=e39] [cursor=pointer]:
+                - /url: /SiteMap.aspx?mnid=Contacts
+                - text: Связь
+                - img ">>" [ref=e41]
+            - listitem [ref=e42]:
+              - link "Форум" [ref=e44] [cursor=pointer]:
+                - /url: /Guestbook.aspx
+            - listitem [ref=e45]
+        - cell [ref=e47]
+  - table [ref=e48]:
+    - rowgroup [ref=e49]:
+      - row [ref=e50]:
+        - cell [ref=e51]:
+          - table [ref=e52]:
+            - rowgroup [ref=e53]:
+              - row [ref=e54]:
+                - 'cell "zawert879 (id 1647859) Игорь Рожков 149,5 / Младший лейтенант Моя почта Моё личное дело Мой баланс Моя команда Выход Choose your language: en ru EN в Twitter EN В Контакте EN в Facebook Информбюро: Архив Новостей >>> Размещение рекламы" [ref=e55]':
+                  - table [ref=e59]:
+                    - rowgroup [ref=e60]:
+                      - row "zawert879 (id 1647859) Игорь Рожков 149,5 / Младший лейтенант" [ref=e61]:
+                        - cell "zawert879 (id 1647859) Игорь Рожков 149,5 / Младший лейтенант" [ref=e62]:
+                          - link "zawert879" [ref=e63] [cursor=pointer]:
+                            - /url: /UserDetails.aspx
+                          - text: (id 1647859)
+                          - link "Игорь Рожков" [ref=e65] [cursor=pointer]:
+                            - /url: /UserDetails.aspx
+                          - generic [ref=e66]: 149,5 / Младший лейтенант
+                      - row "Моя почта" [ref=e68]:
+                        - cell "Моя почта" [ref=e69]:
+                          - link "Моя почта" [ref=e70] [cursor=pointer]:
+                            - /url: /EnMail.aspx
+                      - row "Моё личное дело" [ref=e72]:
+                        - cell "Моё личное дело" [ref=e73]:
+                          - link "Моё личное дело" [ref=e74] [cursor=pointer]:
+                            - /url: /UserDetails.aspx
+                      - row "Мой баланс" [ref=e76]:
+                        - cell "Мой баланс" [ref=e77]:
+                          - link "Мой баланс" [ref=e78] [cursor=pointer]:
+                            - /url: /UserBalance.aspx
+                      - row "Моя команда" [ref=e80]:
+                        - cell "Моя команда" [ref=e81]:
+                          - link "Моя команда" [ref=e82] [cursor=pointer]:
+                            - /url: /Teams/TeamDetails.aspx
+                      - row "Выход" [ref=e84]:
+                        - cell "Выход" [ref=e85]:
+                          - link "Выход" [ref=e86] [cursor=pointer]:
+                            - /url: /Login.aspx?action=logout
+                  - table [ref=e88]:
+                    - rowgroup [ref=e89]:
+                      - 'row "Choose your language: en ru" [ref=e90]':
+                        - 'cell "Choose your language: en ru" [ref=e91]':
+                          - text: "Choose your language:"
+                          - table [ref=e92]:
+                            - rowgroup [ref=e93]:
+                              - row "en ru" [ref=e94]:
+                                - cell "en ru" [ref=e95]:
+                                  - table [ref=e96]:
+                                    - rowgroup [ref=e97]:
+                                      - row "en ru" [ref=e98]:
+                                        - cell "en" [ref=e99]:
+                                          - link "en" [ref=e100] [cursor=pointer]:
+                                            - /url: /Addons.aspx?lang=en&aid=18832
+                                            - img "en" [ref=e101]
+                                        - cell "ru" [ref=e102]:
+                                          - link "ru" [ref=e103] [cursor=pointer]:
+                                            - /url: /Addons.aspx?lang=ru&aid=18832
+                                            - img "ru" [ref=e104]
+                  - generic [ref=e107]:
+                    - link "EN в Twitter" [ref=e108] [cursor=pointer]:
+                      - /url: http://twitter.com/EncounterGames
+                      - img "EN в Twitter" [ref=e109]
+                    - link "EN В Контакте" [ref=e110] [cursor=pointer]:
+                      - /url: http://vkontakte.ru/club971699
+                      - img "EN В Контакте" [ref=e111]
+                    - link "EN в Facebook" [ref=e112] [cursor=pointer]:
+                      - /url: http://www.facebook.com/encountergames
+                      - img "EN в Facebook" [ref=e113]
+                  - generic [ref=e116]:
+                    - generic [ref=e118]: "Информбюро:"
+                    - link "Архив Новостей >>>" [ref=e119] [cursor=pointer]:
+                      - /url: /NewsArchive.aspx
+                  - link "Размещение рекламы" [ref=e121] [cursor=pointer]:
+                    - /url: /Ads.aspx
+                - cell [ref=e122]:
+                  - table [ref=e123]:
+                    - rowgroup [ref=e124]:
+                      - row [ref=e125]:
+                        - cell [ref=e126]:
+                          - heading "Encounter API" [level=1] [ref=e127]
+                          - heading "Encounter API" [level=2] [ref=e128]
+                          - paragraph [ref=e129]: "Дисклеймер: API находится в свободном доступе, для его использования не требуется никаких согласований и разрешений. Используйте свободно для написания ботов/расширений/приложений."
+                          - heading "Авторизация" [level=2] [ref=e130]:
+                            - strong [ref=e131]: Авторизация
+                          - paragraph [ref=e132]:
+                            - strong
+                          - paragraph [ref=e133]: "Авторизация на сайте Энкаутера осуществляется путем отправки следующего запроса на сервер:"
+                          - paragraph [ref=e134]:
+                            - strong
+                            - text: POST <имя сайта>/login/signin?json=1
+                            - text: "------------------------------------"
+                            - text: "POST параметры:"
+                          - paragraph [ref=e135]:
+                            - text: <Login> = имя пользователя
+                            - text: <Password> = пароль
+                            - text: "[ddlNetwork] = id игровой сети (1 – Encounter, 2 – QustUa; по умолчанию 1)"
+                            - text: "[MagicNumbers] = цифры из каптчи (см. секцию “Ошибка авторизации”, ошибка 1)"
+                          - paragraph [ref=e136]
+                          - paragraph [ref=e137]: "Ответом сервера будет JSON объект, который имеет следующую структуру:"
+                          - paragraph [ref=e138]: "{"
+                          - paragraph [ref=e139]: "\"Error\":0, // Код ошибки"
+                          - paragraph [ref=e140]: "\"Message\":\"\", // Локализованное сообщение об ошибке"
+                          - paragraph [ref=e141]: "\"IpUnblockUrl\":null, // URL страницы разблокировки IP адреса"
+                          - paragraph [ref=e142]: "\"BruteForceUnblockUrl\":null, // URL страницы страницы разблокировки при подозрении на брутфорс"
+                          - paragraph [ref=e143]: "\"ConfirmEmailUrl\":null, // URL страницы подтверждения E-Mail"
+                          - paragraph [ref=e144]: "\"CaptchaUrl\":null, // URL к картинке каптчи"
+                          - paragraph [ref=e145]: "\"AdminWhoCanActivate\":null // Администраторы которые могут активировать аккаунт"
+                          - paragraph [ref=e146]: "}"
+                          - paragraph [ref=e147]
+                          - paragraph [ref=e148]: "Также, в своем HTTP-ответе сервер вернет коллекцию кукис, в которой следует обратить внимание на:"
+                          - paragraph [ref=e149]:
+                            - text: GUID = 29e408d5%2D0061%2D4d1c%2Da145%2D2a07e6993c0f
+                            - text: stoken = cwxi0ylkexg2mv4i1vx30hvd
+                            - text: atoken = uid%3d40481%26iss%3d0%26iscd%3d1%26tkn%3d1da114767482dcb2c3505820d8c84444dc62f8
+                          - paragraph [ref=e150]
+                          - paragraph [ref=e151]: Для удержания сессии (авторизации) и целей безопасности, необходимо обеспечить передачу этих значений обратно на сервер, в каждом последующем запросе, в котором необходимо выполнение в контексте залогиненного пользователя.
+                          - paragraph [ref=e152]
+                          - paragraph [ref=e153]:
+                            - strong [ref=e154]: Успешная авторизация
+                          - paragraph [ref=e155]:
+                            - text: В случае, если авторизация прошла успешно, свойство JSON-объекта
+                            - strong [ref=e156]: Error
+                            - strong [ref=e157]
+                            - text: будет равно
+                            - strong [ref=e158]: "0"
+                            - text: ", на этом авториация закончена и больше никаких действий предринимать не нужно."
+                          - paragraph [ref=e159]
+                          - paragraph [ref=e160]:
+                            - strong [ref=e161]: Ошибка авторизации
+                          - paragraph [ref=e162]:
+                            - text: Если в процессе авторизации произошла ошибка, то свойство
+                            - strong [ref=e163]: Error
+                            - strong [ref=e164]
+                            - text: "будет принимать следующие значения:"
+                          - paragraph [ref=e165]
+                          - paragraph [ref=e166]:
+                            - emphasis [ref=e167]:
+                              - strong [ref=e168]: "1"
+                              - text: "- Превышено количество неправильных попыток авторизации"
+                          - paragraph [ref=e169]:
+                            - text: свойство
+                            - strong [ref=e170]: CaptchaUrl
+                            - text: будет содержать ссылку на картинку каптчи, для загрузке картинки капчи необходимо передать header параметр
+                            - strong [ref=e171]
+                            - strong [ref=e172]: Referer
+                            - strong [ref=e173]: =/
+                            - strong [ref=e174]: login
+                            - strong [ref=e175]: ","
+                            - text: для повторной авторизации на сервере к POST запросу нужно добавить параметр
+                            - strong [ref=e176]: MagicNumbers
+                            - text: c цифрами полученными из картинки каптчи.
+                          - paragraph [ref=e177]
+                          - paragraph [ref=e178]:
+                            - emphasis [ref=e179]:
+                              - strong [ref=e180]: "2"
+                              - text: "- Неправильный логин или пароль"
+                          - paragraph [ref=e181]:
+                            - strong [ref=e182]
+                          - paragraph [ref=e183]:
+                            - emphasis [ref=e184]:
+                              - strong [ref=e185]: "3"
+                              - text: "- Пользователь или в Cибири, или в черном списке, или на домене нельзя авторизовываться с других доменов"
+                          - paragraph [ref=e186]:
+                            - strong [ref=e187]
+                          - paragraph [ref=e188]:
+                            - emphasis [ref=e189]:
+                              - strong [ref=e190]: "4"
+                              - text: "- У пользователя в профиле включена блокировака по IP, текущий IP не входит в список разрешенных"
+                          - paragraph [ref=e191]:
+                            - text: свойство
+                            - strong [ref=e192]: IpUnblockUrl
+                            - strong [ref=e193]
+                            - text: будет инициализированно ссылкой на страницу разблокировки ограничения по IP.
+                          - paragraph [ref=e194]
+                          - paragraph [ref=e195]:
+                            - emphasis [ref=e196]:
+                              - strong [ref=e197]: "5"
+                              - text: "- В процессе авторизации произошла ошибка на сервере"
+                          - paragraph [ref=e198]:
+                            - emphasis [ref=e199]:
+                              - strong [ref=e200]
+                          - paragraph [ref=e201]:
+                            - emphasis [ref=e202]:
+                              - strong [ref=e203]: 6 -
+                              - text: Не используется в JSON запросах
+                            - strong
+                          - paragraph [ref=e204]:
+                            - strong [ref=e205]
+                          - paragraph [ref=e206]:
+                            - emphasis [ref=e207]:
+                              - strong [ref=e208]: 7 -
+                              - text: Пользователь заблокирован администратором
+                          - paragraph [ref=e209]
+                          - paragraph [ref=e210]:
+                            - emphasis [ref=e211]:
+                              - strong [ref=e212]: "8"
+                              - text: "- Новый пользователь не активирован"
+                          - paragraph [ref=e213]:
+                            - text: свойство
+                            - strong [ref=e214]: AdminWhoCanActivate
+                            - strong [ref=e215]
+                            - text: будет проинициализированно массивом администраторов, которые могут активировать аккаунт.
+                          - paragraph [ref=e216]
+                          - paragraph [ref=e217]:
+                            - emphasis [ref=e218]:
+                              - strong [ref=e219]: 9 -
+                              - text: Действия пользователя расценены как брутфорс
+                          - paragraph [ref=e220]:
+                            - text: свойство
+                            - strong [ref=e221]: BruteForceUnblockUrl
+                            - text: будет инициализированно ссылкой на страницу разблокировки.
+                            - strong
+                          - paragraph [ref=e222]:
+                            - emphasis [ref=e223]:
+                              - strong [ref=e224]: 10 -
+                              - text: Пользователь не подтвердил E-Mail
+                          - paragraph [ref=e225]:
+                            - text: свойство
+                            - strong [ref=e226]: ConfirmEmailUrl
+                            - text: будет инициализированно ссылкой на страницу подтверждения E-Mail.
+                          - paragraph [ref=e227]
+                          - paragraph [ref=e228]
+                          - heading "Описание Game Engine API Схватки, Точек и Мозгового штурма." [level=2] [ref=e229]:
+                            - generic [ref=e230]:
+                              - strong [ref=e231]: Описание
+                              - strong [ref=e232]: Game
+                              - strong [ref=e233]
+                              - strong [ref=e234]: Engine
+                              - strong [ref=e235]
+                              - strong [ref=e236]: API
+                              - strong [ref=e237]
+                              - strong [ref=e238]: Схватки, Точек и Мозгового штурма.
+                          - paragraph [ref=e239]:
+                            - strong [ref=e240]: "1."
+                            - strong [ref=e241]: Начало работы с API
+                          - paragraph [ref=e242]: "Для начала работы с API необходимо выполнить следующие шаги:"
+                          - list [ref=e243]:
+                            - listitem [ref=e244]: Авторизация на сайте.
+                            - listitem [ref=e245]: Посылка запроса на получение JSON объекта GameEngineModel
+                            - listitem [ref=e246]: Оценить текущее состояние игры
+                          - paragraph [ref=e247]
+                          - paragraph [ref=e248]:
+                            - strong [ref=e249]: "2."
+                            - strong [ref=e250]: Посылка запроса для получения GameEngineModel
+                          - table [ref=e251]:
+                            - rowgroup [ref=e252]:
+                              - row "HTTPVERB GET" [ref=e253]:
+                                - cell "HTTPVERB" [ref=e254]:
+                                  - paragraph [ref=e255]: HTTPVERB
+                                - cell "GET" [ref=e256]:
+                                  - paragraph [ref=e257]: GET
+                              - 'row "URL /GameEngines/Encounter/Play/{ID Игры}?json=1" [ref=e258]':
+                                - cell "URL" [ref=e259]:
+                                  - paragraph [ref=e260]: URL
+                                - 'cell "/GameEngines/Encounter/Play/{ID Игры}?json=1" [ref=e261]':
+                                  - paragraph [ref=e262]:
+                                    - generic [ref=e263]:
+                                      - strong [ref=e264]: "/GameEngines/Encounter/Play/{ID"
+                                      - strong [ref=e265]: "Игры}?json=1"
+                              - row "Пример /GameEngines/Encounter/Play/2020?json=1" [ref=e266]:
+                                - cell "Пример" [ref=e267]:
+                                  - paragraph [ref=e268]: Пример
+                                - cell "/GameEngines/Encounter/Play/2020?json=1" [ref=e269]:
+                                  - paragraph [ref=e270]: /GameEngines/Encounter/Play/2020?json=1
+                              - 'row "Params level = {номер уровня} (передается при штурмовой последовательности)" [ref=e271]':
+                                - cell "Params" [ref=e272]:
+                                  - paragraph [ref=e273]: Params
+                                - 'cell "level = {номер уровня} (передается при штурмовой последовательности)" [ref=e274]':
+                                  - paragraph [ref=e275]:
+                                    - generic [ref=e276]:
+                                      - strong [ref=e277]: level
+                                      - text: "= {номер уровня} (передается при штурмовой последовательности)"
+                          - paragraph [ref=e278]: "Реакцией сервера на данный запрос будет один из следующих ответов:"
+                          - list [ref=e279]:
+                            - listitem [ref=e280]:
+                              - strong [ref=e281]: JSON
+                              - strong [ref=e282]: объект (GameEngineModel
+                              - strong [ref=e283]: ),
+                              - text: представляющий собой текущее состояние игры
+                            - listitem [ref=e284]: Редирект на страницу логина (пользователь не залогинен или разрушена сессия)
+                            - listitem [ref=e285]: Редирект на страницу защиты от DDOS (если посылается слишком много запросов от IP)
+                            - listitem [ref=e286]: Редирект на страницу ошибки (если произошла ошибка на сервере)
+                          - paragraph [ref=e287]
+                          - paragraph [ref=e288]:
+                            - strong [ref=e289]: "3."
+                            - strong [ref=e290]: Оценка текущего состояния игры
+                          - paragraph [ref=e291]: "После отправки вышеуказанного запроса, если не произошло ошибок, то в ответ будет возвращен JSON объект:"
+                          - table [ref=e292]:
+                            - rowgroup [ref=e293]:
+                              - row "Event (int) Отражает в каком состоянии находится игра" [ref=e294]:
+                                - cell "Event (int)" [ref=e295]:
+                                  - paragraph [ref=e296]: Event (int)
+                                - cell "Отражает в каком состоянии находится игра" [ref=e297]:
+                                  - paragraph [ref=e298]: Отражает в каком состоянии находится игра
+                              - row "GameId (int) ID игры" [ref=e299]:
+                                - cell "GameId (int)" [ref=e300]:
+                                  - paragraph [ref=e301]: GameId (int)
+                                - cell "ID игры" [ref=e302]:
+                                  - paragraph [ref=e303]: ID игры
+                              - row "GameNumber (int) номер игры" [ref=e304]:
+                                - cell "GameNumber (int)" [ref=e305]:
+                                  - paragraph [ref=e306]: GameNumber (int)
+                                - cell "номер игры" [ref=e307]:
+                                  - paragraph [ref=e308]: номер игры
+                              - row "GameTitle (string) название игры" [ref=e309]:
+                                - cell "GameTitle (string)" [ref=e310]:
+                                  - paragraph [ref=e311]: GameTitle (string)
+                                - cell "название игры" [ref=e312]:
+                                  - paragraph [ref=e313]: название игры
+                              - 'row "LevelSequence (int) тип последовательнсти: 0 – линейная, 1 –указанная, 2 – случайная, 3 – штурмовая, 4 – динам. случайная" [ref=e314]':
+                                - cell "LevelSequence (int)" [ref=e315]:
+                                  - paragraph [ref=e316]: LevelSequence (int)
+                                - 'cell "тип последовательнсти: 0 – линейная, 1 –указанная, 2 – случайная, 3 – штурмовая, 4 – динам. случайная" [ref=e317]':
+                                  - paragraph [ref=e318]: "тип последовательнсти: 0 – линейная, 1 –указанная, 2 – случайная, 3 – штурмовая, 4 – динам. случайная"
+                              - row "UserId (int) ID игрока" [ref=e319]:
+                                - cell "UserId (int)" [ref=e320]:
+                                  - paragraph [ref=e321]: UserId (int)
+                                - cell "ID игрока" [ref=e322]:
+                                  - paragraph [ref=e323]: ID игрока
+                              - row "TeamId (int) ID команды игрока" [ref=e324]:
+                                - cell "TeamId (int)" [ref=e325]:
+                                  - paragraph [ref=e326]: TeamId (int)
+                                - cell "ID команды игрока" [ref=e327]:
+                                  - paragraph [ref=e328]: ID команды игрока
+                              - row "EngineAction (object) информация о результате последнего запроса игрока" [ref=e329]:
+                                - cell "EngineAction (object)" [ref=e330]:
+                                  - paragraph [ref=e331]: EngineAction (object)
+                                - cell "информация о результате последнего запроса игрока" [ref=e332]:
+                                  - paragraph [ref=e333]: информация о результате последнего запроса игрока
+                              - row "Level (object) информация о текущем уровне" [ref=e334]:
+                                - cell "Level (object)" [ref=e335]:
+                                  - paragraph [ref=e336]: Level (object)
+                                - cell "информация о текущем уровне" [ref=e337]:
+                                  - paragraph [ref=e338]: информация о текущем уровне
+                              - row "Levels (object array) список всех уровней" [ref=e339]:
+                                - cell "Levels (object array)" [ref=e340]:
+                                  - paragraph [ref=e341]: Levels (object array)
+                                - cell "список всех уровней" [ref=e342]:
+                                  - paragraph [ref=e343]: список всех уровней
+                              - row "GameDateTimeStart (string) время старта игры в UTC" [ref=e344]:
+                                - cell "GameDateTimeStart (string)" [ref=e345]:
+                                  - paragraph [ref=e346]: GameDateTimeStart (string)
+                                - cell "время старта игры в UTC" [ref=e347]:
+                                  - paragraph [ref=e348]: время старта игры в UTC
+                              - row "Login (string) логин игрока" [ref=e349]:
+                                - cell "Login (string)" [ref=e350]:
+                                  - paragraph [ref=e351]: Login (string)
+                                - cell "логин игрока" [ref=e352]
+                              - row "TeamName (string) имя команды" [ref=e353]:
+                                - cell "TeamName (string)" [ref=e354]:
+                                  - paragraph [ref=e355]: TeamName (string)
+                                - cell "имя команды" [ref=e356]
+                          - paragraph [ref=e357]:
+                            - text: После каждого запроса необходимо проверять какое значение содержит свойство
+                            - strong [ref=e358]: Event
+                            - text: ", которое может принимать следующие значения:"
+                          - table [ref=e359]:
+                            - rowgroup [ref=e360]:
+                              - row "Код Описание" [ref=e361]:
+                                - cell "Код" [ref=e362]:
+                                  - paragraph [ref=e363]:
+                                    - strong [ref=e364]: Код
+                                - cell "Описание" [ref=e365]:
+                                  - paragraph [ref=e366]:
+                                    - strong [ref=e367]: Описание
+                              - row "0 Игра в нормальном состоянии" [ref=e368]:
+                                - cell "0" [ref=e369]:
+                                  - paragraph [ref=e370]: "0"
+                                - cell "Игра в нормальном состоянии" [ref=e371]:
+                                  - paragraph [ref=e372]:
+                                    - strong [ref=e373]: Игра в нормальном состоянии
+                              - row "2 Игра с указанным ID не существует" [ref=e374]:
+                                - cell "2" [ref=e375]:
+                                  - paragraph [ref=e376]: "2"
+                                - cell "Игра с указанным ID не существует" [ref=e377]:
+                                  - paragraph [ref=e378]: Игра с указанным ID не существует
+                              - row "3 Запрошенная игра не соответствует запрошенному Engine" [ref=e379]:
+                                - cell "3" [ref=e380]:
+                                  - paragraph [ref=e381]: "3"
+                                - cell "Запрошенная игра не соответствует запрошенному Engine" [ref=e382]:
+                                  - paragraph [ref=e383]: Запрошенная игра не соответствует запрошенному Engine
+                              - row "4 Игрок не залогинен на сайте" [ref=e384]:
+                                - cell "4" [ref=e385]:
+                                  - paragraph [ref=e386]: "4"
+                                - cell "Игрок не залогинен на сайте" [ref=e387]:
+                                  - paragraph [ref=e388]: Игрок не залогинен на сайте
+                              - row "5 Игра не началась" [ref=e389]:
+                                - cell "5" [ref=e390]:
+                                  - paragraph [ref=e391]: "5"
+                                - cell "Игра не началась" [ref=e392]:
+                                  - paragraph [ref=e393]: Игра не началась
+                              - row "6 Игра закончилась" [ref=e394]:
+                                - cell "6" [ref=e395]:
+                                  - paragraph [ref=e396]: "6"
+                                - cell "Игра закончилась" [ref=e397]:
+                                  - paragraph [ref=e398]: Игра закончилась
+                              - row "7 Не подана заявка (игроком)" [ref=e399]:
+                                - cell "7" [ref=e400]:
+                                  - paragraph [ref=e401]: "7"
+                                - cell "Не подана заявка (игроком)" [ref=e402]:
+                                  - paragraph [ref=e403]: Не подана заявка (игроком)
+                              - row "8 Не подана заявка (командой)" [ref=e404]:
+                                - cell "8" [ref=e405]:
+                                  - paragraph [ref=e406]: "8"
+                                - cell "Не подана заявка (командой)" [ref=e407]:
+                                  - paragraph [ref=e408]: Не подана заявка (командой)
+                              - row "9 Игрок еще не принят в игру" [ref=e409]:
+                                - cell "9" [ref=e410]:
+                                  - paragraph [ref=e411]: "9"
+                                - cell "Игрок еще не принят в игру" [ref=e412]:
+                                  - paragraph [ref=e413]: Игрок еще не принят в игру
+                              - row "10 У игрока нет команды (в командной игре)" [ref=e414]:
+                                - cell "10" [ref=e415]:
+                                  - paragraph [ref=e416]: "10"
+                                - cell "У игрока нет команды (в командной игре)" [ref=e417]:
+                                  - paragraph [ref=e418]: У игрока нет команды (в командной игре)
+                              - row "11 Игрок не активен в команде (в командной игре)" [ref=e419]:
+                                - cell "11" [ref=e420]:
+                                  - paragraph [ref=e421]: "11"
+                                - cell "Игрок не активен в команде (в командной игре)" [ref=e422]:
+                                  - paragraph [ref=e423]: Игрок не активен в команде (в командной игре)
+                              - row "12 В игре нет уровней" [ref=e424]:
+                                - cell "12" [ref=e425]:
+                                  - paragraph [ref=e426]: "12"
+                                - cell "В игре нет уровней" [ref=e427]:
+                                  - paragraph [ref=e428]: В игре нет уровней
+                              - row "13 Превышено количество участников в команде (в командной игре)" [ref=e429]:
+                                - cell "13" [ref=e430]:
+                                  - paragraph [ref=e431]: "13"
+                                - cell "Превышено количество участников в команде (в командной игре)" [ref=e432]:
+                                  - paragraph [ref=e433]: Превышено количество участников в команде (в командной игре)
+                              - row "16 Уровень снят" [ref=e434]:
+                                - cell "16" [ref=e435]:
+                                  - paragraph [ref=e436]: "16"
+                                - cell "Уровень снят" [ref=e437]:
+                                  - paragraph [ref=e438]: Уровень снят
+                              - row "17 Игра закончена" [ref=e439]:
+                                - cell "17" [ref=e440]:
+                                  - paragraph [ref=e441]: "17"
+                                - cell "Игра закончена" [ref=e442]:
+                                  - paragraph [ref=e443]: Игра закончена
+                              - row "18 Уровень снят" [ref=e444]:
+                                - cell "18" [ref=e445]:
+                                  - paragraph [ref=e446]: "18"
+                                - cell "Уровень снят" [ref=e447]:
+                                  - paragraph [ref=e448]: Уровень снят
+                              - row "19 Уровень пройден автопереходом" [ref=e449]:
+                                - cell "19" [ref=e450]:
+                                  - paragraph [ref=e451]: "19"
+                                - cell "Уровень пройден автопереходом" [ref=e452]:
+                                  - paragraph [ref=e453]: Уровень пройден автопереходом
+                              - row "20 Все сектора отгаданы" [ref=e454]:
+                                - cell "20" [ref=e455]:
+                                  - paragraph [ref=e456]: "20"
+                                - cell "Все сектора отгаданы" [ref=e457]:
+                                  - paragraph [ref=e458]: Все сектора отгаданы
+                              - row "21 Уровень снят" [ref=e459]:
+                                - cell "21" [ref=e460]:
+                                  - paragraph [ref=e461]: "21"
+                                - cell "Уровень снят" [ref=e462]:
+                                  - paragraph [ref=e463]: Уровень снят
+                              - row "22 Таймаут уровня" [ref=e464]:
+                                - cell "22" [ref=e465]:
+                                  - paragraph [ref=e466]: "22"
+                                - cell "Таймаут уровня" [ref=e467]:
+                                  - paragraph [ref=e468]: Таймаут уровня
+                          - paragraph [ref=e469]:
+                            - text: Варианты действий в зависимости от текущего значения свойства
+                            - strong [ref=e470]: Event
+                          - table [ref=e471]:
+                            - rowgroup [ref=e472]:
+                              - row "Код (ы) Необходимое действие" [ref=e473]:
+                                - cell "Код (ы)" [ref=e474]:
+                                  - paragraph [ref=e475]:
+                                    - strong [ref=e476]: Код (ы)
+                                - cell "Необходимое действие" [ref=e477]:
+                                  - paragraph [ref=e478]:
+                                    - strong [ref=e479]: Необходимое действие
+                              - row "0 Игра в нормальном состоянии, можно продолжать посылать запросы" [ref=e480]:
+                                - cell "0" [ref=e481]:
+                                  - paragraph [ref=e482]: "0"
+                                - cell "Игра в нормальном состоянии, можно продолжать посылать запросы" [ref=e483]:
+                                  - paragraph [ref=e484]:
+                                    - strong [ref=e485]: Игра в нормальном состоянии
+                                    - text: ", можно продолжать посылать запросы"
+                              - row "16, 18, 19, 20, 21, 22 Текущий уровень изменился, необходимо послать запрос на сервер еще раз" [ref=e486]:
+                                - cell "16, 18, 19, 20, 21, 22" [ref=e487]:
+                                  - paragraph [ref=e488]: 16, 18, 19, 20, 21, 22
+                                - cell "Текущий уровень изменился, необходимо послать запрос на сервер еще раз" [ref=e489]:
+                                  - paragraph [ref=e490]:
+                                    - strong [ref=e491]: Текущий уровень изменился, необходимо послать запрос на сервер еще раз
+                              - row "все остальные коды Вывести сообщение игроку соответствующее коду ошибки" [ref=e492]:
+                                - cell "все остальные коды" [ref=e493]:
+                                  - paragraph [ref=e494]: все остальные коды
+                                - cell "Вывести сообщение игроку соответствующее коду ошибки" [ref=e495]:
+                                  - paragraph [ref=e496]: Вывести сообщение игроку соответствующее коду ошибки
+                          - paragraph [ref=e497]:
+                            - strong [ref=e498]
+                          - paragraph [ref=e499]:
+                            - strong [ref=e500]: "4."
+                            - strong [ref=e501]: Оценка текущего состояния уровня
+                          - paragraph [ref=e502]:
+                            - text: В случае если игра активна, и допускает участие игрока (
+                            - strong [ref=e503]: model
+                            - strong [ref=e504]: .Event
+                            - strong [ref=e505]: = 0),
+                            - text: перед отправкой ответов игрока на сервер, необходимо удостовериться, что ввод ответов на данном уровне разрешен, для этого требуется проверить объект
+                            - strong [ref=e506]: model
+                            - strong [ref=e507]: .Level
+                            - text: ", который содержит информацию о текущем уровне и имеет следующие свойства:"
+                          - table [ref=e508]:
+                            - rowgroup [ref=e509]:
+                              - row "LevelId (int) ID Уровня" [ref=e510]:
+                                - cell "LevelId (int)" [ref=e511]:
+                                  - paragraph [ref=e512]: LevelId (int)
+                                - cell "ID Уровня" [ref=e513]:
+                                  - paragraph [ref=e514]: ID Уровня
+                              - row "Name (string) Имя уровня" [ref=e515]:
+                                - cell "Name (string)" [ref=e516]:
+                                  - paragraph [ref=e517]: Name (string)
+                                - cell "Имя уровня" [ref=e518]:
+                                  - paragraph [ref=e519]: Имя уровня
+                              - row "Number (string) Номер уровня" [ref=e520]:
+                                - cell "Number (string)" [ref=e521]:
+                                  - paragraph [ref=e522]: Number (string)
+                                - cell "Номер уровня" [ref=e523]:
+                                  - paragraph [ref=e524]: Номер уровня
+                              - row "Timeout (int) время (в секундах) срабатывания автоперехода, 0 – если нет" [ref=e525]:
+                                - cell "Timeout (int)" [ref=e526]:
+                                  - paragraph [ref=e527]: Timeout (int)
+                                - cell "время (в секундах) срабатывания автоперехода, 0 – если нет" [ref=e528]:
+                                  - paragraph [ref=e529]: время (в секундах) срабатывания автоперехода, 0 – если нет
+                              - row "TimeoutAward (int) штраф за автопереход (в секундах), 0 – если нет" [ref=e530]:
+                                - cell "TimeoutAward (int)" [ref=e531]:
+                                  - paragraph [ref=e532]: TimeoutAward (int)
+                                - cell "штраф за автопереход (в секундах), 0 – если нет" [ref=e533]:
+                                  - paragraph [ref=e534]: штраф за автопереход (в секундах), 0 – если нет
+                              - row "TimeoutSecondsRemain (int) осталось времени до срабатывания автоперехода (в секундах)" [ref=e535]:
+                                - cell "TimeoutSecondsRemain (int)" [ref=e536]:
+                                  - paragraph [ref=e537]: TimeoutSecondsRemain (int)
+                                - cell "осталось времени до срабатывания автоперехода (в секундах)" [ref=e538]:
+                                  - paragraph [ref=e539]: осталось времени до срабатывания автоперехода (в секундах)
+                              - row "IsPassed (bool) уровень пройден" [ref=e540]:
+                                - cell "IsPassed (bool)" [ref=e541]:
+                                  - paragraph [ref=e542]:
+                                    - strong [ref=e543]: IsPassed
+                                    - text: (bool)
+                                - cell "уровень пройден" [ref=e544]:
+                                  - paragraph [ref=e545]: уровень пройден
+                              - row "Dismissed (bool) уровень снят администратором" [ref=e546]:
+                                - cell "Dismissed (bool)" [ref=e547]:
+                                  - paragraph [ref=e548]:
+                                    - strong [ref=e549]: Dismissed
+                                    - text: (bool)
+                                - cell "уровень снят администратором" [ref=e550]:
+                                  - paragraph [ref=e551]: уровень снят администратором
+                              - row "StartTime (datetime) время начала уровня для игрока" [ref=e552]:
+                                - cell "StartTime (datetime)" [ref=e553]:
+                                  - paragraph [ref=e554]: StartTime (datetime)
+                                - cell "время начала уровня для игрока" [ref=e555]:
+                                  - paragraph [ref=e556]: время начала уровня для игрока
+                              - row "HasAnswerBlockRule (bool) есть ли на уровне блокировка ответов" [ref=e557]:
+                                - cell "HasAnswerBlockRule (bool)" [ref=e558]:
+                                  - paragraph [ref=e559]:
+                                    - strong [ref=e560]: HasAnswerBlockRule
+                                    - text: (bool)
+                                - cell "есть ли на уровне блокировка ответов" [ref=e561]:
+                                  - paragraph [ref=e562]: есть ли на уровне блокировка ответов
+                              - row "BlockDuration (int) осталось секунду блокировки; 0 – не активна" [ref=e563]:
+                                - cell "BlockDuration (int)" [ref=e564]:
+                                  - paragraph [ref=e565]:
+                                    - strong [ref=e566]: BlockDuration
+                                    - text: (int)
+                                - cell "осталось секунду блокировки; 0 – не активна" [ref=e567]:
+                                  - paragraph [ref=e568]: осталось секунду блокировки; 0 – не активна
+                              - 'row "BlockTargetId (int) блокировка установлена для: 0,1 – для игрока; 2 – для команды" [ref=e569]':
+                                - cell "BlockTargetId (int)" [ref=e570]:
+                                  - paragraph [ref=e571]: BlockTargetId (int)
+                                - 'cell "блокировка установлена для: 0,1 – для игрока; 2 – для команды" [ref=e572]':
+                                  - paragraph [ref=e573]: "блокировка установлена для: 0,1 – для игрока; 2 – для команды"
+                              - row "AttemtsNumber (int) количество попыток разрешенных в рамках AttemtsPeriod" [ref=e574]:
+                                - cell "AttemtsNumber (int)" [ref=e575]:
+                                  - paragraph [ref=e576]: AttemtsNumber (int)
+                                - cell "количество попыток разрешенных в рамках AttemtsPeriod" [ref=e577]:
+                                  - paragraph [ref=e578]:
+                                    - text: количество попыток разрешенных в рамках
+                                    - strong [ref=e579]: AttemtsPeriod
+                              - row "AttemtsPeriod (int) период срабатывания блокировки (в секундах)" [ref=e580]:
+                                - cell "AttemtsPeriod (int)" [ref=e581]:
+                                  - paragraph [ref=e582]: AttemtsPeriod (int)
+                                - cell "период срабатывания блокировки (в секундах)" [ref=e583]:
+                                  - paragraph [ref=e584]: период срабатывания блокировки (в секундах)
+                              - row "RequiredSectorsCount (int) Количество секторов, которые необходимо отгадать" [ref=e585]:
+                                - cell "RequiredSectorsCount (int)" [ref=e586]:
+                                  - paragraph [ref=e587]: RequiredSectorsCount (int)
+                                - cell "Количество секторов, которые необходимо отгадать" [ref=e588]:
+                                  - paragraph [ref=e589]: Количество секторов, которые необходимо отгадать
+                              - row "PassedSectorsCount (int) Количество отгаданных секторов" [ref=e590]:
+                                - cell "PassedSectorsCount (int)" [ref=e591]:
+                                  - paragraph [ref=e592]: PassedSectorsCount (int)
+                                - cell "Количество отгаданных секторов" [ref=e593]:
+                                  - paragraph [ref=e594]: Количество отгаданных секторов
+                              - row "SectorsLeftToClose (int) Количество неотгаданных секторов" [ref=e595]:
+                                - cell "SectorsLeftToClose (int)" [ref=e596]:
+                                  - paragraph [ref=e597]: SectorsLeftToClose (int)
+                                - cell "Количество неотгаданных секторов" [ref=e598]:
+                                  - paragraph [ref=e599]: Количество неотгаданных секторов
+                              - row "MixedActions (object array) История введенных ответов" [ref=e600]:
+                                - cell "MixedActions (object array)" [ref=e601]:
+                                  - paragraph [ref=e602]: MixedActions (object array)
+                                - cell "История введенных ответов" [ref=e603]:
+                                  - paragraph [ref=e604]: История введенных ответов
+                              - row "Messages (object array) Сообщения администратора" [ref=e605]:
+                                - cell "Messages (object array)" [ref=e606]:
+                                  - paragraph [ref=e607]: Messages (object array)
+                                - cell "Сообщения администратора" [ref=e608]:
+                                  - paragraph [ref=e609]: Сообщения администратора
+                              - row "Task (object) Текст задания" [ref=e610]:
+                                - cell "Task (object)" [ref=e611]:
+                                  - paragraph [ref=e612]: Task (object)
+                                - cell "Текст задания" [ref=e613]:
+                                  - paragraph [ref=e614]: Текст задания
+                              - row "Sectors (object array) Сектора" [ref=e615]:
+                                - cell "Sectors (object array)" [ref=e616]:
+                                  - paragraph [ref=e617]: Sectors (object array)
+                                - cell "Сектора" [ref=e618]:
+                                  - paragraph [ref=e619]: Сектора
+                              - row "Helps (object array) Подсказки" [ref=e620]:
+                                - cell "Helps (object array)" [ref=e621]:
+                                  - paragraph [ref=e622]: Helps (object array)
+                                - cell "Подсказки" [ref=e623]:
+                                  - paragraph [ref=e624]: Подсказки
+                              - row "PenaltyHelps (object array) Штрафные подсказки" [ref=e625]:
+                                - cell "PenaltyHelps (object array)" [ref=e626]:
+                                  - paragraph [ref=e627]: PenaltyHelps (object array)
+                                - cell "Штрафные подсказки" [ref=e628]:
+                                  - paragraph [ref=e629]: Штрафные подсказки
+                              - row "Bonuses (object array) Бонусные задания" [ref=e630]:
+                                - cell "Bonuses (object array)" [ref=e631]:
+                                  - paragraph [ref=e632]: Bonuses (object array)
+                                - cell "Бонусные задания" [ref=e633]:
+                                  - paragraph [ref=e634]: Бонусные задания
+                          - paragraph [ref=e635]
+                          - paragraph [ref=e636]: "Перед отправкой ответов проверяем:"
+                          - list [ref=e637]:
+                            - listitem [ref=e638]:
+                              - strong [ref=e639]: model
+                              - strong [ref=e640]: .Level
+                              - strong [ref=e641]: .IsPassed
+                              - strong [ref=e642]: == false
+                              - strong [ref=e643]
+                              - text: уровень не пройден
+                            - listitem [ref=e644]:
+                              - strong [ref=e645]: model
+                              - strong [ref=e646]: .Level
+                              - strong [ref=e647]: .Dismissed
+                              - strong [ref=e648]: == false
+                              - text: уровень не снят
+                            - listitem [ref=e649]:
+                              - strong [ref=e650]: model
+                              - strong [ref=e651]: .Level
+                              - strong [ref=e652]: .HasAnswerBlockRule
+                              - strong [ref=e653]: == false
+                              - text: "||"
+                              - strong [ref=e654]: model
+                              - strong [ref=e655]: .Level
+                              - strong [ref=e656]: .BlockDuration
+                              - strong [ref=e657]: <= 0
+                              - text: – активна блокировка воода ответов на задание (не действует для бонусных ответов)
+                          - paragraph [ref=e658]: Если вышеперечисленные условия справедливы, то можно посылать ответы на проверку
+                          - paragraph [ref=e659]
+                          - paragraph [ref=e660]:
+                            - strong [ref=e661]: "5."
+                            - strong [ref=e662]: Отправка ответов на задание уровня и бонусные задания если блокировка ответов не настроена
+                          - paragraph [ref=e663]: В случае если на уровне не настроена блокировка ответов, то при отправке ответа к уровню, одновременно проверяются ответы и к неотгадданным бонусным заданиям
+                          - table [ref=e664]:
+                            - rowgroup [ref=e665]:
+                              - row "HTTPVERB POST" [ref=e666]:
+                                - cell "HTTPVERB" [ref=e667]:
+                                  - paragraph [ref=e668]: HTTPVERB
+                                - cell "POST" [ref=e669]:
+                                  - paragraph [ref=e670]:
+                                    - strong [ref=e671]: POST
+                              - 'row "URL /GameEngines/Encounter/Play/{ID Игры}?json=1" [ref=e672]':
+                                - cell "URL" [ref=e673]:
+                                  - paragraph [ref=e674]: URL
+                                - 'cell "/GameEngines/Encounter/Play/{ID Игры}?json=1" [ref=e675]':
+                                  - paragraph [ref=e676]:
+                                    - strong [ref=e677]: "/GameEngines/Encounter/Play/{ID"
+                                    - strong [ref=e678]: "Игры}?json=1"
+                              - 'row "Params LevelId = {id уровня} (берем из model.Level.LevelID) LevelNumber = {номер уровня} (берем из model.Level.Number) LevelAction.Answer {текст ответа}" [ref=e679]':
+                                - cell "Params" [ref=e680]:
+                                  - paragraph [ref=e681]: Params
+                                - 'cell "LevelId = {id уровня} (берем из model.Level.LevelID) LevelNumber = {номер уровня} (берем из model.Level.Number) LevelAction.Answer {текст ответа}" [ref=e682]':
+                                  - paragraph [ref=e683]:
+                                    - strong [ref=e684]: LevelId
+                                    - text: "= {id уровня} (берем из model.Level.LevelID)"
+                                  - paragraph [ref=e685]:
+                                    - strong [ref=e686]: LevelNumber
+                                    - text: "= {номер уровня} (берем из model.Level.Number)"
+                                  - paragraph [ref=e687]:
+                                    - strong [ref=e688]: LevelAction.Answer
+                                    - text: "{текст ответа}"
+                          - paragraph [ref=e689]: "Пример:"
+                          - table [ref=e690]:
+                            - rowgroup [ref=e691]:
+                              - row "HTTPVERB POST" [ref=e692]:
+                                - cell "HTTPVERB" [ref=e693]:
+                                  - paragraph [ref=e694]: HTTPVERB
+                                - cell "POST" [ref=e695]:
+                                  - paragraph [ref=e696]:
+                                    - strong [ref=e697]: POST
+                              - row "URL /GameEngines/Encounter/Play/222?json=1" [ref=e698]:
+                                - cell "URL" [ref=e699]:
+                                  - paragraph [ref=e700]: URL
+                                - cell "/GameEngines/Encounter/Play/222?json=1" [ref=e701]:
+                                  - paragraph [ref=e702]:
+                                    - strong [ref=e703]: /GameEngines/Encounter/Play/222?json=1
+                              - 'row "Params LevelId = 1356 (берем из model.Level.LevelID) LevelNumber = 2 {номер уровня} (берем из model.Level.Number) LevelAction.Answer = ответ" [ref=e704]':
+                                - cell "Params" [ref=e705]:
+                                  - paragraph [ref=e706]: Params
+                                - 'cell "LevelId = 1356 (берем из model.Level.LevelID) LevelNumber = 2 {номер уровня} (берем из model.Level.Number) LevelAction.Answer = ответ" [ref=e707]':
+                                  - paragraph [ref=e708]:
+                                    - strong [ref=e709]: LevelId
+                                    - text: = 1356 (берем из model.Level.LevelID)
+                                  - paragraph [ref=e710]:
+                                    - strong [ref=e711]: LevelNumber
+                                    - text: "= 2 {номер уровня} (берем из model.Level.Number)"
+                                  - paragraph [ref=e712]:
+                                    - strong [ref=e713]: LevelAction.Answer
+                                    - text: = ответ
+                          - paragraph [ref=e714]
+                          - paragraph [ref=e715]: После получения ответа в виде JSON объекта, необходимо проверить корректность состояния игры (п 3)
+                          - paragraph [ref=e716]:
+                            - text: Результат последнего действия игрока хранится в объекте
+                            - strong [ref=e717]: model
+                            - strong [ref=e718]: .EngineAction
+                            - strong [ref=e719]: ","
+                            - text: который имеет след свойства
+                          - table [ref=e720]:
+                            - rowgroup [ref=e721]:
+                              - row "GameId (int) ID игры" [ref=e722]:
+                                - cell "GameId (int)" [ref=e723]:
+                                  - paragraph [ref=e724]: GameId (int)
+                                - cell "ID игры" [ref=e725]:
+                                  - paragraph [ref=e726]: ID игры
+                              - row "LevelId (int) ID уровня" [ref=e727]:
+                                - cell "LevelId (int)" [ref=e728]:
+                                  - paragraph [ref=e729]: LevelId (int)
+                                - cell "ID уровня" [ref=e730]:
+                                  - paragraph [ref=e731]: ID уровня
+                              - row "LevelNumber (int) Номер уровня на который был введен ответ" [ref=e732]:
+                                - cell "LevelNumber (int)" [ref=e733]:
+                                  - paragraph [ref=e734]: LevelNumber (int)
+                                - cell "Номер уровня на который был введен ответ" [ref=e735]:
+                                  - paragraph [ref=e736]: Номер уровня на который был введен ответ
+                              - row "LevelAction (object) инфо о результате отправки ответа на уровень и бонус;" [ref=e737]:
+                                - cell "LevelAction (object)" [ref=e738]:
+                                  - paragraph [ref=e739]:
+                                    - strong [ref=e740]: LevelAction
+                                    - text: (object)
+                                - cell "инфо о результате отправки ответа на уровень и бонус;" [ref=e741]:
+                                  - paragraph [ref=e742]: инфо о результате отправки ответа на уровень и бонус;
+                              - row "BonusAction (object) инфо о результате отправки ответа на бонус;" [ref=e743]:
+                                - cell "BonusAction (object)" [ref=e744]:
+                                  - paragraph [ref=e745]: BonusAction (object)
+                                - cell "инфо о результате отправки ответа на бонус;" [ref=e746]:
+                                  - paragraph [ref=e747]: инфо о результате отправки ответа на бонус;
+                          - paragraph [ref=e748]:
+                            - text: Для того что бы узнать, был ли введенный ответ правильным, необходимо проверить свойство
+                            - strong [ref=e749]: model
+                            - strong [ref=e750]: .EngineAction
+                            - strong [ref=e751]: .LevelAction
+                            - strong [ref=e752]: ":"
+                          - table [ref=e753]:
+                            - rowgroup [ref=e754]:
+                              - row "Answer (string) Введенный ответ" [ref=e755]:
+                                - cell "Answer (string)" [ref=e756]:
+                                  - paragraph [ref=e757]: Answer (string)
+                                - cell "Введенный ответ" [ref=e758]:
+                                  - paragraph [ref=e759]: Введенный ответ
+                              - row "IsCorrectAnswer (bool) null – ответа не было, false – неправильный ответ; true – правильный ответ;" [ref=e760]:
+                                - cell "IsCorrectAnswer (bool)" [ref=e761]:
+                                  - paragraph [ref=e762]: IsCorrectAnswer (bool)
+                                - cell "null – ответа не было, false – неправильный ответ; true – правильный ответ;" [ref=e763]:
+                                  - paragraph [ref=e764]: null – ответа не было, false – неправильный ответ; true – правильный ответ;
+                          - paragraph [ref=e765]:
+                            - text: Таким образом, вначале проверяем, был ли введен ответ
+                            - strong [ref=e766]: model
+                            - strong [ref=e767]: .EngineAction
+                            - strong [ref=e768]: .LevelAction
+                            - strong [ref=e769]: .IsCorrect
+                            - strong [ref=e770]: "!= null"
+                            - strong [ref=e771]
+                            - text: и только потом смотрим остальные свойства.
+                          - paragraph [ref=e772]
+                          - paragraph [ref=e773]
+                          - paragraph [ref=e774]
+                          - paragraph [ref=e775]:
+                            - strong [ref=e776]: "6."
+                            - strong [ref=e777]: Отправка бонусных ответов на уровень на сервер если на уровне настроена блокировка ответов
+                          - paragraph [ref=e778]: "Если на уровне настроена блокирока ответов, то ответы на уровень и ответы на бонусные задания отправляются отдельными запросами, для уровня формат запроса тот же что и в п 5, для бонусных заданий запрос имеет следующий формат:"
+                          - table [ref=e779]:
+                            - rowgroup [ref=e780]:
+                              - row "HTTPVERB POST" [ref=e781]:
+                                - cell "HTTPVERB" [ref=e782]:
+                                  - paragraph [ref=e783]: HTTPVERB
+                                - cell "POST" [ref=e784]:
+                                  - paragraph [ref=e785]: POST
+                              - 'row "URL /GameEngines/Encounter/Play/{ID Игры}?json=1" [ref=e786]':
+                                - cell "URL" [ref=e787]:
+                                  - paragraph [ref=e788]: URL
+                                - 'cell "/GameEngines/Encounter/Play/{ID Игры}?json=1" [ref=e789]':
+                                  - paragraph [ref=e790]:
+                                    - strong [ref=e791]: "/GameEngines/Encounter/Play/{ID"
+                                    - strong [ref=e792]: "Игры}?json=1"
+                              - 'row "Params LevelId = {id уровня} (берем из model.Level.LevelID) LevelNumber = {номер уровня} (берем из model.Level.Number) BonusAction.Answer {текст ответа на бонусное задание}" [ref=e793]':
+                                - cell "Params" [ref=e794]:
+                                  - paragraph [ref=e795]: Params
+                                - 'cell "LevelId = {id уровня} (берем из model.Level.LevelID) LevelNumber = {номер уровня} (берем из model.Level.Number) BonusAction.Answer {текст ответа на бонусное задание}" [ref=e796]':
+                                  - paragraph [ref=e797]:
+                                    - strong [ref=e798]: LevelId
+                                    - text: "= {id уровня} (берем из model.Level.LevelID)"
+                                  - paragraph [ref=e799]:
+                                    - strong [ref=e800]: LevelNumber
+                                    - text: "= {номер уровня} (берем из model.Level.Number)"
+                                  - paragraph [ref=e801]:
+                                    - strong [ref=e802]: BonusAction
+                                    - strong [ref=e803]: .Answer
+                                    - text: "{текст ответа на бонусное задание}"
+                          - paragraph [ref=e804]: "Пример:"
+                          - table [ref=e805]:
+                            - rowgroup [ref=e806]:
+                              - row "HTTPVERB POST" [ref=e807]:
+                                - cell "HTTPVERB" [ref=e808]:
+                                  - paragraph [ref=e809]: HTTPVERB
+                                - cell "POST" [ref=e810]:
+                                  - paragraph [ref=e811]: POST
+                              - row "URL /GameEngines/Encounter/Play/222?json=1" [ref=e812]:
+                                - cell "URL" [ref=e813]:
+                                  - paragraph [ref=e814]: URL
+                                - cell "/GameEngines/Encounter/Play/222?json=1" [ref=e815]:
+                                  - paragraph [ref=e816]:
+                                    - strong [ref=e817]: /GameEngines/Encounter/Play/222?json=1
+                              - 'row "Params LevelId = 1356 (берем из model.Level.LevelID) LevelNumber = 2 {номер уровня} (берем из model.Level.Number) BonusAction.Answer = ответ" [ref=e818]':
+                                - cell "Params" [ref=e819]:
+                                  - paragraph [ref=e820]: Params
+                                - 'cell "LevelId = 1356 (берем из model.Level.LevelID) LevelNumber = 2 {номер уровня} (берем из model.Level.Number) BonusAction.Answer = ответ" [ref=e821]':
+                                  - paragraph [ref=e822]:
+                                    - strong [ref=e823]: LevelId
+                                    - text: = 1356 (берем из model.Level.LevelID)
+                                  - paragraph [ref=e824]:
+                                    - strong [ref=e825]: LevelNumber
+                                    - text: "= 2 {номер уровня} (берем из model.Level.Number)"
+                                  - paragraph [ref=e826]:
+                                    - strong [ref=e827]: BonusAction.Answer
+                                    - text: = ответ
+                          - paragraph [ref=e828]
+                          - paragraph [ref=e829]: После получения ответа в виде JSON объекта, необходимо проверить корректность состояния игры (п 3)
+                          - paragraph [ref=e830]:
+                            - text: Для того что бы узнать, был ли введенный ответ к бонусному заданию правильным, необходимо проверить свойство
+                            - strong [ref=e831]: model
+                            - strong [ref=e832]: .EngineAction
+                            - strong [ref=e833]: .BonusAction
+                            - strong [ref=e834]: ":"
+                          - table [ref=e835]:
+                            - rowgroup [ref=e836]:
+                              - row "Answer (string) Введенный ответ" [ref=e837]:
+                                - cell "Answer (string)" [ref=e838]:
+                                  - paragraph [ref=e839]: Answer (string)
+                                - cell "Введенный ответ" [ref=e840]:
+                                  - paragraph [ref=e841]: Введенный ответ
+                              - row "IsCorrectAnswer (bool) null – ответа не было, false – неправильный ответ; true – правильный ответ;" [ref=e842]:
+                                - cell "IsCorrectAnswer (bool)" [ref=e843]:
+                                  - paragraph [ref=e844]: IsCorrectAnswer (bool)
+                                - cell "null – ответа не было, false – неправильный ответ; true – правильный ответ;" [ref=e845]:
+                                  - paragraph [ref=e846]: null – ответа не было, false – неправильный ответ; true – правильный ответ;
+                          - paragraph [ref=e847]:
+                            - text: Таким образом, вначале проверяем, был ли введен ответ
+                            - strong [ref=e848]: model
+                            - strong [ref=e849]: .EngineAction
+                            - strong [ref=e850]: . BonusAction
+                            - strong [ref=e851]: .IsCorrect
+                            - strong [ref=e852]: "!= null"
+                            - strong [ref=e853]
+                            - text: и только потом смотрим остальные свойства.
+                          - paragraph [ref=e854]
+                          - paragraph [ref=e855]:
+                            - strong [ref=e856]: "7."
+                            - strong [ref=e857]: Отправка запроса на открытие штрафной подсказки
+                          - paragraph [ref=e858]:
+                            - text: Информация о имеющихся штрафных подсказка хранится в масиве объектов
+                            - strong [ref=e859]: model
+                            - strong [ref=e860]: .Level
+                            - strong [ref=e861]: . PenaltyHelps
+                            - strong [ref=e862]: ","
+                            - text: "каждый из которых имеет следующую cтруктуру:"
+                          - table [ref=e863]:
+                            - rowgroup [ref=e864]:
+                              - row "HelpId (int) ID подсказки" [ref=e865]:
+                                - cell "HelpId (int)" [ref=e866]:
+                                  - paragraph [ref=e867]: HelpId (int)
+                                - cell "ID подсказки" [ref=e868]:
+                                  - paragraph [ref=e869]: ID подсказки
+                              - row "Number (int) Номер пп" [ref=e870]:
+                                - cell "Number (int)" [ref=e871]:
+                                  - paragraph [ref=e872]: Number (int)
+                                - cell "Номер пп" [ref=e873]:
+                                  - paragraph [ref=e874]: Номер пп
+                              - row "HelpText (string) Текст подсказки" [ref=e875]:
+                                - cell "HelpText (string)" [ref=e876]:
+                                  - paragraph [ref=e877]: HelpText (string)
+                                - cell "Текст подсказки" [ref=e878]:
+                                  - paragraph [ref=e879]: Текст подсказки
+                              - row "IsPenalty (bool) Штрафная/Обычная" [ref=e880]:
+                                - cell "IsPenalty (bool)" [ref=e881]:
+                                  - paragraph [ref=e882]: IsPenalty (bool)
+                                - cell "Штрафная/Обычная" [ref=e883]:
+                                  - paragraph [ref=e884]: Штрафная/Обычная
+                              - row "Penalty (int) Штраф в секундах" [ref=e885]:
+                                - cell "Penalty (int)" [ref=e886]:
+                                  - paragraph [ref=e887]: Penalty (int)
+                                - cell "Штраф в секундах" [ref=e888]:
+                                  - paragraph [ref=e889]: Штраф в секундах
+                              - row "PenaltyComment (string) Описание подсказки" [ref=e890]:
+                                - cell "PenaltyComment (string)" [ref=e891]:
+                                  - paragraph [ref=e892]: PenaltyComment (string)
+                                - cell "Описание подсказки" [ref=e893]:
+                                  - paragraph [ref=e894]: Описание подсказки
+                              - row "RequestConfirm (bool) Требует дополнительного подтверждения" [ref=e895]:
+                                - cell "RequestConfirm (bool)" [ref=e896]:
+                                  - paragraph [ref=e897]: RequestConfirm (bool)
+                                - cell "Требует дополнительного подтверждения" [ref=e898]:
+                                  - paragraph [ref=e899]: Требует дополнительного подтверждения
+                              - row "PenaltyHelpState (int) Состояние, 0 - не открыта; 2 - открыта" [ref=e900]:
+                                - cell "PenaltyHelpState (int)" [ref=e901]:
+                                  - paragraph [ref=e902]: PenaltyHelpState (int)
+                                - cell "Состояние, 0 - не открыта; 2 - открыта" [ref=e903]:
+                                  - paragraph [ref=e904]: Состояние, 0 - не открыта; 2 - открыта
+                              - row "RemainSeconds (int) осталось секуд до того как подскзка будет доступна для игрока" [ref=e905]:
+                                - cell "RemainSeconds (int)" [ref=e906]:
+                                  - paragraph [ref=e907]: RemainSeconds (int)
+                                - cell "осталось секуд до того как подскзка будет доступна для игрока" [ref=e908]:
+                                  - paragraph [ref=e909]: осталось секуд до того как подскзка будет доступна для игрока
+                          - paragraph [ref=e910]:
+                            - text: Перед отправкой запроса на отрытие подсказки необходимо проверить, требует ли данная подсказка дополнительного подтверждения (
+                            - strong [ref=e911]: penalty
+                            - strong [ref=e912]: . RequestConfirm
+                            - strong [ref=e913]: ),
+                            - text: в этом случае в вашей реализации UI, игрока нужно предупредить о том что он получит штраф и запросить его подтверждение на открытие подсказки.
+                          - paragraph [ref=e914]
+                          - paragraph [ref=e915]
+                          - paragraph [ref=e916]: "Формат запроса на открытие подсказки:"
+                          - table [ref=e917]:
+                            - rowgroup [ref=e918]:
+                              - row "HTTPVERB GET" [ref=e919]:
+                                - cell "HTTPVERB" [ref=e920]:
+                                  - paragraph [ref=e921]:
+                                    - strong [ref=e922]: HTTPVERB
+                                - cell "GET" [ref=e923]:
+                                  - paragraph [ref=e924]:
+                                    - strong [ref=e925]: GET
+                              - 'row "URL /GameEngines/Encounter/Play/{ID Игры}?json=1&pid={ ID подсказки}&pact=1" [ref=e926]':
+                                - cell "URL" [ref=e927]:
+                                  - paragraph [ref=e928]:
+                                    - strong [ref=e929]: URL
+                                - 'cell "/GameEngines/Encounter/Play/{ID Игры}?json=1&pid={ ID подсказки}&pact=1" [ref=e930]':
+                                  - paragraph [ref=e931]:
+                                    - strong [ref=e932]: "/GameEngines/Encounter/Play/{ID"
+                                    - strong [ref=e933]: "Игры}?json=1&pid={ ID"
+                                    - strong [ref=e934]: "подсказки}&pact=1"
+                          - paragraph [ref=e935]: "Пример:"
+                          - table [ref=e936]:
+                            - rowgroup [ref=e937]:
+                              - row "HTTPVERB GET" [ref=e938]:
+                                - cell "HTTPVERB" [ref=e939]:
+                                  - paragraph [ref=e940]:
+                                    - strong [ref=e941]: HTTPVERB
+                                - cell "GET" [ref=e942]:
+                                  - paragraph [ref=e943]:
+                                    - strong [ref=e944]: GET
+                              - row "URL /GameEngines/Encounter/Play/222?json=1&pid=9645pact=1" [ref=e945]:
+                                - cell "URL" [ref=e946]:
+                                  - paragraph [ref=e947]:
+                                    - strong [ref=e948]: URL
+                                - cell "/GameEngines/Encounter/Play/222?json=1&pid=9645pact=1" [ref=e949]:
+                                  - paragraph [ref=e950]:
+                                    - strong [ref=e951]: /GameEngines/Encounter/Play/222?json=1&pid=9645pact=1
+                          - paragraph [ref=e952]
+                          - paragraph [ref=e953]
+                          - paragraph [ref=e954]:
+                            - strong [ref=e955]: "8."
+                            - strong [ref=e956]: Описание остальных объектов GameEngineModel
+                          - paragraph [ref=e957]:
+                            - strong [ref=e958]: 8.1.
+                            - strong [ref=e959]: История введенных ответов
+                          - paragraph [ref=e960]: model.Level.MixedActions
+                          - table [ref=e961]:
+                            - rowgroup [ref=e962]:
+                              - row "ActionId (int)" [ref=e963]:
+                                - cell "ActionId (int)" [ref=e964]:
+                                  - paragraph [ref=e965]: ActionId (int)
+                                - cell [ref=e966]:
+                                  - paragraph [ref=e967]
+                              - row "LevelId (int) ID уровня к которому был введен ответ" [ref=e968]:
+                                - cell "LevelId (int)" [ref=e969]:
+                                  - paragraph [ref=e970]: LevelId (int)
+                                - cell "ID уровня к которому был введен ответ" [ref=e971]:
+                                  - paragraph [ref=e972]: ID уровня к которому был введен ответ
+                              - row "LevelNumber (int) Номер уровня к которому был введен ответ" [ref=e973]:
+                                - cell "LevelNumber (int)" [ref=e974]:
+                                  - paragraph [ref=e975]: LevelNumber (int)
+                                - cell "Номер уровня к которому был введен ответ" [ref=e976]:
+                                  - paragraph [ref=e977]: Номер уровня к которому был введен ответ
+                              - row "UserId (int) ID игрока который ввел ответ" [ref=e978]:
+                                - cell "UserId (int)" [ref=e979]:
+                                  - paragraph [ref=e980]: UserId (int)
+                                - cell "ID игрока который ввел ответ" [ref=e981]:
+                                  - paragraph [ref=e982]: ID игрока который ввел ответ
+                              - row "Kind (int) 1 – ответ к уровню, 2 – ответ к бонусу" [ref=e983]:
+                                - cell "Kind (int)" [ref=e984]:
+                                  - paragraph [ref=e985]: Kind (int)
+                                - cell "1 – ответ к уровню, 2 – ответ к бонусу" [ref=e986]:
+                                  - paragraph [ref=e987]: 1 – ответ к уровню, 2 – ответ к бонусу
+                              - row "Login (string) Логин игрока который ввел ответ" [ref=e988]:
+                                - cell "Login (string)" [ref=e989]:
+                                  - paragraph [ref=e990]: Login (string)
+                                - cell "Логин игрока который ввел ответ" [ref=e991]:
+                                  - paragraph [ref=e992]: Логин игрока который ввел ответ
+                              - row "Answer (string) Текст ответа" [ref=e993]:
+                                - cell "Answer (string)" [ref=e994]:
+                                  - paragraph [ref=e995]: Answer (string)
+                                - cell "Текст ответа" [ref=e996]:
+                                  - paragraph [ref=e997]: Текст ответа
+                              - row "AnswForm (string) Текст ответа с подсветкой русских букв" [ref=e998]:
+                                - cell "AnswForm (string)" [ref=e999]:
+                                  - paragraph [ref=e1000]: AnswForm (string)
+                                - cell "Текст ответа с подсветкой русских букв" [ref=e1001]:
+                                  - paragraph [ref=e1002]: Текст ответа с подсветкой русских букв
+                              - row "EnterDateTime (datetime) Время ввода ответа (UTC+0)" [ref=e1003]:
+                                - cell "EnterDateTime (datetime)" [ref=e1004]:
+                                  - paragraph [ref=e1005]: EnterDateTime (datetime)
+                                - cell "Время ввода ответа (UTC+0)" [ref=e1006]:
+                                  - paragraph [ref=e1007]: Время ввода ответа (UTC+0)
+                              - row "LocDateTime (string) Локализованное время ввода ответа" [ref=e1008]:
+                                - cell "LocDateTime (string)" [ref=e1009]:
+                                  - paragraph [ref=e1010]: LocDateTime (string)
+                                - cell "Локализованное время ввода ответа" [ref=e1011]:
+                                  - paragraph [ref=e1012]: Локализованное время ввода ответа
+                              - row "IsCorrect (bool) Верен/неверен" [ref=e1013]:
+                                - cell "IsCorrect (bool)" [ref=e1014]:
+                                  - paragraph [ref=e1015]: IsCorrect (bool)
+                                - cell "Верен/неверен" [ref=e1016]:
+                                  - paragraph [ref=e1017]: Верен/неверен
+                          - paragraph [ref=e1018]:
+                            - strong [ref=e1019]
+                          - paragraph [ref=e1020]:
+                            - strong [ref=e1021]: 8.2.
+                            - strong [ref=e1022]: Сообщения администратора
+                          - paragraph [ref=e1023]: model.Level.Messages
+                          - table [ref=e1024]:
+                            - rowgroup [ref=e1025]:
+                              - row "OwnerId (int) ID Администратора" [ref=e1026]:
+                                - cell "OwnerId (int)" [ref=e1027]:
+                                  - paragraph [ref=e1028]: OwnerId (int)
+                                - cell "ID Администратора" [ref=e1029]:
+                                  - paragraph [ref=e1030]: ID Администратора
+                              - row "OwnerLogin (string) Логин администратора" [ref=e1031]:
+                                - cell "OwnerLogin (string)" [ref=e1032]:
+                                  - paragraph [ref=e1033]: OwnerLogin (string)
+                                - cell "Логин администратора" [ref=e1034]:
+                                  - paragraph [ref=e1035]: Логин администратора
+                              - row "MessageId (int) ID Сообщения" [ref=e1036]:
+                                - cell "MessageId (int)" [ref=e1037]:
+                                  - paragraph [ref=e1038]: MessageId (int)
+                                - cell "ID Сообщения" [ref=e1039]:
+                                  - paragraph [ref=e1040]: ID Сообщения
+                              - row "MessageText (string) Оригинальный текст сообщения" [ref=e1041]:
+                                - cell "MessageText (string)" [ref=e1042]:
+                                  - paragraph [ref=e1043]: MessageText (string)
+                                - cell "Оригинальный текст сообщения" [ref=e1044]:
+                                  - paragraph [ref=e1045]: Оригинальный текст сообщения
+                              - row "WrappedText (string) Отформатированный текст сообщения с учетом ReplaceNl2Br" [ref=e1046]:
+                                - cell "WrappedText (string)" [ref=e1047]:
+                                  - paragraph [ref=e1048]: WrappedText (string)
+                                - cell "Отформатированный текст сообщения с учетом ReplaceNl2Br" [ref=e1049]:
+                                  - paragraph [ref=e1050]:
+                                    - text: Отформатированный текст сообщения с учетом ReplaceNl2Br
+                                    - strong
+                              - row "ReplaceNl2Br (bool) Заменять ли \\n на <BR>" [ref=e1051]:
+                                - cell "ReplaceNl2Br (bool)" [ref=e1052]:
+                                  - paragraph [ref=e1053]: ReplaceNl2Br (bool)
+                                - cell "Заменять ли \\n на <BR>" [ref=e1054]:
+                                  - paragraph [ref=e1055]: Заменять ли \n на <BR>
+                          - paragraph [ref=e1056]:
+                            - strong [ref=e1057]
+                          - paragraph [ref=e1058]:
+                            - strong [ref=e1059]: 8.3.
+                            - strong [ref=e1060]: Задание к уровню
+                          - paragraph [ref=e1061]: model.Level.Tasks
+                          - table [ref=e1062]:
+                            - rowgroup [ref=e1063]:
+                              - row "TaskText (string) Оригинальный текст задания" [ref=e1064]:
+                                - cell "TaskText (string)" [ref=e1065]:
+                                  - paragraph [ref=e1066]: TaskText (string)
+                                - cell "Оригинальный текст задания" [ref=e1067]:
+                                  - paragraph [ref=e1068]: Оригинальный текст задания
+                              - row "TaskTextFormatted Отформатированный текст задания с учетом ReplaceNlToBr" [ref=e1069]:
+                                - cell "TaskTextFormatted" [ref=e1070]:
+                                  - paragraph [ref=e1071]: TaskTextFormatted
+                                - cell "Отформатированный текст задания с учетом ReplaceNlToBr" [ref=e1072]:
+                                  - paragraph [ref=e1073]: Отформатированный текст задания с учетом ReplaceNlToBr
+                              - row "ReplaceNlToBr Заменять ли \\n на <BR>" [ref=e1074]:
+                                - cell "ReplaceNlToBr" [ref=e1075]:
+                                  - paragraph [ref=e1076]: ReplaceNlToBr
+                                - cell "Заменять ли \\n на <BR>" [ref=e1077]:
+                                  - paragraph [ref=e1078]: Заменять ли \n на <BR>
+                          - paragraph [ref=e1079]:
+                            - strong [ref=e1080]
+                          - paragraph [ref=e1081]:
+                            - strong [ref=e1082]
+                          - paragraph [ref=e1083]:
+                            - strong [ref=e1084]
+                          - paragraph [ref=e1085]:
+                            - strong [ref=e1086]
+                          - paragraph [ref=e1087]:
+                            - strong [ref=e1088]: 8.4.
+                            - strong [ref=e1089]: Сектора
+                          - paragraph [ref=e1090]: model.Level.Sectors
+                          - table [ref=e1091]:
+                            - rowgroup [ref=e1092]:
+                              - row "SectorId (int) ID сектора" [ref=e1093]:
+                                - cell "SectorId (int)" [ref=e1094]:
+                                  - paragraph [ref=e1095]: SectorId (int)
+                                - cell "ID сектора" [ref=e1096]:
+                                  - paragraph [ref=e1097]: ID сектора
+                              - row "Order (int) № пп" [ref=e1098]:
+                                - cell "Order (int)" [ref=e1099]:
+                                  - paragraph [ref=e1100]: Order (int)
+                                - cell "№ пп" [ref=e1101]:
+                                  - paragraph [ref=e1102]: № пп
+                              - row "Name (string) Название зектора" [ref=e1103]:
+                                - cell "Name (string)" [ref=e1104]:
+                                  - paragraph [ref=e1105]: Name (string)
+                                - cell "Название зектора" [ref=e1106]:
+                                  - paragraph [ref=e1107]: Название зектора
+                              - row "Answer (string) Отгаданный ответ" [ref=e1108]:
+                                - cell "Answer (string)" [ref=e1109]:
+                                  - paragraph [ref=e1110]: Answer (string)
+                                - cell "Отгаданный ответ" [ref=e1111]:
+                                  - paragraph [ref=e1112]: Отгаданный ответ
+                              - row "IsAnswered (bool) отгадан / не отгадан" [ref=e1113]:
+                                - cell "IsAnswered (bool)" [ref=e1114]:
+                                  - paragraph [ref=e1115]: IsAnswered (bool)
+                                - cell "отгадан / не отгадан" [ref=e1116]:
+                                  - paragraph [ref=e1117]: отгадан / не отгадан
+                          - paragraph [ref=e1118]
+                          - paragraph [ref=e1119]:
+                            - strong [ref=e1120]: 8.5.
+                            - strong [ref=e1121]: Подсказки и штрафные подсказки
+                          - paragraph [ref=e1122]: model.Level.Helps, model.Level.PenaltyHelps
+                          - table [ref=e1123]:
+                            - rowgroup [ref=e1124]:
+                              - row "HelpId (int) ID подсказки" [ref=e1125]:
+                                - cell "HelpId (int)" [ref=e1126]:
+                                  - paragraph [ref=e1127]: HelpId (int)
+                                - cell "ID подсказки" [ref=e1128]:
+                                  - paragraph [ref=e1129]: ID подсказки
+                              - row "Number (int) Номер пп" [ref=e1130]:
+                                - cell "Number (int)" [ref=e1131]:
+                                  - paragraph [ref=e1132]: Number (int)
+                                - cell "Номер пп" [ref=e1133]:
+                                  - paragraph [ref=e1134]: Номер пп
+                              - row "HelpText (string) Текст подсказки" [ref=e1135]:
+                                - cell "HelpText (string)" [ref=e1136]:
+                                  - paragraph [ref=e1137]: HelpText (string)
+                                - cell "Текст подсказки" [ref=e1138]:
+                                  - paragraph [ref=e1139]: Текст подсказки
+                              - row "IsPenalty (bool) Штрафная/Обычная" [ref=e1140]:
+                                - cell "IsPenalty (bool)" [ref=e1141]:
+                                  - paragraph [ref=e1142]: IsPenalty (bool)
+                                - cell "Штрафная/Обычная" [ref=e1143]:
+                                  - paragraph [ref=e1144]: Штрафная/Обычная
+                              - row "Penalty (int) Штраф в секундах (для штрафной)" [ref=e1145]:
+                                - cell "Penalty (int)" [ref=e1146]:
+                                  - paragraph [ref=e1147]: Penalty (int)
+                                - cell "Штраф в секундах (для штрафной)" [ref=e1148]:
+                                  - paragraph [ref=e1149]: Штраф в секундах (для штрафной)
+                              - row "PenaltyComment (string) Описание подсказки (для штрафной)" [ref=e1150]:
+                                - cell "PenaltyComment (string)" [ref=e1151]:
+                                  - paragraph [ref=e1152]: PenaltyComment (string)
+                                - cell "Описание подсказки (для штрафной)" [ref=e1153]:
+                                  - paragraph [ref=e1154]: Описание подсказки (для штрафной)
+                              - row "RequestConfirm (bool) Требует дополнительного подтверждения (для штрафной)" [ref=e1155]:
+                                - cell "RequestConfirm (bool)" [ref=e1156]:
+                                  - paragraph [ref=e1157]: RequestConfirm (bool)
+                                - cell "Требует дополнительного подтверждения (для штрафной)" [ref=e1158]:
+                                  - paragraph [ref=e1159]: Требует дополнительного подтверждения (для штрафной)
+                              - row "PenaltyHelpState (int) Состояние, 0 - не открыта; 2 - открыта (для штрафной)" [ref=e1160]:
+                                - cell "PenaltyHelpState (int)" [ref=e1161]:
+                                  - paragraph [ref=e1162]: PenaltyHelpState (int)
+                                - cell "Состояние, 0 - не открыта; 2 - открыта (для штрафной)" [ref=e1163]:
+                                  - paragraph [ref=e1164]: Состояние, 0 - не открыта; 2 - открыта (для штрафной)
+                              - row "RemainSeconds (int) осталось секуд до того как подскзка будет доступна для игрока" [ref=e1165]:
+                                - cell "RemainSeconds (int)" [ref=e1166]:
+                                  - paragraph [ref=e1167]: RemainSeconds (int)
+                                - cell "осталось секуд до того как подскзка будет доступна для игрока" [ref=e1168]:
+                                  - paragraph [ref=e1169]: осталось секуд до того как подскзка будет доступна для игрока
+                          - paragraph [ref=e1170]:
+                            - strong [ref=e1171]: "8.6"
+                            - strong [ref=e1172]: Бонусы
+                          - paragraph [ref=e1173]:
+                            - text: model.Level.Bonuses
+                            - strong
+                          - table [ref=e1174]:
+                            - rowgroup [ref=e1175]:
+                              - row "BonusId (int) ID Бонуса" [ref=e1176]:
+                                - cell "BonusId (int)" [ref=e1177]:
+                                  - paragraph [ref=e1178]:
+                                    - text: BonusId (int)
+                                    - strong
+                                - cell "ID Бонуса" [ref=e1179]:
+                                  - paragraph [ref=e1180]: ID Бонуса
+                              - row "Name (string) Название" [ref=e1181]:
+                                - cell "Name (string)" [ref=e1182]:
+                                  - paragraph [ref=e1183]:
+                                    - text: Name (string)
+                                    - strong
+                                - cell "Название" [ref=e1184]:
+                                  - paragraph [ref=e1185]: Название
+                              - row "Number (int) Номер пп" [ref=e1186]:
+                                - cell "Number (int)" [ref=e1187]:
+                                  - paragraph [ref=e1188]:
+                                    - text: Number (int)
+                                    - strong
+                                - cell "Номер пп" [ref=e1189]:
+                                  - paragraph [ref=e1190]: Номер пп
+                              - row "Task (string) Задание" [ref=e1191]:
+                                - cell "Task (string)" [ref=e1192]:
+                                  - paragraph [ref=e1193]:
+                                    - text: Task (string)
+                                    - strong
+                                - cell "Задание" [ref=e1194]:
+                                  - paragraph [ref=e1195]: Задание
+                              - row "Help (string) Бонусная подсказка" [ref=e1196]:
+                                - cell "Help (string)" [ref=e1197]:
+                                  - paragraph [ref=e1198]:
+                                    - text: Help (string)
+                                    - strong
+                                - cell "Бонусная подсказка" [ref=e1199]:
+                                  - paragraph [ref=e1200]: Бонусная подсказка
+                              - row "IsAnswered (bool) Разгадан / не разгадан" [ref=e1201]:
+                                - cell "IsAnswered (bool)" [ref=e1202]:
+                                  - paragraph [ref=e1203]:
+                                    - text: IsAnswered (bool)
+                                    - strong
+                                - cell "Разгадан / не разгадан" [ref=e1204]:
+                                  - paragraph [ref=e1205]: Разгадан / не разгадан
+                              - row "Expired (bool) Время на выполнение истекло" [ref=e1206]:
+                                - cell "Expired (bool)" [ref=e1207]:
+                                  - paragraph [ref=e1208]:
+                                    - text: Expired (bool)
+                                    - strong
+                                - cell "Время на выполнение истекло" [ref=e1209]:
+                                  - paragraph [ref=e1210]: Время на выполнение истекло
+                              - row "SecondsToStart (int) Будет доступен через" [ref=e1211]:
+                                - cell "SecondsToStart (int)" [ref=e1212]:
+                                  - paragraph [ref=e1213]:
+                                    - text: SecondsToStart (int)
+                                    - strong
+                                - cell "Будет доступен через" [ref=e1214]:
+                                  - paragraph [ref=e1215]: Будет доступен через
+                              - row "SecondsLeft (int) Будет еще доступен" [ref=e1216]:
+                                - cell "SecondsLeft (int)" [ref=e1217]:
+                                  - paragraph [ref=e1218]:
+                                    - text: SecondsLeft (int)
+                                    - strong
+                                - cell "Будет еще доступен" [ref=e1219]:
+                                  - paragraph [ref=e1220]: Будет еще доступен
+                              - row "AwardTime (int) Начисленный бонус в секндах" [ref=e1221]:
+                                - cell "AwardTime (int)" [ref=e1222]:
+                                  - paragraph [ref=e1223]:
+                                    - text: AwardTime (int)
+                                    - strong
+                                - cell "Начисленный бонус в секндах" [ref=e1224]:
+                                  - paragraph [ref=e1225]: Начисленный бонус в секндах
+                              - row "Negative(bool) \"Отрицательность\" начисляемого времени" [ref=e1226]:
+                                - cell "Negative(bool)" [ref=e1227]:
+                                  - paragraph [ref=e1228]: Negative(bool)
+                                - cell "\"Отрицательность\" начисляемого времени" [ref=e1229]
+                          - paragraph [ref=e1230]
+                          - paragraph [ref=e1231]
+                          - paragraph [ref=e1232]:
+                            - strong [ref=e1233]: 9. Прочее
+                          - paragraph [ref=e1234]
+                          - paragraph [ref=e1235]: Список игр домена можно вытащить вот так - https://domain.en.cx/home/?json=1
+                          - paragraph [ref=e1236]: "Внутри доступны 2 массива: ComingGames и ActiveGames"
+                          - paragraph [ref=e1237]: "Описание полей игры:"
+                          - table [ref=e1238]:
+                            - rowgroup [ref=e1239]:
+                              - row "GameID (int) ID игры" [ref=e1240]:
+                                - cell "GameID (int)" [ref=e1241]:
+                                  - paragraph [ref=e1242]: GameID (int)
+                                - cell "ID игры" [ref=e1243]:
+                                  - paragraph [ref=e1244]: ID игры
+                              - row "GameNum (int) Номер игры" [ref=e1245]:
+                                - cell "GameNum (int)" [ref=e1246]:
+                                  - paragraph [ref=e1247]: GameNum (int)
+                                - cell "Номер игры" [ref=e1248]:
+                                  - paragraph [ref=e1249]: Номер игры
+                              - row "CreateDateTime (obj) Объект времени создания игры" [ref=e1250]:
+                                - cell "CreateDateTime (obj)" [ref=e1251]:
+                                  - paragraph [ref=e1252]: CreateDateTime (obj)
+                                - cell "Объект времени создания игры" [ref=e1253]:
+                                  - paragraph [ref=e1254]: Объект времени создания игры
+                              - row "StartDateTime (obj) Объект времени старта игры" [ref=e1255]:
+                                - cell "StartDateTime (obj)" [ref=e1256]:
+                                  - paragraph [ref=e1257]: StartDateTime (obj)
+                                - cell "Объект времени старта игры" [ref=e1258]:
+                                  - paragraph [ref=e1259]: Объект времени старта игры
+                              - row "FinishDateTime (obj) Объект времени окончания игры" [ref=e1260]:
+                                - cell "FinishDateTime (obj)" [ref=e1261]:
+                                  - paragraph [ref=e1262]: FinishDateTime (obj)
+                                - cell "Объект времени окончания игры" [ref=e1263]:
+                                  - paragraph [ref=e1264]: Объект времени окончания игры
+                              - row "Fee (obj) Объект взноса на игру" [ref=e1265]:
+                                - cell "Fee (obj)" [ref=e1266]:
+                                  - paragraph [ref=e1267]: Fee (obj)
+                                - cell "Объект взноса на игру" [ref=e1268]:
+                                  - paragraph [ref=e1269]: Объект взноса на игру
+                              - row "Prize (obj) Объект награды за игру" [ref=e1270]:
+                                - cell "Prize (obj)" [ref=e1271]:
+                                  - paragraph [ref=e1272]: Prize (obj)
+                                - cell "Объект награды за игру" [ref=e1273]:
+                                  - paragraph [ref=e1274]: Объект награды за игру
+                              - row "ShowInCalendar (int) Флаг отображения игры в календаре" [ref=e1275]:
+                                - cell "ShowInCalendar (int)" [ref=e1276]:
+                                  - paragraph [ref=e1277]: ShowInCalendar (int)
+                                - cell "Флаг отображения игры в календаре" [ref=e1278]:
+                                  - paragraph [ref=e1279]: Флаг отображения игры в календаре
+                              - row "FeeType (int) Тип взноса" [ref=e1280]:
+                                - cell "FeeType (int)" [ref=e1281]:
+                                  - paragraph [ref=e1282]: FeeType (int)
+                                - cell "Тип взноса" [ref=e1283]:
+                                  - paragraph [ref=e1284]: Тип взноса
+                              - row "FeeCurrencyId (int) Тип валюты взноса" [ref=e1285]:
+                                - cell "FeeCurrencyId (int)" [ref=e1286]:
+                                  - paragraph [ref=e1287]: FeeCurrencyId (int)
+                                - cell "Тип валюты взноса" [ref=e1288]:
+                                  - paragraph [ref=e1289]: Тип валюты взноса
+                              - row "Title (string) Название игры" [ref=e1290]:
+                                - cell "Title (string)" [ref=e1291]:
+                                  - paragraph [ref=e1292]: Title (string)
+                                - cell "Название игры" [ref=e1293]:
+                                  - paragraph [ref=e1294]: Название игры
+                              - row "Descr (string) Описание игры" [ref=e1295]:
+                                - cell "Descr (string)" [ref=e1296]:
+                                  - paragraph [ref=e1297]: Descr (string)
+                                - cell "Описание игры" [ref=e1298]:
+                                  - paragraph [ref=e1299]: Описание игры
+                              - row "TSRemain (obj) Объект времени до начала игры" [ref=e1300]:
+                                - cell "TSRemain (obj)" [ref=e1301]:
+                                  - paragraph [ref=e1302]: TSRemain (obj)
+                                - cell "Объект времени до начала игры" [ref=e1303]:
+                                  - paragraph [ref=e1304]: Объект времени до начала игры
+                              - row "MaxPlayers (int) Максимальное количество команд/игроков на игру" [ref=e1305]:
+                                - cell "MaxPlayers (int)" [ref=e1306]:
+                                  - paragraph [ref=e1307]: MaxPlayers (int)
+                                - cell "Максимальное количество команд/игроков на игру" [ref=e1308]:
+                                  - paragraph [ref=e1309]: Максимальное количество команд/игроков на игру
+                              - row "ShowFee (int) Флаг отображения взноса на игру" [ref=e1310]:
+                                - cell "ShowFee (int)" [ref=e1311]:
+                                  - paragraph [ref=e1312]: ShowFee (int)
+                                - cell "Флаг отображения взноса на игру" [ref=e1313]:
+                                  - paragraph [ref=e1314]: Флаг отображения взноса на игру
+                              - row "MaxTeamMembers (int) Максимальное количество игроков в команде на игру" [ref=e1315]:
+                                - cell "MaxTeamMembers (int)" [ref=e1316]:
+                                  - paragraph [ref=e1317]: MaxTeamMembers (int)
+                                - cell "Максимальное количество игроков в команде на игру" [ref=e1318]:
+                                  - paragraph [ref=e1319]: Максимальное количество игроков в команде на игру
+                              - row "FeeName (string) Текст взноса за игру" [ref=e1320]:
+                                - cell "FeeName (string)" [ref=e1321]:
+                                  - paragraph [ref=e1322]: FeeName (string)
+                                - cell "Текст взноса за игру" [ref=e1323]:
+                                  - paragraph [ref=e1324]: Текст взноса за игру
+                              - row "GameTypeID (int) Тип игры - персональная(2) | командная (1) | одиночная (0)" [ref=e1325]:
+                                - cell "GameTypeID (int)" [ref=e1326]:
+                                  - paragraph [ref=e1327]: GameTypeID (int)
+                                - cell "Тип игры - персональная(2) | командная (1) | одиночная (0)" [ref=e1328]:
+                                  - paragraph [ref=e1329]: Тип игры - персональная(2) | командная (1) | одиночная (0)
+                              - row "ZoneId (int) Класс игры - схватка(0) | мш (1) | фэ (2) | мв (3) | кш (4) | фо (5) | точки (7) | конкурс (8) | викторина (9)" [ref=e1330]:
+                                - cell "ZoneId (int)" [ref=e1331]:
+                                  - paragraph [ref=e1332]: ZoneId (int)
+                                - cell "Класс игры - схватка(0) | мш (1) | фэ (2) | мв (3) | кш (4) | фо (5) | точки (7) | конкурс (8) | викторина (9)" [ref=e1333]:
+                                  - paragraph [ref=e1334]: Класс игры - схватка(0) | мш (1) | фэ (2) | мв (3) | кш (4) | фо (5) | точки (7) | конкурс (8) | викторина (9)
+                          - paragraph [ref=e1335]:
+                            - strong
+                          - paragraph [ref=e1336]
+                - cell "fairplay" [ref=e1337]:
+                  - table [ref=e1338]:
+                    - rowgroup [ref=e1339]:
+                      - row "fairplay" [ref=e1340]:
+                        - cell "fairplay" [ref=e1341]:
+                          - generic [ref=e1342]:
+                            - paragraph [ref=e1343]
+                            - link "fairplay" [ref=e1345] [cursor=pointer]:
+                              - /url: /Guestbook/Messages.aspx?topic=42457
+                              - img "fairplay" [ref=e1346]
+                      - row [ref=e1347]:
+                        - cell [ref=e1348]
+      - row [ref=e1349]:
+        - cell [ref=e1350]
+      - row "13.05.2026 15:13:41 (UTC +3) www.en.cx EncounterTM Ltd. 2004-2026 ©" [ref=e1351]:
+        - cell "13.05.2026 15:13:41 (UTC +3) www.en.cx EncounterTM Ltd. 2004-2026 ©" [ref=e1352]:
+          - table [ref=e1353]:
+            - rowgroup [ref=e1354]:
+              - row "13.05.2026 15:13:41 (UTC +3) www.en.cx EncounterTM Ltd. 2004-2026 ©" [ref=e1355]:
+                - cell "13.05.2026 15:13:41 (UTC +3) www.en.cx EncounterTM Ltd. 2004-2026 ©" [ref=e1356]:
+                  - table [ref=e1357]:
+                    - rowgroup [ref=e1358]:
+                      - row [ref=e1359]:
+                        - cell [ref=e1360]
+                      - row "13.05.2026 15:13:41 (UTC +3) www.en.cx EncounterTM Ltd. 2004-2026 ©" [ref=e1361]:
+                        - cell [ref=e1362]
+                        - cell "13.05.2026 15:13:41 (UTC +3) www.en.cx EncounterTM Ltd. 2004-2026 ©" [ref=e1363]:
+                          - generic [ref=e1364]: 13.05.2026 15:13:41
+                          - text: (
+                          - link "UTC" [ref=e1365] [cursor=pointer]:
+                            - /url: /HowTo.aspx?about=UTC
+                          - text: +3)
+                          - link "www.en.cx" [ref=e1366] [cursor=pointer]:
+                            - /url: http://www.en.cx/
+                          - generic [ref=e1367]:
+                            - text: Encounter
+                            - superscript [ref=e1368]: TM
+                            - text: Ltd.
+                            - text: 2004-2026
+                            - link "©" [ref=e1369] [cursor=pointer]:
+                              - /url: http://www.quotebook.us/
+                        - cell [ref=e1370]
+                      - row [ref=e1371]:
+                        - cell [ref=e1372]
+                - cell [ref=e1373]
+              - row [ref=e1374]:
+                - cell [ref=e1375]
+              - row:
+                - cell
