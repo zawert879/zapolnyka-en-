@@ -139,71 +139,128 @@ func (z *Zapolnyaka) openLevelFull(level int) error {
 // ProcessLevel uploads a single prepared level to en.cx.
 func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 	level := p.Conf.Level
+
+	// Count total steps for the level progress bar
+	steps := 1 // openLevel
+	if p.Conf.Clean {
+		steps++
+	}
+	if p.Conf.Name != nil || p.Conf.Comment != nil {
+		steps++
+	}
+	if p.Conf.Autopass != nil {
+		steps++
+	}
+	if p.Body != "" {
+		steps++
+	}
+	steps += len(p.Conf.Hints) + len(p.Conf.PenaltyHints)
+	if len(p.Codes) > 0 {
+		steps++
+	}
+	if p.Conf.SectorsToClose != nil {
+		steps++
+	}
+
+	bar := progressbar.NewOptions(steps,
+		progressbar.OptionSetDescription(fmt.Sprintf("  Уровень %d", level)),
+		progressbar.OptionSetWidth(28),
+		progressbar.OptionShowCount(),
+	)
+	// step shows what's happening NOW; tick advances the bar when the step is done.
+	step := func(desc string) { bar.Describe(fmt.Sprintf("  Уровень %d — %s", level, desc)) }
+	tick := func() { _ = bar.Add(1) }
+
 	logger.Printf("\n▶ Уровень %d\n", level)
 
 	if p.Conf.Clean {
+		step("очистка")
 		logger.Printf("  cleanLevel %d\n", level)
 		if err := z.cleanLevel(level); err != nil {
+			fmt.Println()
 			return fmt.Errorf("clean level: %w", err)
 		}
+		tick()
 	}
 
+	step("открываем уровень")
 	logger.Printf("  openLevel %d\n", level)
 	if err := z.openLevel(level); err != nil {
+		fmt.Println()
 		return fmt.Errorf("open level: %w", err)
 	}
+	tick()
 
 	if p.Conf.Name != nil || p.Conf.Comment != nil {
+		step("название/комментарий")
 		logger.Println("  setLevelNameAndComment")
 		if err := z.setLevelNameAndComment(level, p.Conf.Name, p.Conf.Comment); err != nil {
+			fmt.Println()
 			return fmt.Errorf("set name/comment: %w", err)
 		}
+		tick()
 	}
 
 	if p.Conf.Autopass != nil {
+		step(fmt.Sprintf("автопереход %s", formatDuration(*p.Conf.Autopass)))
 		logger.Printf("  setAutopass %s\n", formatDuration(*p.Conf.Autopass))
 		if err := z.setAutopass(level, *p.Conf.Autopass, p.Conf.AutopassPenalty); err != nil {
+			fmt.Println()
 			return fmt.Errorf("set autopass: %w", err)
 		}
+		tick()
 	}
 
 	if p.Body != "" {
+		step("тело задания")
 		logger.Printf("  setTaskBody (%d байт)\n", len(p.Body))
 		if err := z.setTaskBody(level, p.Body); err != nil {
+			fmt.Println()
 			return fmt.Errorf("set task body: %w", err)
 		}
+		tick()
 	}
 
 	for i, h := range p.Conf.Hints {
+		step(fmt.Sprintf("подсказка %d/%d", i+1, len(p.Conf.Hints)))
 		logger.Printf("  addHint %d/%d time=%ds\n", i+1, len(p.Conf.Hints), h.Time)
 		if err := z.addHint(level, h.Time, h.Text); err != nil {
+			fmt.Println()
 			return fmt.Errorf("add hint %d: %w", i+1, err)
 		}
+		tick()
 		sleep(z.delays.BetweenHints)
 	}
 
 	for i, ph := range p.Conf.PenaltyHints {
+		step(fmt.Sprintf("штрафная подсказка %d/%d", i+1, len(p.Conf.PenaltyHints)))
 		logger.Printf("  addPenaltyHint %d/%d time=%ds\n", i+1, len(p.Conf.PenaltyHints), ph.Time)
 		if err := z.addPenaltyHint(level, ph.Time, ph.Text, ph.Penalty, ph.Comment); err != nil {
+			fmt.Println()
 			return fmt.Errorf("add penalty hint %d: %w", i+1, err)
 		}
+		tick()
 		sleep(z.delays.BetweenHints)
 	}
 
 	if len(p.Codes) > 0 {
+		step(fmt.Sprintf("коды (%d)", len(p.Codes)))
 		logger.Printf("  коды: %d записей, открываем LevelEditor...\n", len(p.Codes))
 		if err := z.openLevel(level); err != nil {
+			fmt.Println()
 			return fmt.Errorf("reopen for codes: %w", err)
 		}
+		fmt.Println()
 
-		bar := progressbar.NewOptions(len(p.Codes),
-			progressbar.OptionSetDescription(fmt.Sprintf("  Уровень %d — коды", level)),
-			progressbar.OptionSetWidth(30),
+		codesBar := progressbar.NewOptions(len(p.Codes),
+			progressbar.OptionSetDescription("    коды"),
+			progressbar.OptionSetWidth(28),
 			progressbar.OptionShowCount(),
 		)
 
 		for i, code := range p.Codes {
 			logger.Printf("  код %d/%d тип=%s\n", i+1, len(p.Codes), code.Type)
+			codesBar.Describe(fmt.Sprintf("    код %d/%d: %s", i+1, len(p.Codes), code.Type))
 			if code.Type.HasSector() {
 				name := ""
 				if code.SectorName != nil {
@@ -211,6 +268,7 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 				}
 				logger.Printf("    addAnswersToSector сектор=%q ответов=%d\n", name, len(code.Answers))
 				if err := z.addAnswersToSector(level, name, code.Answers); err != nil {
+					fmt.Println()
 					return fmt.Errorf("add sector answers: %w", err)
 				}
 			}
@@ -222,23 +280,29 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 				logger.Printf("    addBonus бонус=%q isPenalty=%v ответов=%d\n",
 					bonusName, code.Type.IsPenalty(), len(code.Answers))
 				if err := z.addBonus(level, code); err != nil {
+					fmt.Println()
 					return fmt.Errorf("add bonus: %w", err)
 				}
 			}
 			logger.Printf("  код %d/%d — готов\n", i+1, len(p.Codes))
-			_ = bar.Add(1)
+			_ = codesBar.Add(1)
 			sleep(z.delays.BetweenCodes)
 		}
 		fmt.Println()
+		tick()
 	}
 
 	if p.Conf.SectorsToClose != nil {
+		step(fmt.Sprintf("условие: %d секторов", *p.Conf.SectorsToClose))
 		logger.Printf("  setSectorsToClose %d\n", *p.Conf.SectorsToClose)
 		if err := z.setSectorsToClose(level, *p.Conf.SectorsToClose); err != nil {
+			fmt.Println()
 			return fmt.Errorf("set sectors to close: %w", err)
 		}
+		tick()
 	}
 
+	fmt.Println()
 	logger.Printf("  ✔ уровень %d завершён\n", level)
 	sleep(z.delays.BetweenLevels)
 	return nil
@@ -259,11 +323,42 @@ func (z *Zapolnyaka) setFieldsViaDom(fields map[string]string) error {
 func (z *Zapolnyaka) submitForm(sel string) error {
 	logger.Printf("    submitForm sel=%q\n", sel)
 	wait := z.page.Timeout(navTimeout).WaitNavigation(proto.PageLifecycleEventNameLoad)
-	if _, err := z.page.Eval(`(sel) => document.querySelector(sel).click()`, sel); err != nil {
+	res, err := z.page.Eval(`(sel) => {
+		const el = document.querySelector(sel);
+		if (!el) return 'not found: ' + sel;
+		el.click();
+		return 'ok';
+	}`, sel)
+	if err != nil {
 		return fmt.Errorf("submitForm click: %w", err)
+	}
+	if v := res.Value.String(); v != "ok" {
+		return fmt.Errorf("submitForm: кнопка не найдена: %s", v)
 	}
 	wait()
 	logger.Println("    submitForm — навигация завершена")
+	return nil
+}
+
+// submitFormAny tries selectors in order and clicks the first matching button.
+func (z *Zapolnyaka) submitFormAny(sels ...string) error {
+	wait := z.page.Timeout(navTimeout).WaitNavigation(proto.PageLifecycleEventNameLoad)
+	res, err := z.page.Eval(`(sels) => {
+		for (const sel of sels) {
+			const el = document.querySelector(sel);
+			if (el) { el.click(); return 'ok:' + sel; }
+		}
+		return 'not found';
+	}`, sels)
+	if err != nil {
+		return fmt.Errorf("submitFormAny: %w", err)
+	}
+	v := res.Value.String()
+	if v == "not found" {
+		return fmt.Errorf("submitFormAny: ни один из селекторов не нашёл кнопку: %v", sels)
+	}
+	logger.Printf("    submitFormAny: %s\n", v)
+	wait()
 	return nil
 }
 

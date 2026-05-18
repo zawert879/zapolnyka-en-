@@ -2,6 +2,8 @@ package zapolnyaka
 
 import (
 	"fmt"
+	"time"
+	"zapolnyaka/pkg/logger"
 	"zapolnyaka/pkg/utils"
 )
 
@@ -31,13 +33,45 @@ func (z *Zapolnyaka) setLevelNameAndComment(level int, name, comment *string) er
 }
 
 // setAutopass configures (or disables when seconds==0) the autopass timer.
+// ToggleAutoPassSettings(gid, level) is called only if the panel is not already open.
 func (z *Zapolnyaka) setAutopass(level, seconds int, penaltySeconds *int) error {
 	url := z.url(fmt.Sprintf(
-		"Administration/Games/LevelEditor.aspx?gid=%d&level=%d&swautopass=1",
+		"Administration/Games/LevelEditor.aspx?gid=%d&level=%d",
 		z.gameID, level,
 	))
 	if err := z.gotoSafe(url); err != nil {
 		return err
+	}
+
+	// Open the autopass panel only if it's not already visible.
+	visible, _ := z.page.Eval(`() => {
+		const el = document.querySelector('input[name="txtApHours"]');
+		return !!el && el.getBoundingClientRect().width > 0;
+	}`)
+	if visible == nil || !visible.Value.Bool() {
+		// Check if the toggle function exists (absent when level doesn't exist in the game)
+		fnExists, _ := z.page.Eval(`() => typeof ToggleAutoPassSettings === 'function'`)
+		if fnExists == nil || !fnExists.Value.Bool() {
+			logger.Printf("  warn: ToggleAutoPassSettings не найдена на уровне %d — пропускаем автопереход\n", level)
+			return nil
+		}
+		if _, err := z.page.Eval(`(gid, lvl) => ToggleAutoPassSettings(gid, lvl)`,
+			z.gameID, level,
+		); err != nil {
+			return fmt.Errorf("ToggleAutoPassSettings: %w", err)
+		}
+		// Wait for txtApHours to appear
+		deadline := time.Now().Add(10 * time.Second)
+		for time.Now().Before(deadline) {
+			res, _ := z.page.Eval(`() => {
+				const el = document.querySelector('input[name="txtApHours"]');
+				return !!el && el.getBoundingClientRect().width > 0;
+			}`)
+			if res != nil && res.Value.Bool() {
+				break
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
 	}
 
 	h, m, s := utils.SecondsToHMS(seconds)
@@ -49,7 +83,6 @@ func (z *Zapolnyaka) setAutopass(level, seconds int, penaltySeconds *int) error 
 
 	if penaltySeconds != nil && *penaltySeconds > 0 {
 		ph, pm, ps := utils.SecondsToHMS(*penaltySeconds)
-		// Enable the penalty checkbox first, then set the values
 		if _, err := z.page.Eval(`() => {
 			const cb = document.querySelector('input[name="chkTimeoutPenalty"]');
 			if (cb && !cb.checked) cb.click();
