@@ -39,9 +39,8 @@ func RunCheck(gamePath string) error {
 
 	z, err := zapolnyaka.New(login, password, game.Domain, game.GameID, config.Delays{})
 	if err != nil {
-		return fmt.Errorf("start browser: %w", err)
+		return fmt.Errorf("init client: %w", err)
 	}
-	defer z.Close()
 
 	if err := z.Auth(); err != nil {
 		return fmt.Errorf("auth: %w", err)
@@ -106,23 +105,27 @@ func RunCheck(gamePath string) error {
 			}
 		}
 
-		// First-answer positional check for sectors
-		for i := 0; i < min(len(actual.SectorFirstAnswers), len(expectedSectors)); i++ {
-			got := actual.SectorFirstAnswers[i]
-			want := expectedSectors[i].Answers[0]
-			if !strings.EqualFold(got, want) {
-				fmt.Fprintln(w, errStyle.Render(fmt.Sprintf("    ✗ сектор %d: ожидалось %q, найдено %q", i+1, want, got)))
-				allOk = false
+		// First-answer positional check for sectors (only when the page exposes answers)
+		if anyNonEmpty(actual.SectorFirstAnswers) {
+			for i := 0; i < min(len(actual.SectorFirstAnswers), len(expectedSectors)); i++ {
+				got := actual.SectorFirstAnswers[i]
+				want := expectedSectors[i].Answers[0]
+				if !strings.EqualFold(got, want) {
+					fmt.Fprintln(w, errStyle.Render(fmt.Sprintf("    ✗ сектор %d: ожидалось %q, найдено %q", i+1, want, got)))
+					allOk = false
+				}
 			}
 		}
 
-		// First-answer positional check for bonuses
-		for i := 0; i < min(len(actual.BonusFirstAnswers), len(expectedBonuses)); i++ {
-			got := actual.BonusFirstAnswers[i]
-			want := expectedBonuses[i].Answers[0]
-			if !strings.EqualFold(got, want) {
-				fmt.Fprintln(w, errStyle.Render(fmt.Sprintf("    ✗ бонус %d: ожидалось %q, найдено %q", i+1, want, got)))
-				allOk = false
+		// First-answer positional check for bonuses (only when the page exposes answers)
+		if anyNonEmpty(actual.BonusFirstAnswers) {
+			for i := 0; i < min(len(actual.BonusFirstAnswers), len(expectedBonuses)); i++ {
+				got := actual.BonusFirstAnswers[i]
+				want := expectedBonuses[i].Answers[0]
+				if !strings.EqualFold(got, want) {
+					fmt.Fprintln(w, errStyle.Render(fmt.Sprintf("    ✗ бонус %d: ожидалось %q, найдено %q", i+1, want, got)))
+					allOk = false
+				}
 			}
 		}
 

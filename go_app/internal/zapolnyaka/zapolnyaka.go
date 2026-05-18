@@ -1,17 +1,16 @@
 package zapolnyaka
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"math/rand"
-	"os"
 	"time"
+	"zapolnyaka/encx"
 	"zapolnyaka/internal/config"
 	"zapolnyaka/pkg/logger"
 	"zapolnyaka/pkg/utils"
 
-	"github.com/go-rod/rod"
-	"github.com/go-rod/rod/lib/launcher"
-	"github.com/go-rod/rod/lib/proto"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -25,123 +24,59 @@ func sleep(r config.DelayRange) {
 	}
 }
 
-const navTimeout = 30 * time.Second
-
-// Zapolnyaka drives the en.cx LevelEditor via a headed browser.
+// Zapolnyaka drives the en.cx Admin API to upload level content.
 type Zapolnyaka struct {
-	browser  *rod.Browser
-	page     *rod.Page
-	login    string
-	password string
-	domain   string
-	gameID   int
-	delays   config.Delays
+	client     *encx.Client
+	login      string
+	password   string
+	domain     string
+	gameID     int
+	delays     config.Delays
+	levelDbIds map[int]int // levelNumber → DB ID, populated on Auth
 }
 
-// New launches a headed browser and returns a Zapolnyaka instance.
-// Prefers the system-installed Chrome/Edge to avoid Windows Defender false positives
-// from an auto-downloaded Chromium. Falls back to rod's managed browser if none found.
+// New creates a Zapolnyaka instance ready to authenticate and upload levels.
 func New(login, password, domain string, gameID int, delays config.Delays) (*Zapolnyaka, error) {
-	headless := os.Getenv("ZAPOLNYAKA_HEADLESS") == "1"
-	l := launcher.New().Headless(headless).Leakless(false)
-	if path, ok := launcher.LookPath(); ok {
-		l = l.Bin(path)
-		logger.Printf("🌐 Используем браузер: %s (headless=%v)\n", path, headless)
-	} else {
-		logger.Println("🌐 Системный браузер не найден, запускаем встроенный Chromium...")
-	}
-	u, err := l.Launch()
-	if err != nil {
-		return nil, fmt.Errorf("launch browser: %w", err)
-	}
-	browser := rod.New().ControlURL(u)
-	if err := browser.Connect(); err != nil {
-		return nil, fmt.Errorf("connect browser: %w", err)
-	}
-	page, err := browser.Page(proto.TargetCreateTarget{URL: "about:blank"})
-	if err != nil {
-		return nil, fmt.Errorf("open page: %w", err)
-	}
 	return &Zapolnyaka{
-		browser:  browser,
-		page:     page,
-		login:    login,
-		password: password,
-		domain:   domain,
-		gameID:   gameID,
-		delays:   delays.Default(),
+		client:     encx.New(domain, encx.WithLang("ru")),
+		login:      login,
+		password:   password,
+		domain:     domain,
+		gameID:     gameID,
+		delays:     delays.Default(),
+		levelDbIds: make(map[int]int),
 	}, nil
 }
 
-// Close shuts down the browser.
-func (z *Zapolnyaka) Close() {
-	z.browser.MustClose()
-}
-
-// reconnect relaunches the browser and re-authenticates after a connection drop.
-func (z *Zapolnyaka) reconnect() error {
-	logger.Alert("  🔄 переподключение браузера...\n")
-	_ = z.browser.Close()
-
-	headless := os.Getenv("ZAPOLNYAKA_HEADLESS") == "1"
-	l := launcher.New().Headless(headless).Leakless(false)
-	if path, ok := launcher.LookPath(); ok {
-		l = l.Bin(path)
-	}
-	u, err := l.Launch()
-	if err != nil {
-		return fmt.Errorf("relaunch browser: %w", err)
-	}
-	browser := rod.New().ControlURL(u)
-	if err := browser.Connect(); err != nil {
-		return fmt.Errorf("reconnect browser: %w", err)
-	}
-	page, err := browser.Page(proto.TargetCreateTarget{URL: "about:blank"})
-	if err != nil {
-		return fmt.Errorf("open page after reconnect: %w", err)
-	}
-	z.browser = browser
-	z.page = page
-	return z.Auth()
-}
-
-// url builds an absolute URL for the given path on the configured domain.
+// url builds an absolute HTTPS URL for the given path on the configured domain.
 func (z *Zapolnyaka) url(path string) string {
 	return fmt.Sprintf("https://%s/%s", z.domain, path)
 }
 
-// levelEditorURL returns the LevelEditor URL for the given level number.
-func (z *Zapolnyaka) levelEditorURL(level int) string {
-	return z.url(fmt.Sprintf(
-		"Administration/Games/LevelEditor.aspx?gid=%d&level=%d&swanswers=1",
-		z.gameID, level,
-	))
+// withSessionRetry calls fn; if it returns ErrSessionExpired, re-auths once and retries.
+func (z *Zapolnyaka) withSessionRetry(fn func() error) error {
+	err := fn()
+	if err != nil && errors.Is(err, encx.ErrSessionExpired) {
+		logger.Println("  re-auth: сессия истекла, переавторизация...")
+		if authErr := z.Auth(); authErr != nil {
+			return fmt.Errorf("re-auth failed: %w", authErr)
+		}
+		return fn()
+	}
+	return err
 }
 
-// levelEditorFullURL returns LevelEditor URL without any swXXX filter — shows all sections.
-func (z *Zapolnyaka) levelEditorFullURL(level int) string {
-	return z.url(fmt.Sprintf(
-		"Administration/Games/LevelEditor.aspx?gid=%d&level=%d",
-		z.gameID, level,
-	))
-}
-
-// openLevel navigates to LevelEditor (answers section) for the given level.
-func (z *Zapolnyaka) openLevel(level int) error {
-	return z.gotoSafe(z.levelEditorURL(level))
-}
-
-// openLevelFull navigates to the full LevelEditor (all sections visible) for the given level.
-func (z *Zapolnyaka) openLevelFull(level int) error {
-	return z.gotoSafe(z.levelEditorFullURL(level))
-}
-
-// ProcessLevel uploads a single prepared level to en.cx.
+// ProcessLevel uploads a single prepared level to en.cx via the Admin HTTP API.
 func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
+	// Re-auth before each level to ensure a fresh session.
+	if err := z.Auth(); err != nil {
+		return fmt.Errorf("re-auth before level %d: %w", p.Conf.Level, err)
+	}
+
+	ctx := context.Background()
 	level := p.Conf.Level
 
-	// Count total steps for the level progress bar
-	steps := 1 // openLevel
+	steps := 0
 	if p.Conf.Clean {
 		steps++
 	}
@@ -167,7 +102,6 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 		progressbar.OptionSetWidth(28),
 		progressbar.OptionShowCount(),
 	)
-	// step shows what's happening NOW; tick advances the bar when the step is done.
 	step := func(desc string) { bar.Describe(fmt.Sprintf("  Уровень %d — %s", level, desc)) }
 	tick := func() { _ = bar.Add(1) }
 
@@ -176,25 +110,17 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 	if p.Conf.Clean {
 		step("очистка")
 		logger.Printf("  cleanLevel %d\n", level)
-		if err := z.cleanLevel(level); err != nil {
+		if err := z.cleanLevel(ctx, level); err != nil {
 			fmt.Println()
 			return fmt.Errorf("clean level: %w", err)
 		}
 		tick()
 	}
 
-	step("открываем уровень")
-	logger.Printf("  openLevel %d\n", level)
-	if err := z.openLevel(level); err != nil {
-		fmt.Println()
-		return fmt.Errorf("open level: %w", err)
-	}
-	tick()
-
 	if p.Conf.Name != nil || p.Conf.Comment != nil {
 		step("название/комментарий")
 		logger.Println("  setLevelNameAndComment")
-		if err := z.setLevelNameAndComment(level, p.Conf.Name, p.Conf.Comment); err != nil {
+		if err := z.setLevelNameAndComment(ctx, level, p.Conf.Name, p.Conf.Comment); err != nil {
 			fmt.Println()
 			return fmt.Errorf("set name/comment: %w", err)
 		}
@@ -204,7 +130,7 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 	if p.Conf.Autopass != nil {
 		step(fmt.Sprintf("автопереход %s", formatDuration(*p.Conf.Autopass)))
 		logger.Printf("  setAutopass %s\n", formatDuration(*p.Conf.Autopass))
-		if err := z.setAutopass(level, *p.Conf.Autopass, p.Conf.AutopassPenalty); err != nil {
+		if err := z.setAutopass(ctx, level, *p.Conf.Autopass, p.Conf.AutopassPenalty); err != nil {
 			fmt.Println()
 			return fmt.Errorf("set autopass: %w", err)
 		}
@@ -214,7 +140,7 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 	if p.Body != "" {
 		step("тело задания")
 		logger.Printf("  setTaskBody (%d байт)\n", len(p.Body))
-		if err := z.setTaskBody(level, p.Body); err != nil {
+		if err := z.setTaskBody(ctx, level, p.Body); err != nil {
 			fmt.Println()
 			return fmt.Errorf("set task body: %w", err)
 		}
@@ -224,7 +150,7 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 	for i, h := range p.Conf.Hints {
 		step(fmt.Sprintf("подсказка %d/%d", i+1, len(p.Conf.Hints)))
 		logger.Printf("  addHint %d/%d time=%ds\n", i+1, len(p.Conf.Hints), h.Time)
-		if err := z.addHint(level, h.Time, h.Text); err != nil {
+		if err := z.addHint(ctx, level, h.Time, h.Text); err != nil {
 			fmt.Println()
 			return fmt.Errorf("add hint %d: %w", i+1, err)
 		}
@@ -235,7 +161,7 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 	for i, ph := range p.Conf.PenaltyHints {
 		step(fmt.Sprintf("штрафная подсказка %d/%d", i+1, len(p.Conf.PenaltyHints)))
 		logger.Printf("  addPenaltyHint %d/%d time=%ds\n", i+1, len(p.Conf.PenaltyHints), ph.Time)
-		if err := z.addPenaltyHint(level, ph.Time, ph.Text, ph.Penalty, ph.Comment); err != nil {
+		if err := z.addPenaltyHint(ctx, level, ph.Time, ph.Text, ph.Penalty, ph.Comment); err != nil {
 			fmt.Println()
 			return fmt.Errorf("add penalty hint %d: %w", i+1, err)
 		}
@@ -245,11 +171,7 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 
 	if len(p.Codes) > 0 {
 		step(fmt.Sprintf("коды (%d)", len(p.Codes)))
-		logger.Printf("  коды: %d записей, открываем LevelEditor...\n", len(p.Codes))
-		if err := z.openLevel(level); err != nil {
-			fmt.Println()
-			return fmt.Errorf("reopen for codes: %w", err)
-		}
+		logger.Printf("  коды: %d записей\n", len(p.Codes))
 		fmt.Println()
 
 		codesBar := progressbar.NewOptions(len(p.Codes),
@@ -267,7 +189,10 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 					name = *code.SectorName
 				}
 				logger.Printf("    addAnswersToSector сектор=%q ответов=%d\n", name, len(code.Answers))
-				if err := z.addAnswersToSector(level, name, code.Answers); err != nil {
+				sectorName, sectorAnswers := name, code.Answers
+				if err := z.withSessionRetry(func() error {
+					return z.addAnswersToSector(ctx, level, sectorName, sectorAnswers)
+				}); err != nil {
 					fmt.Println()
 					return fmt.Errorf("add sector answers: %w", err)
 				}
@@ -279,7 +204,10 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 				}
 				logger.Printf("    addBonus бонус=%q isPenalty=%v ответов=%d\n",
 					bonusName, code.Type.IsPenalty(), len(code.Answers))
-				if err := z.addBonus(level, code); err != nil {
+				codeVal := code
+				if err := z.withSessionRetry(func() error {
+					return z.addBonus(ctx, level, codeVal)
+				}); err != nil {
 					fmt.Println()
 					return fmt.Errorf("add bonus: %w", err)
 				}
@@ -295,7 +223,7 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 	if p.Conf.SectorsToClose != nil {
 		step(fmt.Sprintf("условие: %d секторов", *p.Conf.SectorsToClose))
 		logger.Printf("  setSectorsToClose %d\n", *p.Conf.SectorsToClose)
-		if err := z.setSectorsToClose(level, *p.Conf.SectorsToClose); err != nil {
+		if err := z.setSectorsToClose(ctx, level, *p.Conf.SectorsToClose); err != nil {
 			fmt.Println()
 			return fmt.Errorf("set sectors to close: %w", err)
 		}
@@ -306,87 +234,6 @@ func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
 	logger.Printf("  ✔ уровень %d завершён\n", level)
 	sleep(z.delays.BetweenLevels)
 	return nil
-}
-
-// setFieldsViaDom sets all named inputs in a single Eval to avoid ASP.NET AutoPostBack.
-func (z *Zapolnyaka) setFieldsViaDom(fields map[string]string) error {
-	_, err := z.page.Eval(`(fields) => {
-		for (const [name, val] of Object.entries(fields)) {
-			const el = document.querySelector('[name="' + name + '"]');
-			if (el) el.value = val;
-		}
-	}`, fields)
-	return err
-}
-
-// submitForm clicks a button by selector and waits for the next page load.
-func (z *Zapolnyaka) submitForm(sel string) error {
-	logger.Printf("    submitForm sel=%q\n", sel)
-	wait := z.page.Timeout(navTimeout).WaitNavigation(proto.PageLifecycleEventNameLoad)
-	res, err := z.page.Eval(`(sel) => {
-		const el = document.querySelector(sel);
-		if (!el) return 'not found: ' + sel;
-		el.click();
-		return 'ok';
-	}`, sel)
-	if err != nil {
-		return fmt.Errorf("submitForm click: %w", err)
-	}
-	if v := res.Value.String(); v != "ok" {
-		return fmt.Errorf("submitForm: кнопка не найдена: %s", v)
-	}
-	wait()
-	logger.Println("    submitForm — навигация завершена")
-	return nil
-}
-
-// submitFormAny tries selectors in order and clicks the first matching button.
-func (z *Zapolnyaka) submitFormAny(sels ...string) error {
-	wait := z.page.Timeout(navTimeout).WaitNavigation(proto.PageLifecycleEventNameLoad)
-	res, err := z.page.Eval(`(sels) => {
-		for (const sel of sels) {
-			const el = document.querySelector(sel);
-			if (el) { el.click(); return 'ok:' + sel; }
-		}
-		return 'not found';
-	}`, sels)
-	if err != nil {
-		return fmt.Errorf("submitFormAny: %w", err)
-	}
-	v := res.Value.String()
-	if v == "not found" {
-		return fmt.Errorf("submitFormAny: ни один из селекторов не нашёл кнопку: %v", sels)
-	}
-	logger.Printf("    submitFormAny: %s\n", v)
-	wait()
-	return nil
-}
-
-// fetchURL executes a credentialed fetch inside the browser context.
-func (z *Zapolnyaka) fetchURL(url string) error {
-	_, err := z.page.Eval(`(url) => fetch(url, {credentials:'include'})`, url)
-	return err
-}
-
-// waitForNewPage clicks something via clickFn, then waits for a new browser tab to appear.
-func (z *Zapolnyaka) waitForNewPage(clickFn func() error) (*rod.Page, error) {
-	pagesBefore := z.browser.MustPages()
-	if err := clickFn(); err != nil {
-		return nil, err
-	}
-	deadline := time.Now().Add(30 * time.Second)
-	for time.Now().Before(deadline) {
-		pagesAfter := z.browser.MustPages()
-		if len(pagesAfter) > len(pagesBefore) {
-			newPage := pagesAfter[len(pagesAfter)-1]
-			if err := newPage.Timeout(navTimeout).WaitLoad(); err != nil {
-				logger.Printf("  waitForNewPage WaitLoad: %v\n", err)
-			}
-			return newPage, nil
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-	return nil, fmt.Errorf("new page (popup) not opened within 30s")
 }
 
 func formatDuration(seconds int) string {

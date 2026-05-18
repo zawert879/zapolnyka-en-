@@ -1,8 +1,13 @@
 package zapolnyaka
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
+	"html"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 // ScenarioLevel holds scraped data for one level from GameScenario.aspx.
@@ -16,81 +21,139 @@ type ScenarioLevel struct {
 	BonusFirstAnswers  []string `json:"bonusFirstAnswers"`
 }
 
-// ScrapeScenario opens GameScenario.aspx once and returns data for all levels.
+// Compiled regexes for GameScenario.aspx parsing (mirrors Validator.ts logic).
+var (
+	// Level anchor: any <a> tag with a numeric name attribute.
+	gsLevelAnchorRe = regexp.MustCompile(`(?i)<a\b[^>]*\bname="(\d+)"`)
+
+	// Elements with _SectorsRepeater_ctlN_ in their id.
+	gsSectorIdxRe  = regexp.MustCompile(`(?i)_SectorsRepeater_ctl(\d+)_`)
+	gsSectorNameRe = regexp.MustCompile(`(?i)id="[^"]*_SectorsRepeater_ctl(\d+)_divSectorName[^"]*"[^>]*>([^<]*)`)
+	gsSectorAnsRe  = regexp.MustCompile(`(?i)id="[^"]*_SectorsRepeater_ctl(\d+)_lblLevelAnswer[^"]*"[^>]*>([^<]*)`)
+
+	// Elements with _LevelBonusesRepeater_ctlN_ in their id.
+	gsBonusIdxRe   = regexp.MustCompile(`(?i)_LevelBonusesRepeater_ctl(\d+)_`)
+	gsBonusNameRe  = regexp.MustCompile(`(?i)id="[^"]*_LevelBonusesRepeater_ctl(\d+)_lblBonusNum[^"]*"[^>]*>([^<]*)`)
+	gsBonusAnsRe   = regexp.MustCompile(`(?i)id="[^"]*_LevelBonusesRepeater_ctl(\d+)_lblBonusAnswer[^"]*"[^>]*>([^<]*)`)
+
+	// Bonus name may be wrapped in quotes: "BonusName"
+	gsBonusQuoteRe = regexp.MustCompile(`"([^"]+)"`)
+)
+
+// ScrapeScenario fetches GameScenario.aspx in a single request and parses all level data.
+// This mirrors the TypeScript Validator.ts logic exactly.
 func (z *Zapolnyaka) ScrapeScenario() (map[int]*ScenarioLevel, error) {
-	url := z.url(fmt.Sprintf("GameScenario.aspx?gid=%d", z.gameID))
-	if err := z.gotoSafe(url); err != nil {
-		return nil, fmt.Errorf("navigate to GameScenario: %w", err)
-	}
-
-	res, err := z.page.Eval(`() => {
-		const result = [];
-		for (const anchor of document.querySelectorAll('a[name]')) {
-			const levelNum = parseInt(anchor.getAttribute('name') ?? '', 10);
-			if (isNaN(levelNum)) continue;
-
-			const scenarioBlock = anchor.parentElement?.parentElement?.querySelector('.scenarioBlock');
-			if (!scenarioBlock) continue;
-
-			// ── Sectors ─────────────────────────────────────────────────────
-			const sectorIdxSet = new Set();
-			const sectorNameMap = new Map();
-			const sectorAnswerMap = new Map();
-			for (const el of scenarioBlock.querySelectorAll('[id*="_SectorsRepeater_ctl"]')) {
-				const m = el.id.match(/_SectorsRepeater_ctl(\d+)_/);
-				if (!m) continue;
-				const idx = parseInt(m[1]);
-				sectorIdxSet.add(idx);
-				if (el.id.includes('_divSectorName'))
-					sectorNameMap.set(idx, el.textContent?.trim() ?? '');
-				if (el.id.includes('_lblLevelAnswer') && !sectorAnswerMap.has(idx))
-					sectorAnswerMap.set(idx, el.textContent?.trim() ?? '');
-			}
-			const si = [...sectorIdxSet].sort((a, b) => a - b);
-
-			// ── Bonuses ──────────────────────────────────────────────────────
-			const bonusIdxSet = new Set();
-			const bonusNameMap = new Map();
-			const bonusAnswerMap = new Map();
-			for (const el of scenarioBlock.querySelectorAll('[id*="_LevelBonusesRepeater_ctl"]')) {
-				const m = el.id.match(/_LevelBonusesRepeater_ctl(\d+)_/);
-				if (!m) continue;
-				const idx = parseInt(m[1]);
-				bonusIdxSet.add(idx);
-				if (el.id.includes('_lblBonusNum')) {
-					const text = el.textContent?.trim() ?? '';
-					const nm = text.match(/"([^"]+)"/);
-					bonusNameMap.set(idx, nm ? nm[1] : text);
-				}
-				if (el.id.includes('_lblBonusAnswer') && !bonusAnswerMap.has(idx))
-					bonusAnswerMap.set(idx, el.textContent?.trim() ?? '');
-			}
-			const bi = [...bonusIdxSet].sort((a, b) => a - b);
-
-			result.push({
-				levelNum,
-				sectorCount: sectorIdxSet.size,
-				sectorNames:        si.map(i => sectorNameMap.get(i) ?? ''),
-				sectorFirstAnswers: si.map(i => sectorAnswerMap.get(i) ?? ''),
-				bonusCount: bonusIdxSet.size,
-				bonusNames:        bi.map(i => bonusNameMap.get(i) ?? ''),
-				bonusFirstAnswers: bi.map(i => bonusAnswerMap.get(i) ?? ''),
-			});
-		}
-		return result;
-	}`)
+	ctx := context.Background()
+	u := fmt.Sprintf("https://%s/GameScenario.aspx?gid=%d", z.domain, z.gameID)
+	body, err := z.client.GetPage(ctx, u)
 	if err != nil {
-		return nil, fmt.Errorf("eval GameScenario: %w", err)
+		return nil, fmt.Errorf("get game scenario: %w", err)
+	}
+	return parseGameScenario(body), nil
+}
+
+// parseGameScenario extracts per-level sector and bonus data from GameScenario.aspx HTML.
+func parseGameScenario(htmlStr string) map[int]*ScenarioLevel {
+	result := make(map[int]*ScenarioLevel)
+
+	anchors := gsLevelAnchorRe.FindAllStringIndex(htmlStr, -1)
+	anchorNums := gsLevelAnchorRe.FindAllStringSubmatch(htmlStr, -1)
+	if len(anchors) == 0 {
+		return result
 	}
 
-	var levels []ScenarioLevel
-	if err := json.Unmarshal([]byte(res.Value.JSON("", "")), &levels); err != nil {
-		return nil, fmt.Errorf("parse scenario data: %w", err)
+	for i, anchorNum := range anchorNums {
+		levelNum, _ := strconv.Atoi(anchorNum[1])
+		if levelNum <= 0 {
+			continue
+		}
+
+		// HTML section for this level: from this anchor to the next.
+		start := anchors[i][1]
+		end := len(htmlStr)
+		if i+1 < len(anchors) {
+			end = anchors[i+1][0]
+		}
+		section := htmlStr[start:end]
+
+		lvl := &ScenarioLevel{LevelNum: levelNum}
+
+		// ── Sectors ──────────────────────────────────────────────────────────
+		sectorIndices := uniqueCtlIndices(gsSectorIdxRe.FindAllStringSubmatch(section, -1))
+		lvl.SectorCount = len(sectorIndices)
+
+		sectorNameMap := make(map[int]string)
+		for _, m := range gsSectorNameRe.FindAllStringSubmatch(section, -1) {
+			idx, _ := strconv.Atoi(m[1])
+			if _, seen := sectorNameMap[idx]; !seen {
+				sectorNameMap[idx] = strings.TrimSpace(html.UnescapeString(m[2]))
+			}
+		}
+
+		sectorAnsMap := make(map[int]string)
+		for _, m := range gsSectorAnsRe.FindAllStringSubmatch(section, -1) {
+			idx, _ := strconv.Atoi(m[1])
+			if _, seen := sectorAnsMap[idx]; !seen {
+				sectorAnsMap[idx] = strings.TrimSpace(html.UnescapeString(m[2]))
+			}
+		}
+
+		sort.Ints(sectorIndices)
+		for _, idx := range sectorIndices {
+			lvl.SectorNames = append(lvl.SectorNames, sectorNameMap[idx])
+			lvl.SectorFirstAnswers = append(lvl.SectorFirstAnswers, sectorAnsMap[idx])
+		}
+
+		// ── Bonuses ──────────────────────────────────────────────────────────
+		bonusIndices := uniqueCtlIndices(gsBonusIdxRe.FindAllStringSubmatch(section, -1))
+		lvl.BonusCount = len(bonusIndices)
+
+		bonusNameMap := make(map[int]string)
+		for _, m := range gsBonusNameRe.FindAllStringSubmatch(section, -1) {
+			idx, _ := strconv.Atoi(m[1])
+			if _, seen := bonusNameMap[idx]; !seen {
+				text := strings.TrimSpace(html.UnescapeString(m[2]))
+				// Bonus name is rendered as «"BonusName"» on the page.
+				if qm := gsBonusQuoteRe.FindStringSubmatch(text); qm != nil {
+					text = qm[1]
+				}
+				bonusNameMap[idx] = text
+			}
+		}
+
+		bonusAnsMap := make(map[int]string)
+		for _, m := range gsBonusAnsRe.FindAllStringSubmatch(section, -1) {
+			idx, _ := strconv.Atoi(m[1])
+			if _, seen := bonusAnsMap[idx]; !seen {
+				bonusAnsMap[idx] = strings.TrimSpace(html.UnescapeString(m[2]))
+			}
+		}
+
+		sort.Ints(bonusIndices)
+		for _, idx := range bonusIndices {
+			lvl.BonusNames = append(lvl.BonusNames, bonusNameMap[idx])
+			lvl.BonusFirstAnswers = append(lvl.BonusFirstAnswers, bonusAnsMap[idx])
+		}
+
+		result[levelNum] = lvl
 	}
 
-	m := make(map[int]*ScenarioLevel, len(levels))
-	for i := range levels {
-		m[levels[i].LevelNum] = &levels[i]
+	return result
+}
+
+// uniqueCtlIndices collects unique integer repeater indices from regex match groups.
+func uniqueCtlIndices(matches [][]string) []int {
+	seen := make(map[int]bool)
+	var result []int
+	for _, m := range matches {
+		if len(m) < 2 {
+			continue
+		}
+		idx, _ := strconv.Atoi(m[1])
+		if !seen[idx] {
+			seen[idx] = true
+			result = append(result, idx)
+		}
 	}
-	return m, nil
+	return result
 }

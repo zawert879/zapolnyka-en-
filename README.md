@@ -6,7 +6,72 @@
 
 ---
 
-## Установка
+## Go-версия (рекомендуется)
+
+Go-версия — самодостаточный бинарь без зависимостей: не нужны Node.js, yarn, Playwright. Работает на Windows, macOS и Linux. Имеет интерактивное TUI-меню и CLI-режим.
+
+### Скачать
+
+Перейди на страницу [Releases](https://github.com/zawert879/zapolnyka-en-/releases) и скачай бинарь для своей платформы:
+
+| Платформа | Файл |
+|---|---|
+| Windows 64-bit | `zapolnyaka-windows-amd64.exe` |
+| macOS (Intel) | `zapolnyaka-darwin-amd64` |
+| macOS (Apple Silicon) | `zapolnyaka-darwin-arm64` |
+| Linux 64-bit | `zapolnyaka-linux-amd64` |
+
+На macOS/Linux после скачивания сделай файл исполняемым:
+
+```bash
+chmod +x zapolnyaka-darwin-arm64
+```
+
+### Первый запуск
+
+**Без аргументов** — открывается интерактивное TUI-меню:
+
+```bash
+./zapolnyaka
+```
+
+TUI само спросит логин, пароль и путь к `game.yml` при первом использовании.
+
+### CLI-режим
+
+Если нужна автоматизация или скрипты — передай аргументы напрямую:
+
+```bash
+# Сохранить учётные данные (однократно)
+zapolnyaka auth <логин> <пароль>
+
+# Залить все уровни из game.yml
+zapolnyaka go data/game.yml
+
+# Проверить конфиги без браузера
+zapolnyaka validate data/game.yml
+
+# Сравнить конфиг с тем, что уже залито на en.cx
+zapolnyaka check data/game.yml
+```
+
+Учётные данные хранятся локально в `.zapolnyaka.json` (рядом с бинарём). Последний использованный `game.yml` запоминается — следующий раз путь можно не указывать:
+
+```bash
+zapolnyaka go   # использует последний game.yml
+```
+
+### Структура данных
+
+Форматы конфигов (`game.yml`, `conf.yml`, `codes.yml`) — те же, что и в TypeScript-версии. Подробнее см. ниже.
+
+---
+
+## TypeScript-версия
+
+Требует Node.js и yarn. Актуальна, если нужна кастомизация или разработка.
+
+### Установка
 
 ```bash
 yarn install
