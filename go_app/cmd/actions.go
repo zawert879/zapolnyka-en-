@@ -31,27 +31,6 @@ func ActionCheck(gamePath string) error {
 	return RunCheck(gamePath)
 }
 
-// ActionSelfTest uploads to the next devLevel and reports pass/fail.
-func ActionSelfTest() error {
-	hist := LoadHistory()
-	devLevel := hist.SelfTestDevLevel
-	if devLevel < SelfTestMinLevel || devLevel > SelfTestMaxLevel {
-		devLevel = SelfTestMinLevel
-	}
-	fmt.Printf("\n🧪 Тест на devLevel %d\n", devLevel)
-	if err := RunSelfTest(devLevel); err != nil {
-		return err
-	}
-	next := devLevel + 1
-	if next > SelfTestMaxLevel {
-		next = SelfTestMinLevel
-	}
-	hist.SelfTestDevLevel = next
-	SaveHistory(hist)
-	fmt.Println(actInfoStyle.Render(fmt.Sprintf("  Следующий тест будет на devLevel %d", next)))
-	return nil
-}
-
 // ActionAuth saves credentials to the history file.
 func ActionAuth(login, password string) error {
 	hist := LoadHistory()

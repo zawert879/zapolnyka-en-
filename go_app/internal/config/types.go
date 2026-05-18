@@ -50,7 +50,6 @@ type Code struct {
 
 type Level struct {
 	Level           int           `yaml:"level"    json:"level"`
-	DevLevel        *int          `yaml:"devLevel,omitempty"        json:"devLevel,omitempty"`
 	Codes           *string       `yaml:"codes,omitempty"           json:"codes,omitempty"`
 	Body            *string       `yaml:"body,omitempty"            json:"body,omitempty"`
 	Clean           bool          `yaml:"clean"    json:"clean"`
@@ -93,7 +92,6 @@ type Game struct {
 	GameID        int      `yaml:"gameId"        json:"gameId"`
 	Levels        []string `yaml:"levels"        json:"levels"`
 	DefaultFormat string   `yaml:"defaultFormat,omitempty" json:"defaultFormat,omitempty"`
-	IsDev         bool     `yaml:"isDev,omitempty"         json:"isDev,omitempty"`
 	Delays        Delays   `yaml:"delays,omitempty"        json:"delays,omitempty"`
 }
 

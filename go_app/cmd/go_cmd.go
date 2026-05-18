@@ -35,12 +35,10 @@ func RunGo(gamePath string) error {
 	}
 
 	logger.Printf("📂 Игра: %s  ID: %d  Уровней: %d\n", game.Domain, game.GameID, len(prepared))
-	logger.Println("\n🌐 Запускаем браузер...")
 	z, err := zapolnyaka.New(login, password, game.Domain, game.GameID, game.Delays)
 	if err != nil {
-		return fmt.Errorf("start browser: %w", err)
+		return fmt.Errorf("init client: %w", err)
 	}
-	defer z.Close()
 
 	logger.Println("🔑 Авторизация...")
 	if err := z.Auth(); err != nil {

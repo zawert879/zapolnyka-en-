@@ -36,9 +36,6 @@ func runCLI() {
 		}
 		err = cmd.ActionAuth(strings.TrimSpace(os.Args[2]), os.Args[3])
 
-	case "selftest":
-		err = cmd.ActionSelfTest()
-
 	case "go":
 		if gamePath == "" {
 			cliDie("Укажите путь: zapolnyaka.exe go data/myGame/game.yml")
@@ -61,7 +58,7 @@ func runCLI() {
 
 	default:
 		cliDie(fmt.Sprintf(
-			"Неизвестное действие: %q\n  Доступные: auth <login> <pass> | selftest | go [game.yml] | validate [game.yml] | check [game.yml]",
+			"Неизвестное действие: %q\n  Доступные: auth <login> <pass> | go [game.yml] | validate [game.yml] | check [game.yml]",
 			action,
 		))
 	}

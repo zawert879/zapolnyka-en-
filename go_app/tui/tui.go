@@ -67,7 +67,6 @@ func Run() {
 				huh.NewOption("🎮  Создать конфиг игры", "game"),
 				huh.NewOption("📝  Добавить уровень", "level"),
 				huh.NewOption("🔑  Авторизоваться", "auth"),
-				huh.NewOption("🧪  Тест (devLevel)", "selftest"),
 				huh.NewOption("🚪  Выход", "exit"),
 			).Value(&action),
 		)).Run(); err != nil {
@@ -107,11 +106,6 @@ func dispatch(action string) error {
 		return tuiLevel()
 	case "auth":
 		return tuiAuth()
-	case "selftest":
-		if err := cmd.ActionSelfTest(); err != nil {
-			return err
-		}
-		return pause()
 	case "exit":
 		fmt.Println("До свидания!")
 		os.Exit(0)

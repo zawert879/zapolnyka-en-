@@ -86,10 +86,6 @@ func LoadAll(gamePath string) (*Game, []PreparedLevel, error) {
 		if err != nil {
 			return nil, nil, err
 		}
-		// dev mode: swap level number
-		if game.IsDev && level.DevLevel != nil {
-			level.Level = *level.DevLevel
-		}
 		levelDir := filepath.Dir(confPath)
 		p := PreparedLevel{Conf: level}
 

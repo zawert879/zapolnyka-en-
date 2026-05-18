@@ -17,9 +17,6 @@ func RunValidate(gamePath string) error {
 
 	w := os.Stdout
 	fmt.Fprintf(w, "\n📋 Игра: %s  ID: %d  Уровней: %d\n", game.Domain, game.GameID, len(prepared))
-	if game.IsDev {
-		fmt.Fprintln(w, "   режим: isDev=true")
-	}
 
 	for _, p := range prepared {
 		c := p.Conf

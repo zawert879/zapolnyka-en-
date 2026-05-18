@@ -8,11 +8,10 @@ import (
 
 // History stores the last used game/level paths and saved credentials.
 type History struct {
-	Login            string `json:"login"`
-	Password         string `json:"password"`
-	LastGame         string `json:"lastGame"`
-	LastLevel        string `json:"lastLevel"`
-	SelfTestDevLevel int    `json:"selfTestDevLevel,omitempty"`
+	Login    string `json:"login"`
+	Password string `json:"password"`
+	LastGame string `json:"lastGame"`
+	LastLevel string `json:"lastLevel"`
 }
 
 const historyFile = ".zapolnyaka.json"
@@ -43,9 +42,6 @@ func SaveHistory(h History) {
 	}
 	if h.LastLevel == "" {
 		h.LastLevel = existing.LastLevel
-	}
-	if h.SelfTestDevLevel == 0 {
-		h.SelfTestDevLevel = existing.SelfTestDevLevel
 	}
 	data, _ := json.MarshalIndent(h, "", "  ")
 	_ = os.WriteFile(historyFile, data, 0o644)
