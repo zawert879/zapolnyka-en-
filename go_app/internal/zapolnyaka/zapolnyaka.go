@@ -68,11 +68,6 @@ func (z *Zapolnyaka) withSessionRetry(fn func() error) error {
 
 // ProcessLevel uploads a single prepared level to en.cx via the Admin HTTP API.
 func (z *Zapolnyaka) ProcessLevel(p config.PreparedLevel) error {
-	// Re-auth before each level to ensure a fresh session.
-	if err := z.Auth(); err != nil {
-		return fmt.Errorf("re-auth before level %d: %w", p.Conf.Level, err)
-	}
-
 	ctx := context.Background()
 	level := p.Conf.Level
 
