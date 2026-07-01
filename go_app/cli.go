@@ -30,6 +30,10 @@ func runCLI() {
 
 	var err error
 	switch action {
+	case "version", "--version", "-v":
+		fmt.Println("zapolnyaka " + version)
+		return
+
 	case "auth":
 		if len(os.Args) < 4 {
 			cliDie("Использование: zapolnyaka.exe auth <логин> <пароль>")
@@ -64,7 +68,7 @@ func runCLI() {
 
 	default:
 		cliDie(fmt.Sprintf(
-			"Неизвестное действие: %q\n  Доступные: auth <login> <pass> | go [game.yml] | assets [game.yml] | validate [game.yml] | check [game.yml]",
+			"Неизвестное действие: %q\n  Доступные: auth <login> <pass> | go [game.yml] | assets [game.yml] | validate [game.yml] | check [game.yml] | version",
 			action,
 		))
 	}

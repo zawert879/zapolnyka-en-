@@ -35,6 +35,23 @@ jobs:
         with:
           go-version-file: go_app/go.mod
 
+      # Windows: embed a version-info resource (CompanyName / ProductName / version).
+      # An unsigned, resource-less Go .exe is a classic Microsoft Defender ML
+      # false-positive trigger (Program:Win32/Wacapew.A!ml); a proper version
+      # resource markedly reduces that. Version numbers are taken from the tag.
+      - name: Embed Windows version info
+        if: matrix.os == 'windows'
+        working-directory: go_app
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          IFS='.' read -r MAJOR MINOR PATCH _ <<< "$VER"
+          go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@v1.7.0 \
+            -64 \
+            -ver-major "${MAJOR:-0}" -ver-minor "${MINOR:-0}" -ver-patch "${PATCH:-0}" \
+            -file-version "$VER" -product-version "$VER" \
+            -o resource_windows_amd64.syso versioninfo.json
+
+      # No -s -w: keeping the symbol table also lowers the heuristic FP rate.
       - name: Build
         working-directory: go_app
         env:
@@ -42,8 +59,28 @@ jobs:
           GOARCH: ${{ matrix.arch }}
           CGO_ENABLED: 0
         run: |
-          go build -trimpath -ldflags="-s -w -X main.version=${{ github.ref_name }}" \
+          go build -trimpath -ldflags="-X main.version=${{ github.ref_name }}" \
             -o ../dist/zapolnyaka-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }} .
+
+      # Optional Windows Authenticode signing — the definitive fix for the FP and
+      # for SmartScreen. No-op until you add repo secrets WINDOWS_CERT_BASE64
+      # (base64 of a .pfx) and WINDOWS_CERT_PASSWORD.
+      - name: Sign Windows binary (optional)
+        if: matrix.os == 'windows' && env.CERT != ''
+        working-directory: go_app
+        env:
+          CERT: ${{ secrets.WINDOWS_CERT_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y osslsigncode
+          echo "$CERT" | base64 -d > cert.pfx
+          osslsigncode sign -pkcs12 cert.pfx -pass "$CERT_PASSWORD" \
+            -n "zapolnyaka-en" -i "https://github.com/${{ github.repository }}" \
+            -ts http://timestamp.digicert.com \
+            -in "../dist/zapolnyaka-windows-amd64.exe" \
+            -out "../dist/zapolnyaka-windows-amd64.signed.exe"
+          mv "../dist/zapolnyaka-windows-amd64.signed.exe" "../dist/zapolnyaka-windows-amd64.exe"
+          rm -f cert.pfx
 
       - uses: actions/upload-artifact@v4
         with:
