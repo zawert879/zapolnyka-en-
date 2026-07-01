@@ -22,6 +22,15 @@ func RunGo(gamePath string) error {
 		return fmt.Errorf("в конфиге %s нет уровней — добавьте их командой 'Добавить уровень'", gamePath)
 	}
 
+	// Rewrite {{asset}} placeholders in level content to their uploaded URLs.
+	manifest, err := loadManifest(manifestPath(assetsDirFor(gamePath, game)))
+	if err != nil {
+		return fmt.Errorf("load asset manifest: %w", err)
+	}
+	if err := substituteAssets(prepared, manifest, game.GameID); err != nil {
+		return err
+	}
+
 	logger.Printf("📂 Игра: %s  ID: %d  Уровней: %d\n", game.Domain, game.GameID, len(prepared))
 	z, err := zapolnyaka.New(login, password, game.Domain, game.GameID, game.Delays)
 	if err != nil {
