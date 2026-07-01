@@ -140,6 +140,7 @@ data/
 
 # Go build artifacts
 *.exe
+*.exe~
 *.syso
 go_app/.zapolnyaka.json
 go_app/testrun/
