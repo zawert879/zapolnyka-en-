@@ -44,6 +44,12 @@ func runCLI() {
 		fmt.Println()
 		err = cmd.ActionGo(gamePath)
 
+	case "assets":
+		if gamePath == "" {
+			cliDie("Укажите путь: zapolnyaka.exe assets data/myGame/game.yml")
+		}
+		err = cmd.ActionAssets(gamePath)
+
 	case "validate":
 		if gamePath == "" {
 			cliDie("Укажите путь: zapolnyaka.exe validate data/myGame/game.yml")
@@ -58,7 +64,7 @@ func runCLI() {
 
 	default:
 		cliDie(fmt.Sprintf(
-			"Неизвестное действие: %q\n  Доступные: auth <login> <pass> | go [game.yml] | validate [game.yml] | check [game.yml]",
+			"Неизвестное действие: %q\n  Доступные: auth <login> <pass> | go [game.yml] | assets [game.yml] | validate [game.yml] | check [game.yml]",
 			action,
 		))
 	}

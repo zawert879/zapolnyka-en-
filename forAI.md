@@ -49,9 +49,20 @@ data/
   ]
 }
 ```
-Пути в `levels` — относительно директории самого `game.*`. Обязательны: `domain`, `gameId`, `levels`. Опционально: `defaultFormat` (`json` | `yml`).
+Пути в `levels` — относительно директории самого `game.*`. Обязательны: `domain`, `gameId`, `levels`. Опционально: `defaultFormat` (`json` | `yml`), `assetsDir` (папка с ассетами для команды `assets`, по умолчанию `assets/`).
 
 **Логин/пароль — только в `.env`** (в корне репозитория `zapolnyaka-en/`): `EN_LOGIN=...` и `EN_PASSWORD=...`. Файл уже в `.gitignore`, пример — в `.env.example`. Если переменные не заданы — `go` прерывается с ошибкой.
+
+## Загрузка ассетов (команда `assets`, только Go-версия)
+
+Команда `assets <game>` заливает файлы из папки `assetsDir` (по умолчанию `assets/` рядом с game-файлом) в раздел en.cx «Файлы для игры». Используется для общего дизайна игры (`design.css`, `fog.js`, картинки), который подключается в `task.html` разметкой (`@import` / `<script src>`).
+
+**Эндпоинт (разведан на живой форме):** `POST https://{domain}/Administration/Games/FileUploader.aspx?gid={gameId}`, `enctype=multipart/form-data`. Форма простая, без `__VIEWSTATE`:
+- `inputFile1` — поле файла (один файл за запрос);
+- `ctl03` — image-сабмит, поэтому шлём координаты клика `ctl03.x=1` и `ctl03.y=1`;
+- игра определяется **только** query-параметром `gid` (скрытых полей с id нет).
+
+Лимит — **48 МБ** на файл. После загрузки файл раздаётся с `https://d1.endata.cx/data/games/{gameId}/{файл}` (мгновенно, без кэша — для разработки) и `https://cdn.endata.cx/data/games/{gameId}/{файл}` (кэш 24 ч — прод). Реализация: `encx.AdminUploadGameFile` (multipart), `zapolnyaka.UploadAssets` (цикл + переавторизация при ErrSessionExpired), команда `cmd.RunAssets`. Команда **не** трогает тела уровней — версию `?v=N` для сброса кэша поднимаешь вручную.
 
 ## Конфиг уровня (data/N/conf.json)
 ```json

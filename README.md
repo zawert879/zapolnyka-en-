@@ -112,6 +112,18 @@ yarn build && yarn start go data/game.yml
 yarn dev go data/game.yml
 ```
 
+### `assets <game>` — залить ассеты (только Go-версия)
+
+Залить файлы из папки ассетов в раздел «Файлы для игры» en.cx (`FileUploader.aspx`). После загрузки они раздаются с `https://d1.endata.cx/data/games/<gameId>/<файл>` (мгновенно) и `https://cdn.endata.cx/...` (кэш 24 ч). Лимит — 48 МБ на файл.
+
+```bash
+zapolnyaka assets data/game.yml      # или пункт меню «🖼 Залить ассеты» в TUI
+```
+
+- Папка по умолчанию — `assets/` рядом с `game.yml`; переопределяется полем `assetsDir` в game-конфиге.
+- Заливаются все обычные файлы из папки (без подпапок и скрытых файлов).
+- Ссылки в `task.html` (`@import`/`<script src>`) команда не трогает — версию `?v=N` обновляешь сам.
+
 ### `game <path>` — создать `game.yml` / `game.json`
 
 ```bash

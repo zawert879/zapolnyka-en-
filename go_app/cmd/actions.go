@@ -21,6 +21,17 @@ func ActionGo(gamePath string) error {
 	return nil
 }
 
+// ActionAssets uploads the game's assets and saves the game path to history.
+func ActionAssets(gamePath string) error {
+	if err := RunAssets(gamePath); err != nil {
+		return err
+	}
+	hist := LoadHistory()
+	hist.LastGame = gamePath
+	SaveHistory(hist)
+	return nil
+}
+
 // ActionValidate prints the parsed config without a browser.
 func ActionValidate(gamePath string) error {
 	return RunValidate(gamePath)

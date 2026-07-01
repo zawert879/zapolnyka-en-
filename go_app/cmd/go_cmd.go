@@ -2,28 +2,16 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"zapolnyaka/internal/config"
 	"zapolnyaka/internal/zapolnyaka"
 	"zapolnyaka/pkg/logger"
-
-	"github.com/joho/godotenv"
 )
 
 // RunGo uploads all levels from the given game config file.
 func RunGo(gamePath string) error {
-	hist := LoadHistory()
-	login := hist.Login
-	password := hist.Password
-
-	// Fall back to .env if not stored in history
-	if login == "" || password == "" {
-		_ = godotenv.Load()
-		login = os.Getenv("EN_LOGIN")
-		password = os.Getenv("EN_PASSWORD")
-	}
-	if login == "" || password == "" {
-		return fmt.Errorf("учётные данные не заданы — используйте пункт «Авторизоваться» или .env (EN_LOGIN / EN_PASSWORD)")
+	login, password, err := resolveCredentials()
+	if err != nil {
+		return err
 	}
 
 	game, prepared, err := config.LoadAll(gamePath)

@@ -22,6 +22,7 @@ yarn build && yarn start go data/game.yml  # production
 ## CLI-команды
 
 - `go <game>` — залить все уровни из game-конфига
+- `assets <game>` — залить ассеты (css/js/картинки) из папки `assetsDir` (по умолчанию `assets/`) в «Файлы для игры» en.cx. Только Go-версия (`go_app/`)
 - `game <path> [-d domain] [-g gameId] [-b]` — создать новый game-конфиг
 - `level <game> <dir> [level] [-f json|yml] [-b]` — создать шаблон уровня и добавить в game
 

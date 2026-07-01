@@ -91,6 +91,7 @@ type Game struct {
 	Domain        string   `yaml:"domain"        json:"domain"`
 	GameID        int      `yaml:"gameId"        json:"gameId"`
 	Levels        []string `yaml:"levels"        json:"levels"`
+	AssetsDir     string   `yaml:"assetsDir,omitempty"     json:"assetsDir,omitempty"` // папка с ассетами (css/js/картинки) относительно game-файла; по умолчанию "assets"
 	DefaultFormat string   `yaml:"defaultFormat,omitempty" json:"defaultFormat,omitempty"`
 	Delays        Delays   `yaml:"delays,omitempty"        json:"delays,omitempty"`
 }

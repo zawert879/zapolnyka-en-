@@ -61,6 +61,7 @@ func Run() {
 		if err := newInlineForm(huh.NewGroup(
 			huh.NewSelect[string]().Title("Выберите действие").Options(
 				huh.NewOption("🚀  Залить уровни", "go"),
+				huh.NewOption("🖼   Залить ассеты", "assets"),
 				huh.NewOption("📋  Проверить конфиги", "validate"),
 				huh.NewOption("🔍  Проверить залитое", "check"),
 				huh.NewOption("➕  Добавить код в уровень", "code"),
@@ -94,6 +95,8 @@ func dispatch(action string) error {
 	switch action {
 	case "go":
 		return tuiGo()
+	case "assets":
+		return tuiAssets()
 	case "validate":
 		return tuiValidate()
 	case "check":
@@ -130,6 +133,16 @@ func tuiGo() error {
 		return err
 	}
 	return cmd.ActionGo(gamePath)
+}
+
+func tuiAssets() error {
+	hist := cmd.LoadHistory()
+	gamePath, err := pickGame(hist)
+	if err != nil || gamePath == "" {
+		return err
+	}
+	fmt.Println()
+	return cmd.ActionAssets(gamePath)
 }
 
 func tuiValidate() error {
