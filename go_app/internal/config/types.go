@@ -43,6 +43,7 @@ type Code struct {
 	Type       CodeType `yaml:"type"       json:"type"`
 	SectorName *string  `yaml:"sectorName,omitempty" json:"sectorName,omitempty"`
 	BonusName  *string  `yaml:"bonusName,omitempty"  json:"bonusName,omitempty"`
+	Task       *string  `yaml:"task,omitempty"       json:"task,omitempty"`
 	Answers    []string `yaml:"answers"    json:"answers"`
 	Time       *int     `yaml:"time,omitempty"       json:"time,omitempty"`
 	Help       *string  `yaml:"help,omitempty"       json:"help,omitempty"`

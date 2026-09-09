@@ -3,6 +3,7 @@ package cmd
 import (
 	"strings"
 	"testing"
+	"zapolnyaka/internal/config"
 )
 
 func TestPlanUploadsTilde(t *testing.T) {
@@ -62,5 +63,30 @@ func TestExpandPlaceholders(t *testing.T) {
 	}
 	if !strings.Contains(out, "{{nope.png}}") || !strings.Contains(out, "abc.css") {
 		t.Fatalf("partial expand: %q", out)
+	}
+}
+
+func TestSubstituteAssetsCodeTaskAndHelp(t *testing.T) {
+	m := map[string]string{"1.jpg": "abc.jpg"}
+	task := `<img src="{{1.jpg}}">`
+	help := "ok {{1.jpg}}"
+	prepared := []config.PreparedLevel{{
+		Codes: []config.Code{{Type: config.CodeTypeBonus, Task: &task, Help: &help, Answers: []string{"x"}}},
+	}}
+	if err := substituteAssets(prepared, m, 82460); err != nil {
+		t.Fatalf("substituteAssets: %v", err)
+	}
+	wantURL := "https://d1.endata.cx/data/games/82460/abc.jpg"
+	if got := *prepared[0].Codes[0].Task; got != `<img src="`+wantURL+`">` {
+		t.Fatalf("task: %q", got)
+	}
+	if got := *prepared[0].Codes[0].Help; got != "ok "+wantURL {
+		t.Fatalf("help: %q", got)
+	}
+
+	missingTask := "{{nope.png}}"
+	prepared[0].Codes[0].Task = &missingTask
+	if err := substituteAssets(prepared, m, 82460); err == nil {
+		t.Fatalf("expected error for missing placeholder in task")
 	}
 }

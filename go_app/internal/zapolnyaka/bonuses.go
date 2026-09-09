@@ -25,6 +25,10 @@ func (z *Zapolnyaka) addBonus(ctx context.Context, level int, code config.Code) 
 	if code.BonusName != nil {
 		bonusName = *code.BonusName
 	}
+	task := ""
+	if code.Task != nil {
+		task = *code.Task
+	}
 	help := ""
 	if code.Help != nil {
 		help = *code.Help
@@ -34,6 +38,7 @@ func (z *Zapolnyaka) addBonus(ctx context.Context, level int, code config.Code) 
 
 	b := encx.AdminBonus{
 		Name:         bonusName,
+		Task:         task,
 		Hint:         help,
 		LevelID:      z.levelDbIds[level],
 		Answers:      chunks[0],

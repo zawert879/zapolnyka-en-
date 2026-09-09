@@ -356,7 +356,7 @@ func pickLevel(gamePath string, hist cmd.History) (string, error) {
 
 func collectCodeFields(ct config.CodeType) (config.Code, error) {
 	code := config.Code{Type: ct}
-	var sectorName, bonusName, answersStr, timeStr, helpStr string
+	var sectorName, bonusName, answersStr, timeStr, taskStr, helpStr string
 	var fields []huh.Field
 	if ct.HasSector() {
 		fields = append(fields, huh.NewInput().Title("Имя сектора").Value(&sectorName))
@@ -382,6 +382,7 @@ func collectCodeFields(ct config.CodeType) (config.Code, error) {
 					}
 					return nil
 				}),
+			huh.NewInput().Title("Задание бонуса (task) — опционально, видно до ввода").Value(&taskStr),
 			huh.NewInput().Title("Подсказка (help) — опционально").Value(&helpStr),
 		)
 	}
@@ -402,6 +403,9 @@ func collectCodeFields(ct config.CodeType) (config.Code, error) {
 	if timeStr != "" {
 		t, _ := strconv.Atoi(timeStr)
 		code.Time = &t
+	}
+	if taskStr != "" {
+		code.Task = &taskStr
 	}
 	if helpStr != "" {
 		code.Help = &helpStr

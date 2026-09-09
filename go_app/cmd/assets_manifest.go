@@ -153,6 +153,11 @@ func substituteAssets(prepared []config.PreparedLevel, manifest map[string]strin
 		collect(m)
 
 		for ci := range p.Codes {
+			if p.Codes[ci].Task != nil {
+				s, mm := expandPlaceholders(*p.Codes[ci].Task, manifest, gameID)
+				p.Codes[ci].Task = &s
+				collect(mm)
+			}
 			if p.Codes[ci].Help != nil {
 				s, mm := expandPlaceholders(*p.Codes[ci].Help, manifest, gameID)
 				p.Codes[ci].Help = &s
