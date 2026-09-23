@@ -6,6 +6,7 @@ import (
 	"slices"
 	"zapolnyaka/encx"
 	"zapolnyaka/internal/config"
+	"zapolnyaka/pkg/logger"
 	"zapolnyaka/pkg/utils"
 )
 
@@ -34,13 +35,20 @@ func (z *Zapolnyaka) addBonus(ctx context.Context, level int, code config.Code) 
 		help = *code.Help
 	}
 
+	levelID, levelIDs, err := z.bonusLevels(level, code)
+	if err != nil {
+		return err
+	}
+	multi := levelID == -1 || len(levelIDs) > 1
+
 	h, m, s := utils.SecondsToHMS(*code.Time)
 
 	b := encx.AdminBonus{
 		Name:         bonusName,
 		Task:         task,
 		Hint:         help,
-		LevelID:      z.levelDbIds[level],
+		LevelID:      levelID,
+		LevelIDs:     levelIDs,
 		Answers:      chunks[0],
 		AwardHours:   h,
 		AwardMinutes: m,
@@ -52,7 +60,7 @@ func (z *Zapolnyaka) addBonus(ctx context.Context, level int, code config.Code) 
 		return fmt.Errorf("create bonus: %w", err)
 	}
 
-	if len(chunks) == 1 {
+	if len(chunks) == 1 && !multi {
 		return nil
 	}
 
@@ -65,6 +73,15 @@ func (z *Zapolnyaka) addBonus(ctx context.Context, level int, code config.Code) 
 		return fmt.Errorf("no bonus IDs found after creation")
 	}
 	bonusID := bids[len(bids)-1]
+
+	if multi {
+		// Мультиуровневый бонус виден на страницах других уровней:
+		// cleanLevel следующих уровней в этом запуске не должен его удалить.
+		z.createdBonuses[bonusID] = true
+	}
+	if len(chunks) == 1 {
+		return nil
+	}
 
 	// Add remaining chunks by updating with the full accumulated answer list
 	cur, err := z.client.AdminGetBonus(ctx, z.gameID, level, bonusID)
@@ -80,4 +97,35 @@ func (z *Zapolnyaka) addBonus(ctx context.Context, level int, code config.Code) 
 		}
 	}
 	return nil
+}
+
+// bonusLevels resolves the code's `levels` spec against the game's levels.
+// Returns (levelID, levelIDs): levelID == -1 means "all levels";
+// non-empty levelIDs is an explicit set; otherwise the bonus plays on `level` only.
+func (z *Zapolnyaka) bonusLevels(level int, code config.Code) (int, []int, error) {
+	if code.Levels == nil {
+		return z.levelDbIds[level], nil, nil
+	}
+	f, err := config.ParseLevelSpec(*code.Levels)
+	if err != nil {
+		return 0, nil, err
+	}
+	if f.All {
+		logger.Printf("    уровни бонуса %q → все уровни\n", *code.Levels)
+		return -1, nil, nil
+	}
+	nums := make([]int, 0, len(z.levelDbIds))
+	for n := range z.levelDbIds {
+		nums = append(nums, n)
+	}
+	matched := f.Resolve(nums)
+	if len(matched) == 0 {
+		return 0, nil, fmt.Errorf("levels %q: ни один уровень игры не подходит", *code.Levels)
+	}
+	ids := make([]int, 0, len(matched))
+	for _, n := range matched {
+		ids = append(ids, z.levelDbIds[n])
+	}
+	logger.Printf("    уровни бонуса %q → %v\n", *code.Levels, matched)
+	return ids[0], ids, nil
 }

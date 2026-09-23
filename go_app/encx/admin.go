@@ -304,6 +304,26 @@ func (c *Client) AdminUpdateAnswerBlock(ctx context.Context, gameId, levelNum in
 
 // --- Bonus Management ---
 
+// setBonusLevels fills the level checkboxes of the bonus form.
+// LevelIDs (explicit set) wins; otherwise LevelID -1/0 means "all levels".
+func setBonusLevels(form url.Values, b AdminBonus) {
+	if len(b.LevelIDs) > 0 {
+		form.Set("rbAllLevels", "0")
+		for _, id := range b.LevelIDs {
+			if id > 0 {
+				form.Set(fmt.Sprintf("level_%d", id), "on")
+			}
+		}
+		return
+	}
+	if b.LevelID == -1 || b.LevelID == 0 {
+		form.Set("rbAllLevels", "1")
+		return
+	}
+	form.Set("rbAllLevels", "0")
+	form.Set(fmt.Sprintf("level_%d", b.LevelID), "on")
+}
+
 // AdminCreateBonus creates a new bonus on the specified level.
 func (c *Client) AdminCreateBonus(ctx context.Context, gameId, levelNum int, b AdminBonus) error {
 	u := fmt.Sprintf("%s/Administration/Games/BonusEdit.aspx?gid=%d&level=%d&bonus=0&action=save",
@@ -315,14 +335,7 @@ func (c *Client) AdminCreateBonus(ctx context.Context, gameId, levelNum int, b A
 	form.Set("txtHelp", b.Hint)
 	form.Set("ddlBonusFor", b.BonusFor)
 
-	if b.LevelID == -1 || b.LevelID == 0 {
-		// Bonus for all levels
-		form.Set("rbAllLevels", "1")
-	} else {
-		// Bonus for specific level
-		form.Set("rbAllLevels", "0")
-		form.Set(fmt.Sprintf("level_%d", b.LevelID), "on")
-	}
+	setBonusLevels(form, b)
 
 	for i, ans := range b.Answers {
 		form.Set(fmt.Sprintf("answer_-%d", i+1), ans)
@@ -854,12 +867,7 @@ func (c *Client) AdminUpdateBonus(ctx context.Context, gameId, levelNum, bonusId
 	form.Set("txtHelp", b.Hint)
 	form.Set("ddlBonusFor", b.BonusFor)
 
-	if b.LevelID == -1 || b.LevelID == 0 {
-		form.Set("rbAllLevels", "1")
-	} else {
-		form.Set("rbAllLevels", "0")
-		form.Set(fmt.Sprintf("level_%d", b.LevelID), "on")
-	}
+	setBonusLevels(form, b)
 
 	for i, ans := range b.Answers {
 		form.Set(fmt.Sprintf("answer_-%d", i+1), ans)

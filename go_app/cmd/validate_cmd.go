@@ -52,9 +52,9 @@ func RunValidate(gamePath string) error {
 		}
 
 		fmt.Fprintf(w, "   Коды (%d):\n", len(p.Codes))
-		fmt.Fprintf(w, "   %-3s  %-14s  %-20s  %-20s  %7s  %s\n",
-			"#", "Тип", "Сектор", "Бонус/Штраф", "Ответов", "Время")
-		fmt.Fprintln(w, "   "+strings.Repeat("─", 76))
+		fmt.Fprintf(w, "   %-3s  %-14s  %-20s  %-20s  %7s  %-6s  %s\n",
+			"#", "Тип", "Сектор", "Бонус/Штраф", "Ответов", "Время", "Уровни")
+		fmt.Fprintln(w, "   "+strings.Repeat("─", 86))
 		for i, code := range p.Codes {
 			sector := "—"
 			if code.SectorName != nil {
@@ -68,9 +68,13 @@ func RunValidate(gamePath string) error {
 			if code.Time != nil {
 				timeStr = fmt.Sprintf("%dс", *code.Time)
 			}
-			fmt.Fprintf(w, "   %-3d  %-14s  %-20s  %-20s  %7d  %s\n",
+			levelsStr := "—"
+			if code.Levels != nil {
+				levelsStr = *code.Levels
+			}
+			fmt.Fprintf(w, "   %-3d  %-14s  %-20s  %-20s  %7d  %-6s  %s\n",
 				i+1, code.Type, truncate(sector, 20), truncate(bonus, 20),
-				len(code.Answers), timeStr)
+				len(code.Answers), timeStr, levelsStr)
 		}
 	}
 

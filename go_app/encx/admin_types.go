@@ -35,7 +35,8 @@ type AdminBonus struct {
 	Name     string   `json:"name"`
 	Task     string   `json:"task"`
 	Hint     string   `json:"hint"`
-	LevelID  int      `json:"level_id"`
+	LevelID  int      `json:"level_id"`            // -1/0 = все уровни; иначе один уровень (если LevelIDs пуст)
+	LevelIDs []int    `json:"level_ids,omitempty"` // явный набор уровней; имеет приоритет над LevelID
 	Answers  []string `json:"answers"`
 	BonusFor string   `json:"bonus_for"` // ddlBonusFor value
 

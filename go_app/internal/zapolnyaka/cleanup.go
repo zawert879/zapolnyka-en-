@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"zapolnyaka/encx"
+	"zapolnyaka/pkg/logger"
 )
 
 // cleanLevel deletes all tasks, bonuses, sectors, hints and disables autopass.
@@ -25,6 +26,10 @@ func (z *Zapolnyaka) cleanLevel(ctx context.Context, level int) error {
 		return fmt.Errorf("list bonuses: %w", err)
 	}
 	for _, bid := range bids {
+		if z.createdBonuses[bid] {
+			logger.Printf("  cleanLevel: бонус %d создан в этом запуске на нескольких уровнях — не удаляю\n", bid)
+			continue
+		}
 		if err := z.client.AdminDeleteBonus(ctx, z.gameID, level, bid); err != nil {
 			return fmt.Errorf("delete bonus %d: %w", bid, err)
 		}

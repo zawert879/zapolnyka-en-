@@ -33,6 +33,9 @@ type Zapolnyaka struct {
 	gameID     int
 	delays     config.Delays
 	levelDbIds map[int]int // levelNumber → DB ID, populated on Auth
+	// createdBonuses — ID мультиуровневых бонусов, созданных в этом запуске:
+	// cleanLevel не удаляет их, иначе бонус уровня 1 на "1-10" пропадёт при очистке уровня 2.
+	createdBonuses map[int]bool
 }
 
 // New creates a Zapolnyaka instance ready to authenticate and upload levels.
@@ -45,6 +48,8 @@ func New(login, password, domain string, gameID int, delays config.Delays) (*Zap
 		gameID:     gameID,
 		delays:     delays.Default(),
 		levelDbIds: make(map[int]int),
+
+		createdBonuses: make(map[int]bool),
 	}, nil
 }
 

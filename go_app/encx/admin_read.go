@@ -215,10 +215,16 @@ func (c *Client) AdminGetBonus(ctx context.Context, gameId, levelNum, bonusId in
 	if adminRbAllLevelsRe.MatchString(body) {
 		b.LevelID = -1 // sentinel: means "all levels"
 	} else {
-		// Find checked level
-		if m := adminCheckedLevelRe.FindStringSubmatch(body); m != nil {
-			idStr := strings.TrimPrefix(m[1], "level_")
-			b.LevelID, _ = strconv.Atoi(idStr)
+		// Collect all checked levels (a bonus may play on several)
+		for _, m := range adminCheckedLevelRe.FindAllStringSubmatch(body, -1) {
+			id, _ := strconv.Atoi(strings.TrimPrefix(m[1], "level_"))
+			if id <= 0 {
+				continue
+			}
+			b.LevelIDs = append(b.LevelIDs, id)
+			if b.LevelID == 0 {
+				b.LevelID = id
+			}
 		}
 	}
 

@@ -70,7 +70,7 @@ func RunCheck(gamePath string) error {
 		}
 
 		expectedSectors := codesWithSector(p.Codes)
-		expectedBonuses := codesWithBonus(p.Codes)
+		expectedBonuses := expectedBonusesFor(prepared, levelNum)
 
 		sOk := actual.SectorCount == len(expectedSectors)
 		bOk := actual.BonusCount == len(expectedBonuses)
@@ -155,6 +155,30 @@ func codesWithSector(codes []config.Code) []config.Code {
 	for _, c := range codes {
 		if c.Type.HasSector() {
 			out = append(out, c)
+		}
+	}
+	return out
+}
+
+// expectedBonusesFor returns the bonuses that should be visible on levelNum, in creation
+// order: the level's own bonuses plus bonuses of other levels whose `levels` spec covers it.
+// A bonus with `levels` set plays only where the spec says — its own level is not implied.
+func expectedBonusesFor(prepared []config.PreparedLevel, levelNum int) []config.Code {
+	var out []config.Code
+	for _, p := range prepared {
+		for _, c := range p.Codes {
+			if !c.Type.HasBonus() {
+				continue
+			}
+			if c.Levels == nil {
+				if p.Conf.Level == levelNum {
+					out = append(out, c)
+				}
+				continue
+			}
+			if f, err := config.ParseLevelSpec(*c.Levels); err == nil && f.Matches(levelNum) {
+				out = append(out, c)
+			}
 		}
 	}
 	return out

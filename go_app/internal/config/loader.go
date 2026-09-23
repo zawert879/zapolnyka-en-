@@ -65,6 +65,14 @@ func LoadCodes(path string) ([]Code, error) {
 		if c.Type != CodeTypeSector && c.Time == nil {
 			return nil, fmt.Errorf("codes[%d] (type=%s): time is required", i, c.Type)
 		}
+		if c.Levels != nil {
+			if !c.Type.HasBonus() {
+				return nil, fmt.Errorf("codes[%d] (type=%s): levels допустимо только для бонусных типов", i, c.Type)
+			}
+			if _, err := ParseLevelSpec(*c.Levels); err != nil {
+				return nil, fmt.Errorf("codes[%d]: %w", i, err)
+			}
+		}
 	}
 	return codes, nil
 }
