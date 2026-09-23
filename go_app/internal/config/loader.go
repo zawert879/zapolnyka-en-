@@ -58,23 +58,62 @@ func LoadCodes(path string) ([]Code, error) {
 	if err := parseFile(path, &codes); err != nil {
 		return nil, err
 	}
+	lines := codeLines(path)
+	where := func(i int) string {
+		if i < len(lines) && lines[i] > 0 {
+			return fmt.Sprintf("%s:%d (запись %d)", path, lines[i], i+1)
+		}
+		return fmt.Sprintf("%s (запись %d)", path, i+1)
+	}
 	for i, c := range codes {
+		switch c.Type {
+		case CodeTypeSector, CodeTypeBonus, CodeTypePenalty, CodeTypeSectorBonus, CodeTypeSectorPenalty:
+		default:
+			return nil, fmt.Errorf("%s: неизвестный type %q (ожидается сектор | бонус | штраф | секторбонус | секторштраф)", where(i), string(c.Type))
+		}
 		if len(c.Answers) == 0 {
-			return nil, fmt.Errorf("codes[%d]: answers is required", i)
+			return nil, fmt.Errorf("%s: нужно поле answers (минимум один ответ)", where(i))
 		}
 		if c.Type != CodeTypeSector && c.Time == nil {
-			return nil, fmt.Errorf("codes[%d] (type=%s): time is required", i, c.Type)
+			return nil, fmt.Errorf("%s, type=%s: нужно поле time (секунды)", where(i), c.Type)
 		}
 		if c.Levels != nil {
 			if !c.Type.HasBonus() {
-				return nil, fmt.Errorf("codes[%d] (type=%s): levels допустимо только для бонусных типов", i, c.Type)
+				return nil, fmt.Errorf("%s, type=%s: levels допустимо только для бонусных типов", where(i), c.Type)
 			}
 			if _, err := ParseLevelSpec(*c.Levels); err != nil {
-				return nil, fmt.Errorf("codes[%d]: %w", i, err)
+				return nil, fmt.Errorf("%s: %w", where(i), err)
 			}
 		}
 	}
 	return codes, nil
+}
+
+// codeLines returns the 1-based source line of every top-level list item in a YAML
+// codes file, so validation errors can point at the record. Returns nil for JSON
+// files or when the file is not a plain sequence.
+func codeLines(path string) []int {
+	ext := strings.ToLower(filepath.Ext(path))
+	if ext != ".yml" && ext != ".yaml" {
+		return nil
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil
+	}
+	var doc yaml.Node
+	if yaml.Unmarshal(data, &doc) != nil || len(doc.Content) == 0 {
+		return nil
+	}
+	seq := doc.Content[0]
+	if seq.Kind != yaml.SequenceNode {
+		return nil
+	}
+	lines := make([]int, len(seq.Content))
+	for i, item := range seq.Content {
+		lines[i] = item.Line
+	}
+	return lines
 }
 
 // LoadGame fully loads a game and all its levels into PreparedLevels.
