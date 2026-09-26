@@ -17,6 +17,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	ttemplate "text/template"
 	"time"
 
@@ -42,12 +43,48 @@ type Options struct {
 // движке: /gameengines/encounter/play/{gid}/ (форма POST'ит на него же, таймеры
 // перезагружают его же). /play/{n} — dev-переход на уровень n.
 type Server struct {
+	mu    sync.RWMutex // защищает opts.GamePath/DataDir, store, gid (переключение игры из UI)
 	opts  Options
 	store *Store
 	mux   *http.ServeMux
 	tmpl  *templates
 	gid   int
 	env   Env
+}
+
+func (s *Server) gamePath() string { s.mu.RLock(); defer s.mu.RUnlock(); return s.opts.GamePath }
+func (s *Server) dataDir() string  { s.mu.RLock(); defer s.mu.RUnlock(); return s.opts.DataDir }
+func (s *Server) getStore() *Store { s.mu.RLock(); defer s.mu.RUnlock(); return s.store }
+func (s *Server) getGid() int      { s.mu.RLock(); defer s.mu.RUnlock(); return s.gid }
+
+// GamePath — текущий game.yml.
+func (s *Server) GamePath() string { return s.gamePath() }
+
+// Mux — маршрутизатор сервера: сюда монтируются другие обработчики (веб-интерфейс).
+func (s *Server) Mux() *http.ServeMux { return s.mux }
+
+// Env — окружение рендера (логин, откуда брать файлы движка).
+func (s *Server) Env() Env { return s.env }
+
+// SetGame переключает эмулятор на другой game.yml: состояние симуляции берётся
+// из папки этой игры.
+func (s *Server) SetGame(gamePath string) error {
+	abs, err := filepath.Abs(gamePath)
+	if err != nil {
+		return err
+	}
+	conf, err := config.LoadGame(abs)
+	if err != nil {
+		return err
+	}
+	store, err := NewStore(filepath.Join(filepath.Dir(abs), ".emu-state.json"), s.opts.Now)
+	if err != nil {
+		return err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.opts.GamePath, s.opts.DataDir, s.store, s.gid = abs, filepath.Dir(abs), store, conf.GameID
+	return nil
 }
 
 // templates — play.html рендерится text/template (html/template вырезает HTML-комментарии
@@ -151,7 +188,7 @@ func (s *Server) Handler() http.Handler { return s.mux }
 func (s *Server) Addr() string { return s.opts.Addr }
 
 // PlayPath — канонический путь play-страницы.
-func (s *Server) PlayPath() string { return PlayPath(s.gid) }
+func (s *Server) PlayPath() string { return PlayPath(s.getGid()) }
 
 // URL — адрес play-страницы для открытия в браузере.
 func (s *Server) URL() string { return "http://" + s.opts.Addr + s.PlayPath() }
@@ -187,12 +224,11 @@ func (s *Server) logged(h http.Handler) http.Handler {
 
 func (s *Server) routes() {
 	m := http.NewServeMux()
-	play := s.PlayPath() // …/play/{gid}/
 	m.HandleFunc("GET /{$}", s.handleIndex)
-	m.HandleFunc("GET "+play+"{$}", s.handlePlay)
-	m.HandleFunc("POST "+play+"{$}", s.handleAnswer)
-	m.HandleFunc("GET "+strings.TrimSuffix(play, "/"), func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, play, http.StatusFound) // движок тоже редиректит на слэш
+	m.HandleFunc("GET /gameengines/encounter/play/{gid}/{$}", s.withGid(s.handlePlay))
+	m.HandleFunc("POST /gameengines/encounter/play/{gid}/{$}", s.withGid(s.handleAnswer))
+	m.HandleFunc("GET /gameengines/encounter/play/{gid}", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, s.PlayPath(), http.StatusFound) // движок тоже редиректит на слэш
 	})
 	m.HandleFunc("GET /play/{n}", s.handleGoto)
 	m.HandleFunc("GET /finished", s.handleFinished)
@@ -209,6 +245,17 @@ func (s *Server) routes() {
 	s.mux = m
 }
 
+// withGid пускает на play-страницу только с gid текущей игры, иначе ведёт на неё.
+func (s *Server) withGid(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.PathValue("gid") != strconv.Itoa(s.getGid()) {
+			http.Redirect(w, r, s.PlayPath(), http.StatusFound)
+			return
+		}
+		h(w, r)
+	}
+}
+
 // ---------------------------------------------------------------- загрузка игры
 
 // loaded — игра и переписыватель контента, перечитываемые на каждый запрос
@@ -219,11 +266,11 @@ type loaded struct {
 }
 
 func (s *Server) load() (*loaded, error) {
-	conf, prepared, err := config.LoadAll(s.opts.GamePath)
+	conf, prepared, err := config.LoadAll(s.gamePath())
 	if err != nil {
 		return nil, err
 	}
-	dir := assets.DirFor(s.opts.GamePath, conf)
+	dir := assets.DirFor(s.gamePath(), conf)
 	manifest, err := assets.LoadManifest(assets.ManifestPath(dir))
 	if err != nil {
 		return nil, err
@@ -242,7 +289,7 @@ func (s *Server) levelNum(r *http.Request) (int, error) {
 // current — текущий уровень симуляции (первый уровень конфига, если не задан).
 func (s *Server) current(l *loaded) int {
 	n := 0
-	s.store.Read(func(gs *GameState, _ time.Time) { n = gs.Current })
+	s.getStore().Read(func(gs *GameState, _ time.Time) { n = gs.Current })
 	if _, ok := l.game.Level(n); !ok {
 		n = l.game.First()
 	}
@@ -271,7 +318,7 @@ func (s *Server) handleGoto(w http.ResponseWriter, r *http.Request) {
 		s.notFoundLevel(w, l, n)
 		return
 	}
-	_ = s.store.Update(func(gs *GameState, now time.Time) error {
+	_ = s.getStore().Update(func(gs *GameState, now time.Time) error {
 		gs.Current = n
 		gs.Level(n, now)
 		return nil
@@ -287,7 +334,7 @@ func (s *Server) handlePlay(w http.ResponseWriter, r *http.Request) {
 	}
 	n := s.current(l)
 	if n == 0 {
-		s.errorPage(w, fmt.Errorf("в конфиге %s нет уровней", s.opts.GamePath))
+		s.errorPage(w, fmt.Errorf("в конфиге %s нет уровней", s.gamePath()))
 		return
 	}
 	q := r.URL.Query()
@@ -310,7 +357,7 @@ func (s *Server) handlePlay(w http.ResponseWriter, r *http.Request) {
 
 	var v *View
 	redirect := ""
-	err = s.store.Update(func(gs *GameState, now time.Time) error {
+	err = s.getStore().Update(func(gs *GameState, now time.Time) error {
 		gs.Current = n
 		v, err = BuildView(l.game, n, gs, now, l.rw, s.env, req)
 		if err != nil {
@@ -370,7 +417,7 @@ func (s *Server) penaltyAction(l *loaded, n, id, pact int) (int, error) {
 	if pact != 1 {
 		return idx, nil
 	}
-	return idx, s.store.Update(func(gs *GameState, now time.Time) error {
+	return idx, s.getStore().Update(func(gs *GameState, now time.Time) error {
 		ls := gs.Level(n, now)
 		if int(ls.Elapsed(now).Seconds()) < h.Time {
 			return nil // ещё недоступна
@@ -391,7 +438,7 @@ func (s *Server) handleAnswer(w http.ResponseWriter, r *http.Request) {
 	}
 	n := s.current(l)
 	if n == 0 {
-		s.errorPage(w, fmt.Errorf("в конфиге %s нет уровней", s.opts.GamePath))
+		s.errorPage(w, fmt.Errorf("в конфиге %s нет уровней", s.gamePath()))
 		return
 	}
 	if err := r.ParseForm(); err != nil {
@@ -404,7 +451,7 @@ func (s *Server) handleAnswer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var v *View
-	err = s.store.Update(func(gs *GameState, now time.Time) error {
+	err = s.getStore().Update(func(gs *GameState, now time.Time) error {
 		ls := gs.Level(n, now)
 		req := Request{JustNow: map[int]bool{}}
 		if strings.TrimSpace(answer) != "" {
@@ -512,7 +559,7 @@ func (s *Server) notFoundLevel(w http.ResponseWriter, l *loaded, n int) {
 	w.WriteHeader(http.StatusNotFound)
 	s.render(w, "error.html", map[string]any{
 		"Title":  fmt.Sprintf("Уровня %d нет в конфиге", n),
-		"Error":  fmt.Sprintf("В %s есть уровни: %v", s.opts.GamePath, l.game.Numbers()),
+		"Error":  fmt.Sprintf("В %s есть уровни: %v", s.gamePath(), l.game.Numbers()),
 		"Levels": l.game.Numbers(),
 	})
 }
@@ -616,7 +663,7 @@ func (s *Server) handleAPILevel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var v *View
-	err = s.store.Update(func(gs *GameState, now time.Time) error {
+	err = s.getStore().Update(func(gs *GameState, now time.Time) error {
 		v, err = BuildView(l.game, n, gs, now, l.rw, s.env, Request{})
 		return err
 	})
@@ -660,7 +707,7 @@ func (s *Server) handleAPIState(w http.ResponseWriter, r *http.Request) {
 	}
 
 	redirect := s.PlayPath()
-	err = s.store.Update(func(gs *GameState, now time.Time) error {
+	err = s.getStore().Update(func(gs *GameState, now time.Time) error {
 		ls := gs.Level(n, now)
 		switch a.Action {
 		case "toggleCode":
@@ -792,9 +839,9 @@ func (s *Server) handleMtime(w http.ResponseWriter, r *http.Request) {
 			latest = fi.ModTime().UnixNano()
 		}
 	}
-	touch(s.opts.GamePath)
-	if conf, err := config.LoadGame(s.opts.GamePath); err == nil {
-		dir := filepath.Dir(s.opts.GamePath)
+	touch(s.gamePath())
+	if conf, err := config.LoadGame(s.gamePath()); err == nil {
+		dir := filepath.Dir(s.gamePath())
 		for _, rel := range conf.Levels {
 			confPath := filepath.Join(dir, rel)
 			touch(confPath)
@@ -807,7 +854,7 @@ func (s *Server) handleMtime(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		adir := assets.DirFor(s.opts.GamePath, conf)
+		adir := assets.DirFor(s.gamePath(), conf)
 		if entries, err := os.ReadDir(adir); err == nil {
 			for _, e := range entries {
 				if !e.IsDir() {
@@ -823,7 +870,7 @@ func (s *Server) handleMtime(w http.ResponseWriter, r *http.Request) {
 
 var snapshotNameRe = regexp.MustCompile(`^[A-Za-z0-9_.-]{1,80}$`)
 
-func (s *Server) snapshotsDir() string { return filepath.Join(s.opts.DataDir, "snapshots") }
+func (s *Server) snapshotsDir() string { return filepath.Join(s.dataDir(), "snapshots") }
 
 func corsHeaders(w http.ResponseWriter) {
 	h := w.Header()

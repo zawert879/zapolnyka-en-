@@ -9,7 +9,10 @@ import (
 )
 
 // RunGo uploads all levels from the given game config file.
-func RunGo(gamePath string) error {
+func RunGo(gamePath string) error { return RunGoLevels(gamePath, nil) }
+
+// RunGoLevels заливает уровни игры; при непустом only — только уровни с этими номерами.
+func RunGoLevels(gamePath string, only []int) error {
 	login, password, err := resolveCredentials()
 	if err != nil {
 		return err
@@ -21,6 +24,22 @@ func RunGo(gamePath string) error {
 	}
 	if len(prepared) == 0 {
 		return fmt.Errorf("в конфиге %s нет уровней — добавьте их командой 'Добавить уровень'", gamePath)
+	}
+	if len(only) > 0 {
+		want := map[int]bool{}
+		for _, n := range only {
+			want[n] = true
+		}
+		var filtered []config.PreparedLevel
+		for _, p := range prepared {
+			if want[p.Conf.Level] {
+				filtered = append(filtered, p)
+			}
+		}
+		if len(filtered) == 0 {
+			return fmt.Errorf("уровни %v не найдены в конфиге", only)
+		}
+		prepared = filtered
 	}
 
 	// Rewrite {{asset}} placeholders in level content to their uploaded URLs.

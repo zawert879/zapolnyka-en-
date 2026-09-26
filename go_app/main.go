@@ -16,6 +16,7 @@ func main() {
 	if isCLIMode() {
 		runCLI()
 	} else {
-		tui.Run()
+		tui.Version = version
+	tui.Run()
 	}
 }

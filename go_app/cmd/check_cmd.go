@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"zapolnyaka/internal/config"
@@ -17,7 +18,10 @@ var (
 )
 
 // RunCheck opens GameScenario.aspx and compares actual server state with the game config.
-func RunCheck(gamePath string) error {
+func RunCheck(gamePath string) error { return RunCheckTo(os.Stdout, gamePath) }
+
+// RunCheckTo — то же, но вывод в w (лог веб-интерфейса).
+func RunCheckTo(w io.Writer, gamePath string) error {
 	hist := LoadHistory()
 	login := hist.Login
 	password := hist.Password
@@ -35,7 +39,6 @@ func RunCheck(gamePath string) error {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	w := os.Stdout
 
 	z, err := zapolnyaka.New(login, password, game.Domain, game.GameID, config.Delays{})
 	if err != nil {

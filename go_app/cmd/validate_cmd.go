@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"zapolnyaka/internal/config"
@@ -9,13 +10,15 @@ import (
 
 // RunValidate loads and pretty-prints the full game config without launching a browser.
 // Output goes to stdout so it's visible in the terminal.
-func RunValidate(gamePath string) error {
+func RunValidate(gamePath string) error { return RunValidateTo(os.Stdout, gamePath) }
+
+// RunValidateTo — то же, но вывод в w (лог веб-интерфейса).
+func RunValidateTo(w io.Writer, gamePath string) error {
 	game, prepared, err := config.LoadAll(gamePath)
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	w := os.Stdout
 	fmt.Fprintf(w, "\n📋 Игра: %s  ID: %d  Уровней: %d\n", game.Domain, game.GameID, len(prepared))
 
 	for _, p := range prepared {

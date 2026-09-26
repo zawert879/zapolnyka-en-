@@ -41,6 +41,9 @@ func newInlineForm(groups ...*huh.Group) *huh.Form {
 }
 
 // Run is the entry point for TUI mode. Called only when no CLI args are present.
+// Version — версия приложения (задаётся из main).
+var Version = "dev"
+
 func Run() {
 	fmt.Println(titleStyle.Render("\n  🗂  zapolnyaka-en — автозаполнение уровней Encounter\n"))
 
@@ -62,6 +65,7 @@ func Run() {
 			huh.NewSelect[string]().Title("Выберите действие").Options(
 				huh.NewOption("🚀  Залить уровни", "go"),
 				huh.NewOption("🖼   Залить ассеты", "assets"),
+				huh.NewOption("🖥   Веб-интерфейс (всё в браузере)", "ui"),
 				huh.NewOption("🧪  Эмулятор уровней", "emu"),
 				huh.NewOption("📋  Проверить конфиги", "validate"),
 				huh.NewOption("🔍  Проверить залитое", "check"),
@@ -100,6 +104,8 @@ func dispatch(action string) error {
 		return tuiAssets()
 	case "emu":
 		return tuiEmu()
+	case "ui":
+		return tuiUI()
 	case "validate":
 		return tuiValidate()
 	case "check":
@@ -170,6 +176,32 @@ func tuiEmu() error {
 		return err
 	case err := <-done:
 		fmt.Println("  ⏹ Эмулятор остановлен")
+		return err
+	}
+}
+
+func tuiUI() error {
+	hist := cmd.LoadHistory()
+	gamePath, err := pickGame(hist)
+	if err != nil || gamePath == "" {
+		return err
+	}
+	fmt.Println()
+	_, stop, errc, err := cmd.StartUI(gamePath, cmd.EmuOptions{Port: 8090, OpenBrowser: true}, Version)
+	if err != nil {
+		return err
+	}
+	defer stop()
+	hist.LastGame = gamePath
+	cmd.SaveHistory(hist)
+
+	done := make(chan error, 1)
+	go func() { done <- pause() }()
+	select {
+	case err := <-errc:
+		return err
+	case err := <-done:
+		fmt.Println("  ⏹ Веб-интерфейс остановлен")
 		return err
 	}
 }

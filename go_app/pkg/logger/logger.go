@@ -48,6 +48,14 @@ func Init(logPath string) func() {
 	return func() { _ = f.Close() }
 }
 
+// Tee дублирует всё, что пишется в лог, ещё и в w (например, в лог задания
+// веб-интерфейса). Возвращает функцию, снимающую дублирование.
+func Tee(w io.Writer) func() {
+	prev := W
+	W = io.MultiWriter(prev, w)
+	return func() { W = prev }
+}
+
 func Printf(format string, a ...any) { fmt.Fprintf(W, format, a...) }
 func Println(a ...any)               { fmt.Fprintln(W, a...) }
 func Print(a ...any)                 { fmt.Fprint(W, a...) }

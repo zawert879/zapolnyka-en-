@@ -50,6 +50,14 @@ func ActionEmu(gamePath string, o EmuOptions) error {
 	return RunEmu(gamePath, o)
 }
 
+// ActionUI запускает веб-интерфейс (эмулятор + вкладки) и запоминает игру.
+func ActionUI(gamePath string, o EmuOptions, version string) error {
+	hist := LoadHistory()
+	hist.LastGame = gamePath
+	SaveHistory(hist)
+	return RunUI(gamePath, o, version)
+}
+
 // ActionSnapshot снимает реальную play-страницу игры в snapshots/.
 func ActionSnapshot(gamePath string, o SnapshotOptions) error {
 	if err := RunSnapshot(gamePath, o); err != nil {

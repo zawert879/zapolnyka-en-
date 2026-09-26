@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>zapolnyaka</title>
+<link rel="stylesheet" href="/ui/static/app.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><span class="logo">Z</span><span>zapolnyaka</span></div>
+    <label class="gamepick">
+      <span class="muted">игра</span>
+      <select id="gameSelect" aria-label="Игра"></select>
+    </label>
+    <nav class="tabs" id="tabs">
+      <a href="#commands" data-tab="commands">Команды</a>
+      <a href="#codes" data-tab="codes">Коды</a>
+      <a href="#editor" data-tab="editor">Редактор</a>
+      <a href="#preview" data-tab="preview">Превью</a>
+      <a href="#emu" data-tab="emu">Эмулятор</a>
+    </nav>
+    <div class="auth"><span class="dot" id="authDot"></span><span id="authLogin">—</span></div>
+  </header>
+
+  <div class="body">
+    <aside class="sidebar">
+      <div class="side-head"><span class="label">Уровни</span><button class="icon" id="btnNewLevel" title="Добавить уровень" aria-label="Добавить уровень">+</button></div>
+      <div class="levels" id="levels"></div>
+      <div class="side-foot">
+        <div class="label">Ассеты</div>
+        <div class="assets" id="assets"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- ================= Команды ================= -->
+      <section class="tab" id="tab-commands">
+        <div class="head">
+          <div><h1>Команды</h1><div class="muted">Всё, что делает CLI, — кнопками. Лог выполнения внизу.</div></div>
+          <div class="row">
+            <label class="check"><input type="checkbox" id="onlySelected"> только отмеченные уровни</label>
+            <span class="chip mono" id="selectedChip">все</span>
+          </div>
+        </div>
+        <div class="cards">
+          <div class="card"><div class="card-h">Залить уровни</div><div class="muted">Очистка, тело, подсказки, коды, условие прохождения. Подставляет {{плейсхолдеры}} ассетов.</div><button class="primary" data-run="go">go</button></div>
+          <div class="card"><div class="card-h">Залить ассеты</div><div class="muted">Файлы игры под uuid-именами, манифест обновляется.</div><button data-run="assets">assets</button></div>
+          <div class="card"><div class="card-h">Проверить конфиги</div><div class="muted">Разбор YAML/JSON, типы кодов, обязательные поля.</div><button data-run="validate">validate</button></div>
+          <div class="card"><div class="card-h">Проверить залитое</div><div class="muted">Сценарий игры в админке против конфига.</div><button data-run="check">check</button></div>
+          <div class="card wide"><div class="card-h">Снимок реальной страницы</div><div class="muted">HTML + JSON текущего уровня команды. Можно ввести код или взять штрафную подсказку перед снятием.</div>
+            <div class="row"><input id="snapName" class="mono" placeholder="имя, напр. L15-mid"><input id="snapSend" class="mono" placeholder="ввести код (необязательно)"><input id="snapPid" class="mono short" placeholder="pid"><button data-run="snapshot">snapshot</button></div></div>
+          <div class="card"><div class="card-h">Авторизация</div><div class="muted">Логин и пароль en.cx хранятся в .zapolnyaka.json.</div>
+            <div class="col"><input id="authLoginInput" placeholder="логин" autocomplete="username"><input id="authPassInput" type="password" placeholder="пароль" autocomplete="current-password"><button id="btnAuth">auth</button></div></div>
+          <div class="card"><div class="card-h">Создать игру</div><div class="muted">Новый game.yml в data/&lt;имя&gt;/.</div>
+            <div class="col"><input id="ngName" placeholder="имя папки"><input id="ngDomain" placeholder="домен, напр. tech.en.cx"><input id="ngGid" class="mono" placeholder="gameId"><button id="btnNewGame">game</button></div></div>
+        </div>
+        <div class="console">
+          <div class="console-h"><span class="label">Лог</span><span id="jobTitle" class="muted">—</span><div class="progress"><div id="jobProgress"></div></div><span id="jobState" class="mono muted"></span><button class="small" id="btnClearLog">Очистить</button></div>
+          <pre id="log"></pre>
+        </div>
+      </section>
+
+      <!-- ================= Коды ================= -->
+      <section class="tab" id="tab-codes">
+        <div class="head">
+          <div><h1 id="codesTitle">Коды</h1><div class="muted mono" id="codesPath"></div></div>
+          <div class="row"><button id="btnCodesReload">Отменить</button><button class="primary" id="btnCodesSave">Сохранить codes.yml</button></div>
+        </div>
+        <div class="warn" id="codesWarn" hidden></div>
+        <div class="split">
+          <div class="panel grow">
+            <table class="codes" id="codesTable">
+              <thead><tr><th>#</th><th>Тип</th><th>Сектор</th><th>Бонус</th><th>Ответы</th><th>Время</th><th>Уровни</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <div class="row addrow">
+              <button class="dashed" data-add="сектор">+ сектор</button><button class="dashed" data-add="бонус">+ бонус</button><button class="dashed" data-add="штраф">+ штраф</button><button class="dashed" data-add="секторбонус">+ секторбонус</button><button class="dashed" data-add="секторштраф">+ секторштраф</button>
+              <span class="muted grow right">порядок строк = порядок создания в админке</span>
+            </div>
+          </div>
+          <div class="panel inspector" id="inspector">
+            <div class="muted">Выберите запись в таблице.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= Редактор ================= -->
+      <section class="tab" id="tab-editor">
+        <div class="split full">
+          <div class="editor-col">
+            <div class="filetabs">
+              <button data-file="body" class="active">task.html</button><button data-file="conf">conf.yml</button><button data-file="codes">codes.yml</button>
+              <span class="muted mono grow right" id="editorPath"></span>
+              <button class="primary small" id="btnEditorSave">Сохранить · Ctrl+S</button>
+            </div>
+            <div class="editor-wrap"><pre class="gutter" id="gutter"></pre><textarea id="editor" spellcheck="false" wrap="off"></textarea></div>
+            <div class="editor-foot"><span id="editorHint" class="muted"></span><span class="grow"></span><span class="muted mono" id="editorPos"></span></div>
+          </div>
+          <div class="conf-col">
+            <div class="label">Уровень · conf.yml</div>
+            <label>Название<input id="cfName"></label>
+            <label>Комментарий (админка)<input id="cfComment"></label>
+            <div class="grid2"><label>Автопереход, сек<input id="cfAutopass" class="mono" type="number" min="0"></label><label>Штраф, сек<input id="cfPenalty" class="mono" type="number" min="0"></label></div>
+            <label>Закрыть секторов (пусто — все)<input id="cfSectors" class="mono" type="number" min="0" placeholder="все"></label>
+            <label class="check"><input type="checkbox" id="cfClean"> очищать уровень перед заливкой (clean)</label>
+            <div class="row between"><span class="label">Подсказки</span><button class="dashed small" id="btnAddHint">+ подсказка</button></div>
+            <div id="hints" class="col"></div>
+            <div class="row between"><span class="label">Штрафные подсказки</span><button class="dashed small" id="btnAddPenalty">+ штрафная</button></div>
+            <div id="penalties" class="col"></div>
+            <div class="row"><button class="primary" id="btnConfSave">Сохранить conf.yml</button><button id="btnConfReload">Отменить</button></div>
+            <div class="label top">Вставить ассет в редактор</div>
+            <div id="assetButtons" class="col"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= Превью ================= -->
+      <section class="tab" id="tab-preview">
+        <div class="toolbar">
+          <b id="previewTitle">Превью</b><span class="muted">контент уровня в дизайне игры, без шапки и панелей движка</span>
+          <span class="grow"></span>
+          <div class="seg"><button data-vw="1280" class="active">Desktop 1280</button><button data-vw="390">Телефон 390</button></div>
+          <label class="check"><input type="checkbox" data-po="task" checked> задание</label>
+          <label class="check"><input type="checkbox" data-po="sectors" checked> сектора</label>
+          <label class="check"><input type="checkbox" data-po="hints" checked> подсказки</label>
+          <label class="check"><input type="checkbox" data-po="penalties" checked> штрафные</label>
+          <label class="check"><input type="checkbox" data-po="bonuses" checked> бонусы</label>
+          <label class="check"><input type="checkbox" data-po="fog"> скрипты/туман</label>
+          <button id="btnPreviewReload">Обновить</button>
+          <a class="btn" href="#emu">Открыть в эмуляторе</a>
+        </div>
+        <div class="preview-body">
+          <div class="frame-wrap"><iframe id="previewFrame" title="Превью уровня"></iframe></div>
+          <div class="panel checks"><div class="label">Проверки контента</div><div id="checks"></div></div>
+        </div>
+      </section>
+
+      <!-- ================= Эмулятор ================= -->
+      <section class="tab" id="tab-emu">
+        <div class="toolbar">
+          <b>Эмулятор</b><span class="muted mono" id="emuUrl"></span><span class="chip ok">байт в байт с движком v1.88</span>
+          <span class="grow"></span>
+          <div class="seg"><button data-ew="100%" class="active">Desktop</button><button data-ew="390px">Телефон</button></div>
+          <button id="btnEmuReload">Обновить</button>
+          <a class="btn" id="emuNewWindow" target="_blank" href="/">В новом окне</a>
+          <select id="snapSelect" aria-label="Снимок для сверки"></select><button id="btnDiff">Сверить со снимком</button>
+        </div>
+        <div class="emu-body">
+          <div class="frame-wrap"><iframe id="emuFrame" title="Эмулятор"></iframe></div>
+          <div class="panel diffpanel" id="diffPanel" hidden></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="statusbar">
+    <span id="stAddr"></span><span id="stJob"></span><span id="stDirty"></span><span class="grow"></span><span id="stVersion"></span>
+  </footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script src="/ui/static/app.js"></script>
+</body>
+</html>

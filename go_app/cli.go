@@ -19,7 +19,7 @@ var cliErrStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 // isCLIMode reports whether the binary was invoked with command-line arguments.
 func isCLIMode() bool { return len(os.Args) > 1 }
 
-const cliUsage = "auth <login> <pass> | go [game.yml] | assets [game.yml] | validate [game.yml] | check [game.yml] | emu [game.yml] [--port 8090] [--dev] [--no-open] | snapshot [game.yml] [--name X] [--send код] [--pid id] | version"
+const cliUsage = "auth <login> <pass> | go [game.yml] | assets [game.yml] | validate [game.yml] | check [game.yml] | ui [game.yml] [--port 8090] | emu [game.yml] [--port 8090] [--dev] [--offline] [--no-open] | snapshot [game.yml] [--name X] [--send код] [--pid id] | version"
 
 // runCLI parses os.Args, runs the requested action, then exits.
 // The TUI menu is never initialized in this path.
@@ -86,6 +86,29 @@ func runCLI() {
 			cliDie("Укажите путь: zapolnyaka.exe emu data/myGame/game.yml [--port 8090] [--dev]")
 		}
 		err = cmd.ActionEmu(path, cmd.EmuOptions{Port: *port, Dev: *dev, Offline: *offline, OpenBrowser: !*noOpen})
+
+	case "ui":
+		path, rest := splitPositional(os.Args[2:])
+		fs := flag.NewFlagSet("ui", flag.ContinueOnError)
+		port := fs.Int("port", 8090, "порт (слушает 127.0.0.1)")
+		dev := fs.Bool("dev", false, "шаблоны и статику читать с диска (правка без пересборки)")
+		noOpen := fs.Bool("no-open", false, "не открывать браузер")
+		offline := fs.Bool("offline", false, "CSS/JS движка из встроенной копии (без world.en.cx)")
+		if perr := fs.Parse(rest); perr != nil {
+			cliDie("Использование: zapolnyaka.exe ui data/myGame/game.yml [--port 8090] [--dev] [--offline] [--no-open]")
+		}
+		if path == "" {
+			path = hist.LastGame
+		}
+		if path == "" {
+			if games := cmd.ScanGames("data"); len(games) > 0 {
+				path = games[0]
+			}
+		}
+		if path == "" {
+			cliDie("Укажите путь: zapolnyaka.exe ui data/myGame/game.yml")
+		}
+		err = cmd.ActionUI(path, cmd.EmuOptions{Port: *port, Dev: *dev, Offline: *offline, OpenBrowser: !*noOpen}, version)
 
 	case "snapshot":
 		path, rest := splitPositional(os.Args[2:])
