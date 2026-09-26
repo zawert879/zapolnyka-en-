@@ -1,4 +1,4 @@
-// app.js — веб-интерфейс zapolnyaka: вкладки Команды / Коды / Редактор / Визуальный / Превью / Эмулятор.
+// app.js — веб-интерфейс zapolnyaka: вкладки Команды / Коды / Уровень / Редактор / Визуальный / Превью / Эмулятор.
 // Одна страница без сборки: состояние в S, данные через /api/ui/*, эмулятор — в iframe.
 (function () {
   'use strict';
@@ -156,6 +156,7 @@
   }
   function refreshTab() {
     if (S.tab === 'codes') renderCodes();
+    if (S.tab === 'level') renderConf();
     if (S.tab === 'editor') renderEditor();
     if (S.tab === 'visual') renderVisual();
     if (S.tab === 'preview') renderPreview();
@@ -355,8 +356,7 @@
     $('#editorPath').textContent = paths[S.file] || '';
     if (document.activeElement !== ed) ed.value = S.raw[S.file] || '';
     updateGutter();
-    $('#editorHint').textContent = { body: 'HTML тела задания. CSS — через <style>@import url("{{design.css}}")</style>: голый <link> движок вырежет.', conf: 'YAML настроек уровня; проверяется при сохранении.', codes: 'YAML кодов; проверяется при сохранении. Удобнее — вкладка «Коды».' }[S.file];
-    renderConf();
+    $('#editorHint').textContent = { body: 'HTML тела задания. CSS — через <style>@import url("{{design.css}}")</style>: голый <link> движок вырежет.', conf: 'YAML настроек уровня; проверяется при сохранении. Удобнее — вкладка «Уровень».', codes: 'YAML кодов; проверяется при сохранении. Удобнее — вкладка «Коды».' }[S.file];
   }
   function updateGutter() {
     const n = (ed.value.match(/\n/g) || []).length + 1;
@@ -389,11 +389,14 @@
   }
   const saveRaw = () => saveFile(S.file, ed.value);
   $('#btnEditorSave').addEventListener('click', saveRaw);
-  document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (S.tab === 'editor') saveRaw(); else if (S.tab === 'visual') veSave(); else if (S.tab === 'codes') $('#btnCodesSave').click(); } });
+  document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (S.tab === 'editor') saveRaw(); else if (S.tab === 'visual') veSave(); else if (S.tab === 'codes') $('#btnCodesSave').click(); else if (S.tab === 'level') $('#btnConfSave').click(); } });
 
   // conf-форма
   function renderConf() {
     const c = S.conf || {};
+    const d = S.data;
+    $('#levelTitle').textContent = d ? `Уровень ${d.number}${c.name ? ' «' + c.name + '»' : ''}${d.disabled ? ' · выключен в game.yml' : ''}` : 'Уровень';
+    $('#levelPath').textContent = d ? d.files.conf : '';
     $('#cfName').value = c.name || ''; $('#cfComment').value = c.comment || '';
     $('#cfAutopass').value = c.autopass || ''; $('#cfPenalty').value = c.autopassPenalty || '';
     $('#cfSectors').value = c.sectorsToClose || ''; $('#cfClean').checked = !!c.clean;
@@ -418,7 +421,7 @@
       const c = Object.assign({}, S.conf);
       c.hints = (c.hints || []).filter((h) => h.text); c.penaltyHints = (c.penaltyHints || []).filter((h) => h.text);
       await api('PUT', `/api/ui/level/${S.level}/conf`, c);
-      S.confDirty = false; toast('conf.yml сохранён', 'ok'); await loadState(); await loadLevel(); if (S.file === 'conf') ed.value = S.raw.conf; renderEditor();
+      S.confDirty = false; toast('conf.yml сохранён', 'ok'); await loadState(); await loadLevel(); if (S.file === 'conf') ed.value = S.raw.conf; renderConf();
     } catch (e) { toast(String(e.message || e), 'err'); }
   });
   $('#btnConfReload').addEventListener('click', async () => { S.confDirty = false; await loadLevel(); renderConf(); });

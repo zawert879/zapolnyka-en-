@@ -18,6 +18,7 @@
     <nav class="tabs" id="tabs">
       <a href="#commands" data-tab="commands">Команды</a>
       <a href="#codes" data-tab="codes">Коды</a>
+      <a href="#level" data-tab="level">Уровень</a>
       <a href="#editor" data-tab="editor">Редактор</a>
       <a href="#visual" data-tab="visual">Визуальный</a>
       <a href="#preview" data-tab="preview">Превью</a>
@@ -99,23 +100,36 @@
               <span class="muted mono grow right" id="editorPath"></span>
               <button class="primary small" id="btnEditorSave">Сохранить · Ctrl+S</button>
             </div>
+            <div class="assetbar"><span class="label">Вставить ассет</span><div id="assetButtons" class="row"></div></div>
             <div class="editor-wrap"><pre class="gutter" id="gutter"></pre><textarea id="editor" spellcheck="false" wrap="off"></textarea></div>
             <div class="editor-foot"><span id="editorHint" class="muted"></span><span class="grow"></span><span class="muted mono" id="editorPos"></span></div>
           </div>
-          <div class="conf-col">
-            <div class="label">Уровень · conf.yml</div>
-            <label>Название<input id="cfName"></label>
+        </div>
+      </section>
+
+      <!-- ================= Уровень (conf.yml) ================= -->
+      <section class="tab" id="tab-level">
+        <div class="head">
+          <div><h1 id="levelTitle">Уровень</h1><div class="muted mono" id="levelPath"></div></div>
+          <div class="row"><button id="btnConfReload">Отменить</button><button class="primary" id="btnConfSave">Сохранить conf.yml · Ctrl+S</button></div>
+        </div>
+        <div class="conf-grid">
+          <div class="panel conf-panel">
+            <div class="label">Основное</div>
+            <label>Название уровня (админка)<input id="cfName"></label>
             <label>Комментарий (админка)<input id="cfComment"></label>
-            <div class="grid2"><label>Автопереход, сек<input id="cfAutopass" class="mono" type="number" min="0"></label><label>Штраф, сек<input id="cfPenalty" class="mono" type="number" min="0"></label></div>
-            <label>Закрыть секторов (пусто — все)<input id="cfSectors" class="mono" type="number" min="0" placeholder="все"></label>
+            <div class="grid2"><label>Автопереход, сек (0 — выкл)<input id="cfAutopass" class="mono" type="number" min="0"></label><label>Штраф при автопереходе, сек<input id="cfPenalty" class="mono" type="number" min="0"></label></div>
+            <label>Условие прохождения: закрыть секторов (пусто — все)<input id="cfSectors" class="mono" type="number" min="0" placeholder="все"></label>
             <label class="check"><input type="checkbox" id="cfClean"> очищать уровень перед заливкой (clean)</label>
+            <div class="muted">Файлы уровня (codes, body) задаются в conf.yml и не меняются формой — правьте их во вкладке «Редактор».</div>
+          </div>
+          <div class="panel conf-panel">
             <div class="row between"><span class="label">Подсказки</span><button class="dashed small" id="btnAddHint">+ подсказка</button></div>
+            <div class="muted">Время — секунда уровня, когда подсказка откроется. HTML разрешён, {{ассеты}} подставляются.</div>
             <div id="hints" class="col"></div>
-            <div class="row between"><span class="label">Штрафные подсказки</span><button class="dashed small" id="btnAddPenalty">+ штрафная</button></div>
+            <div class="row between top"><span class="label">Штрафные подсказки</span><button class="dashed small" id="btnAddPenalty">+ штрафная</button></div>
+            <div class="muted">Время доступности, штраф в секундах и комментарий, который игрок видит перед подтверждением.</div>
             <div id="penalties" class="col"></div>
-            <div class="row"><button class="primary" id="btnConfSave">Сохранить conf.yml</button><button id="btnConfReload">Отменить</button></div>
-            <div class="label top">Вставить ассет в редактор</div>
-            <div id="assetButtons" class="col"></div>
           </div>
         </div>
       </section>
