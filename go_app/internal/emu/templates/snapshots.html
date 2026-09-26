@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Снимки реальной игры · эмулятор</title>
+<link href="/engine/engine.css" rel="stylesheet">
+<style>body{min-width:0;padding:20px} a{color:#99FF33} code{color:#ccc}</style>
+</head>
+<body>
+<h2>Снимки реальной play-страницы</h2>
+<p>Папка: <code>{{.Dir}}</code></p>
+{{if .Files}}
+<ul>
+{{range .Files}}<li><a href="/snapshots/{{.}}" target="_blank">{{.}}</a></li>{{end}}
+</ul>
+{{else}}
+<p>Снимков пока нет. На реальной странице en.cx выполни скрипт <a href="/emu/capture.js">/emu/capture.js</a> (см. README, раздел «Эмулятор»).</p>
+{{end}}
+<p><a href="/">К уровням</a></p>
+</body>
+</html>

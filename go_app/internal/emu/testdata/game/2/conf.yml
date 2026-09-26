@@ -1,0 +1,13 @@
+codes: codes.yml
+body: task.html
+clean: true
+level: 2
+name: "Второй"
+autopass: 600
+autopassPenalty: 60
+sectorsToClose: 1
+penaltyHints:
+  - time: 0
+    text: "penalty text"
+    penalty: 60
+    comment: "sure?"

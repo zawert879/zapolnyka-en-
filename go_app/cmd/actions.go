@@ -42,6 +42,25 @@ func ActionCheck(gamePath string) error {
 	return RunCheck(gamePath)
 }
 
+// ActionEmu запускает эмулятор play-страницы и запоминает игру в истории.
+func ActionEmu(gamePath string, o EmuOptions) error {
+	hist := LoadHistory()
+	hist.LastGame = gamePath
+	SaveHistory(hist)
+	return RunEmu(gamePath, o)
+}
+
+// ActionSnapshot снимает реальную play-страницу игры в snapshots/.
+func ActionSnapshot(gamePath string, o SnapshotOptions) error {
+	if err := RunSnapshot(gamePath, o); err != nil {
+		return err
+	}
+	hist := LoadHistory()
+	hist.LastGame = gamePath
+	SaveHistory(hist)
+	return nil
+}
+
 // ActionAuth saves credentials to the history file.
 func ActionAuth(login, password string) error {
 	hist := LoadHistory()

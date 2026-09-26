@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Игра завершена · эмулятор</title>
+<link href="/engine/engine.css" rel="stylesheet">
+<style>body{min-width:0;padding:20px} a{color:#99FF33}</style>
+</head>
+<body>
+<h2>Все уровни конфига пройдены</h2>
+<p>В реальной игре здесь движок показывает страницу финиша. Уровни: {{range .Levels}}<a href="/play/{{.}}">{{.}}</a> {{end}}</p>
+<p><a href="/play/{{.First}}">Начать с первого уровня</a></p>
+<script>
+// сброс симуляции по кнопке
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+codes: codes.yml
+body: task.html
+clean: true
+level: 1
+name: "Первый"
+autopass: 0
+hints:
+  - time: 0
+    text: "сразу"
+  - time: 120
+    text: "через две минуты"

@@ -1,0 +1,8 @@
+- type: сектор
+  sectorName: "A"
+  answers: [alpha, альфа]
+- type: бонус
+  bonusName: "B"
+  answers: [beta]
+  time: 60
+  help: "bonus help text"

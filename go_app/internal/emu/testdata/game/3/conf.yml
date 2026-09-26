@@ -1,0 +1,6 @@
+codes: codes.yml
+body: task.html
+clean: true
+level: 3
+name: "Третий"
+autopass: 0

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+<title>Сеть городских игр Encounter</title>
+<meta name="description"  />
+<meta name="keywords" content="квест, схватка, городская игра, encounter, en, энка, энкаунтер, схватка, фотокросс, фотоохота, геокешинг, корпоративная игра, викторина, мозговой штурм" />
+<link rel="shortcut icon" href="https://cdn.endata.cx/images/favicon.ico" />			
+		
+		
+
+
+		
+
+
+	
+
+	
+
+
+   
+	
+	
+	
+
+	
+
+	
+
+
+	<link href="{{.EngineBase}}/css/v2/en/engines/engine.css?ver={{.EngineVer}}" type="text/css" rel="stylesheet" media="screen,projection"  />
+<link href="{{.EngineBase}}/css/v2/en/engines/real.css?ver={{.EngineVer}}" type="text/css" rel="stylesheet" media="screen,projection"  />
+<link href="{{.EngineBase}}/css/v2/en/engines/engine_adaptive.css?ver={{.EngineVer}}" type="text/css" rel="stylesheet" media="screen,projection"  />
+<script type="text/javascript" src="{{.EngineBase}}/js/v2/jquery/jquery-1.6.2.js?ver={{.EngineVer}}"></script>
+<script type="text/javascript" src="{{.EngineBase}}/js/v2/jQuery/ui/jquery-ui-1.7.2.core.js?ver={{.EngineVer}}"></script>
+<script type="text/javascript" src="{{.EngineBase}}/js/v2/cons/main.js?ver={{.EngineVer}}"></script>
+<script type="text/javascript" src="{{.EngineBase}}/js/v2/Timer.js?ver={{.EngineVer}}"></script>
+<script type="text/javascript" src="{{.EngineBase}}/js/v2/engines/misc.js?ver={{.EngineVer}}"></script>
+<script type="text/javascript" src="{{.EngineBase}}/js/v2/common.js?ver={{.EngineVer}}"></script>
+	
+
+				
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+	
+
+
+<script type="module" src="https://unpkg.com/theme-toggle@0.1.5/dist/theme-toggle.js" ></script>
+<script src="{{.ToastrBase}}/toastr.min.js" ></script>
+<link rel="stylesheet" href="{{.ToastrBase}}/toastr.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<body>
+	<div class="container">
+		<div class="header">
+			<a href="/" class="logo"><img src="https://cdn.endata.cx/images/v2/en/engines/enlogo.png" width="60" height="60" title="Encounter сеть городских игр — квест, фотоигра, мозговой штурм, викторина." alt="Encounter сеть городских игр — квест, фотоигра, мозговой штурм, викторина."></a>
+			<img src="https://cdn.endata.cx/images/v2/en/engines/types/type0.gif" class="gametype" width="30" height="30" title="Схватка (одиночная)" alt="Схватка (одиночная)" />
+			<h1><a href="/GameDetails.aspx?gid={{.GameID}}" id="lblGameTitle">{{.GameTitle}}</a></h1>
+			
+			
+
+<ul>
+	<li class="refresh">
+		<a href="{{.PlayPath}}?rnd={{.Rnd}}"><i></i><span>Обновить</span></a>
+	</li>	
+	<li class="stats">
+		<a href="/GameStat.aspx?gid={{.GameID}}" target="_blank"><i></i><span>Статистика</span></a>
+	</li>
+		<li class="levelstats">
+			<a href="javascript:OpenScrollableWindow('/LevelStat.aspx?gid={{.GameID}}&amp;level={{.Number}}', 'LevelStat', 700, 420)"><span>Стат. уровня</span>
+			</a>
+		</li>	
+		<li class="discuss">
+		<a href="/guestbook/messages.aspx?topic={{.Topic}}"><i></i><span>Обсуждение</span></a>
+	</li>
+			<!--li class="mail">
+			<a href="javascript:OpenScrollableWindow('/MailLevel.aspx?gid={{.GameID}}&amp;level={{.Number}}', 'MailLevel', 640, 420)"><span>На почту</span></a>
+		</li-->
+			<!--li class="print">
+			<a href="/gameengines/encounter/print/{{.GameID}}/?level={{.Number}}" target="_blank"><i></i><span>На печать</span></a>
+		</li-->
+
+	<li class="design">
+			<a href="#" id="adaptive" onclick="enableDesktop();"><i></i><span>Design</span></a>
+	</li>
+
+</ul>
+<!--theme-toggle theme="light"></theme-toggle-->
+
+		</div>
+		
+			 
+
+
+
+
+<!--[if lte IE 7]>
+<link href="{{.EngineBase}}/css/v2/en/engines/gameEngine2-lteIE7.cs" type="text/css" rel="stylesheet" media="screen,projection" />	
+<![endif]-->
+
+<script type="text/javascript">
+var ctrlToFocusId = 'Answer';
+</script>
+
+
+
+
+
+
+<div class="aside">
+	<a id="lnkAnswerBoxMarker"></a>
+			<form method="post" class="answers_form">		
+				<input type="hidden" name="LevelId" value="{{.LevelID}}" />
+				<input type="hidden" name="LevelNumber" value="{{.Number}}" />
+				<input type="text" id="Answer" name="LevelAction.Answer" maxlength="4000" tabindex="1" placeholder="Введите ответ или код и нажмите Enter" autocomplete="off" {{.AnswerAttr}} />									
+				<input type="submit" class="submit" value ="&gt;&gt;" />
+	  
+				<label for="Answer">Введите ответ или код и нажмите Enter</label>	
+			</form>
+	
+	<div class="pane" id="this">
+		<ul class="history">
+{{.HistoryHTML}}		</ul>
+	</div>
+
+
+</div>
+<div class="content">
+		
+
+	<h2>Уровень <span>{{.Number}}</span> из {{.LevelsTotal}}{{if .LevelName}}: {{.LevelNameHTML}}{{end}}</h2>
+
+
+
+{{.TimerHTML}}{{.SectorsHTML}}
+{{.TaskBlockHTML}}<div id="ordinary_helps">	
+{{.HelpsHTML}}</div>
+	
+	 
+<div id="penalty_helps">
+{{.PenaltiesHTML}}</div>
+<br>
+
+<div id="bonuses">
+{{.BonusesHTML}}</div>
+</div>
+<!--/content-->
+
+<div class="footer">
+<span>
+	 <a href="{{.LangHrefEN}}" 
+		>EN</a>
+	 <a href="{{.LangHrefRU}}" 
+		class="selected">RU</a>
+</span>
+</div><!-- footer -->
+
+</div><!-- container -->
+
+<script>
+toastr.options = {
+  "closeButton": true,
+  "debug": false,
+  "newestOnTop": true,
+  "progressBar": true,
+  "positionClass": "toast-top-right",
+  "preventDuplicates": true,
+  "onclick": null,
+  "showDuration": "300",
+  "hideDuration": "1000",
+  "timeOut": "5000",
+  "extendedTimeOut": "1000",
+  "showEasing": "swing",
+  "hideEasing": "linear",
+  "showMethod": "fadeIn",
+  "hideMethod": "fadeOut"
+}
+
+
+function getCookie(cname) {
+     var name = cname + "=";
+     var ca = document.cookie.split(';');
+     for(var i=0; i<ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1);
+        if(c.indexOf(name) == 0)
+           return c.substring(name.length,c.length);
+     }
+     return "";
+}
+
+function setCookie(name,value,days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+
+function eraseCookie(name) {   
+    document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
+
+function enableDesktop() {
+eraseCookie('view-mode');
+setCookie('view-mode','desktop',1);
+document.location.reload();
+}
+
+function enableMobile() {
+eraseCookie('view-mode');
+setCookie('view-mode','mobile',1);
+document.location.reload();
+}
+
+
+var viewport = document.querySelector("meta[name=viewport]");
+const adaptive = document.getElementById("adaptive");
+var viewMode = getCookie("view-mode");
+if(viewMode == "desktop"){
+    viewport.setAttribute('content', 'width=1024,initial-scale=1.0');
+    adaptive.innerHTML = "<i></i><span>Adaptive</span>";
+    adaptive.setAttribute('onclick','enableMobile()');
+    
+}else if (viewMode == "mobile"){
+    viewport.setAttribute('content', 'width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no');
+    adaptive.innerHTML = "<i></i><span>Desktop</span>";
+    adaptive.setAttribute('onclick','enableDesktop()');
+}else{
+setCookie('view-mode','mobile',1);
+}
+
+const copy = document.querySelectorAll(".color_bonus"); 
+for (const copied of copy) { 
+  copied.onclick = function() { 
+    document.execCommand("copy"); 
+  };  
+  copied.addEventListener("copy", function(event) { 
+    event.preventDefault(); 
+    if (event.clipboardData) { 
+      event.clipboardData.setData("text/plain", copied.textContent.trim());
+    };
+  });
+};
+
+const copye = document.querySelectorAll(".incorrect"); 
+for (const copied of copye) { 
+  copied.onclick = function() { 
+    document.execCommand("copy"); 
+  };  
+  copied.addEventListener("copy", function(event) { 
+    event.preventDefault(); 
+    if (event.clipboardData) { 
+      event.clipboardData.setData("text/plain", copied.textContent.trim());
+    };
+  });
+};
+
+
+
+</script>
+
+
+
+ 
+
+</body>
+
+
+</html>{{.PanelHTML}}

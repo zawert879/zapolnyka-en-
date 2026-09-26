@@ -62,6 +62,7 @@ func Run() {
 			huh.NewSelect[string]().Title("Выберите действие").Options(
 				huh.NewOption("🚀  Залить уровни", "go"),
 				huh.NewOption("🖼   Залить ассеты", "assets"),
+				huh.NewOption("🧪  Эмулятор уровней", "emu"),
 				huh.NewOption("📋  Проверить конфиги", "validate"),
 				huh.NewOption("🔍  Проверить залитое", "check"),
 				huh.NewOption("➕  Добавить код в уровень", "code"),
@@ -97,6 +98,8 @@ func dispatch(action string) error {
 		return tuiGo()
 	case "assets":
 		return tuiAssets()
+	case "emu":
+		return tuiEmu()
 	case "validate":
 		return tuiValidate()
 	case "check":
@@ -143,6 +146,32 @@ func tuiAssets() error {
 	}
 	fmt.Println()
 	return cmd.ActionAssets(gamePath)
+}
+
+func tuiEmu() error {
+	hist := cmd.LoadHistory()
+	gamePath, err := pickGame(hist)
+	if err != nil || gamePath == "" {
+		return err
+	}
+	fmt.Println()
+	_, stop, errc, err := cmd.StartEmu(gamePath, cmd.EmuOptions{Port: 8090, OpenBrowser: true})
+	if err != nil {
+		return err
+	}
+	defer stop()
+	hist.LastGame = gamePath
+	cmd.SaveHistory(hist)
+
+	done := make(chan error, 1)
+	go func() { done <- pause() }()
+	select {
+	case err := <-errc:
+		return err
+	case err := <-done:
+		fmt.Println("  ⏹ Эмулятор остановлен")
+		return err
+	}
 }
 
 func tuiValidate() error {

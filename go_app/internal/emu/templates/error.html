@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{.Title}}</title>
+<link href="/engine/engine.css" rel="stylesheet">
+<style>body{min-width:0;padding:20px} pre{white-space:pre-wrap;color:#ff7f7f;background:#111;padding:12px;border-radius:6px} a{color:#99FF33}</style>
+</head>
+<body>
+<h2>{{.Title}}</h2>
+<pre>{{.Error}}</pre>
+<p>Правь конфиг и обнови страницу — эмулятор перечитывает файлы на каждый запрос.</p>
+{{if .Levels}}<p>Уровни: {{range .Levels}}<a href="/play/{{.}}">{{.}}</a> {{end}}</p>{{end}}
+<p><a href="/">На первый уровень</a></p>
+</body>
+</html>

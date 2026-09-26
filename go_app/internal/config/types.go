@@ -92,6 +92,8 @@ func (d Delays) Default() Delays {
 type Game struct {
 	Domain        string   `yaml:"domain"        json:"domain"`
 	GameID        int      `yaml:"gameId"        json:"gameId"`
+	Title         string   `yaml:"title,omitempty"         json:"title,omitempty"` // название игры (шапка эмулятора)
+	Topic         int      `yaml:"topic,omitempty"         json:"topic,omitempty"` // id темы обсуждения (ссылка в шапке эмулятора)
 	Levels        []string `yaml:"levels"        json:"levels"`
 	AssetsDir     string   `yaml:"assetsDir,omitempty"     json:"assetsDir,omitempty"` // папка с ассетами (css/js/картинки) относительно game-файла; по умолчанию "assets"
 	DefaultFormat string   `yaml:"defaultFormat,omitempty" json:"defaultFormat,omitempty"`

@@ -1,0 +1,6 @@
+- type: секторбонус
+  sectorName: "SB"
+  bonusName: "SB bonus"
+  answers: [combo]
+  time: 90
+  help: "combo help"

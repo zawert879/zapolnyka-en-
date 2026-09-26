@@ -23,6 +23,8 @@ yarn build && yarn start go data/game.yml  # production
 
 - `go <game>` — залить все уровни из game-конфига
 - `assets <game>` — залить ассеты (css/js/картинки) из папки `assetsDir` (по умолчанию `assets/`) в «Файлы для игры» en.cx под UUID-именами (маппинг в `assets/.manifest.json`). В контенте ссылаешься плейсхолдером `{{имя}}`, `go` подставляет URL; префикс `~` у файла = оставить читаемое имя без uuid. Только Go-версия (`go_app/`)
+- `emu <game> [--port 8090] [--offline] [--dev] [--no-open]` — локальный эмулятор play-страницы en.cx из конфигов, побайтово повторяющий HTML движка (тот же путь `/gameengines/encounter/play/<gid>/`), + dev-панель (время, коды, штрафные подсказки, автопереход). Только Go-версия, пакет `go_app/internal/emu/`; разметка блоков — `render.go`, скелет — `templates/play.html` (генерируется `tools/gen_template.py` из снимка, руками не править: там значимые хвостовые табы и CRLF)
+- `snapshot <game> [--name X] [--send код] [--pid id --pact N]` — сохранить реальную play-страницу (HTML + `?json=1`) в `snapshots/`; сверка — `tools/emudiff.py`, реплей — `tools/replay.py`. Только Go-версия
 - `game <path> [-d domain] [-g gameId] [-b]` — создать новый game-конфиг
 - `level <game> <dir> [level] [-f json|yml] [-b]` — создать шаблон уровня и добавить в game
 

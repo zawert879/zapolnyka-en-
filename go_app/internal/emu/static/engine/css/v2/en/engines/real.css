@@ -1,0 +1,10 @@
+.content {
+	margin-left:290px;	
+}
+a, .history .correct a {
+	color:#99FF33;
+	cursor: pointer;
+}
+a:hover, .history .correct a:hover {
+	color:#C5FF8A; 
+}

@@ -1,0 +1,8 @@
+domain: tech.en.cx
+gameId: 1
+defaultFormat: yml
+assetsDir: assets
+levels:
+  - 1/conf.yml
+  - 2/conf.yml
+  - 3/conf.yml

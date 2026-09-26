@@ -1,0 +1,12 @@
+- type: сектор
+  sectorName: "S1"
+  answers: [one]
+- type: сектор
+  sectorName: "S2"
+  answers: [two]
+- type: бонус
+  bonusName: "Multi"
+  levels: "2-3"
+  answers: [multi]
+  time: 30
+  help: "multi help"
