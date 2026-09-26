@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"zapolnyaka/internal/assets"
 	"zapolnyaka/internal/config"
 	"zapolnyaka/internal/emu"
 )
@@ -75,6 +76,9 @@ func Mount(mux *http.ServeMux, deps Deps) *UI {
 	mux.HandleFunc("POST /api/ui/level/new", u.handleNewLevel)
 	mux.HandleFunc("GET /api/ui/snapshots", u.handleSnapshots)
 	mux.HandleFunc("GET /api/ui/diff/{name}", u.handleDiff)
+	mux.HandleFunc("POST /api/ui/level/enabled", u.handleLevelEnabled)
+	mux.HandleFunc("POST /api/ui/assets", u.handleAssetUpload)
+	mux.HandleFunc("DELETE /api/ui/assets/{name}", u.handleAssetDelete)
 	return u
 }
 
@@ -123,16 +127,19 @@ func (u *UI) levelNum(r *http.Request) (int, error) {
 // ---------------------------------------------------------------- состояние
 
 type stateResponse struct {
-	Games    []GameInfo  `json:"games"`
-	Game     *GameInfo   `json:"game"`
-	Levels   []LevelInfo `json:"levels"`
-	Assets   []AssetInfo `json:"assets"`
-	Login    string      `json:"login"`
-	PlayPath string      `json:"playPath"`
-	Addr     string      `json:"addr"`
-	Version  string      `json:"version"`
-	Job      *jobStatus  `json:"job,omitempty"`
-	Error    string      `json:"error,omitempty"`
+	Games     []GameInfo  `json:"games"`
+	Game      *GameInfo   `json:"game"`
+	Levels    []LevelInfo `json:"levels"`
+	Assets    []AssetInfo `json:"assets"`
+	Login     string      `json:"login"`
+	PlayPath  string      `json:"playPath"`
+	Engine    string      `json:"engineBase"` // база CSS/JS движка (для визуального редактора)
+	EngineVer string      `json:"engineVer"`
+	AssetsDir string      `json:"assetsDir"`
+	Addr      string      `json:"addr"`
+	Version   string      `json:"version"`
+	Job       *jobStatus  `json:"job,omitempty"`
+	Error     string      `json:"error,omitempty"`
 }
 
 type jobStatus struct {
@@ -146,7 +153,7 @@ type jobStatus struct {
 
 func (u *UI) handleState(w http.ResponseWriter, r *http.Request) {
 	cur := u.deps.Emu.GamePath()
-	resp := stateResponse{Login: u.deps.Actions.Login(), PlayPath: u.deps.Emu.PlayPath(), Addr: u.deps.Emu.Addr(), Version: u.deps.Version}
+	resp := stateResponse{Login: u.deps.Actions.Login(), PlayPath: u.deps.Emu.PlayPath(), Engine: u.deps.Emu.Env().EngineBase, EngineVer: emu.EngineVer, Addr: u.deps.Emu.Addr(), Version: u.deps.Version}
 	for _, p := range u.deps.Actions.ScanGames() {
 		abs, _ := filepath.Abs(p)
 		info := GameInfo{Path: filepath.ToSlash(p), Current: abs == cur}
@@ -162,6 +169,7 @@ func (u *UI) handleState(w http.ResponseWriter, r *http.Request) {
 		resp.Game = &GameInfo{Path: filepath.ToSlash(cur), Title: game.Title, Domain: game.Domain, GameID: game.GameID, Levels: len(game.Levels), Current: true}
 		resp.Levels = levels
 		resp.Assets = listAssets(cur, game)
+		resp.AssetsDir = filepath.ToSlash(assets.DirFor(cur, game))
 	}
 	if resp.Levels == nil {
 		resp.Levels = []LevelInfo{}
@@ -282,7 +290,7 @@ func previewOptions(q map[string][]string) emu.PreviewOptions {
 		}
 		return v[0] == "1" || v[0] == "true"
 	}
-	o.Task, o.Sectors, o.Hints, o.Penalties, o.Bonuses, o.Fog = get("task", true), get("sectors", true), get("hints", true), get("penalties", true), get("bonuses", true), get("fog", false)
+	o.Task, o.Sectors, o.Hints, o.Penalties, o.Bonuses, o.Fog = get("task", true), get("sectors", true), get("hints", true), get("penalties", true), get("bonuses", true), get("fog", true)
 	return o
 }
 

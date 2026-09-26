@@ -19,6 +19,7 @@
       <a href="#commands" data-tab="commands">Команды</a>
       <a href="#codes" data-tab="codes">Коды</a>
       <a href="#editor" data-tab="editor">Редактор</a>
+      <a href="#visual" data-tab="visual">Визуальный</a>
       <a href="#preview" data-tab="preview">Превью</a>
       <a href="#emu" data-tab="emu">Эмулятор</a>
     </nav>
@@ -30,8 +31,10 @@
       <div class="side-head"><span class="label">Уровни</span><button class="icon" id="btnNewLevel" title="Добавить уровень" aria-label="Добавить уровень">+</button></div>
       <div class="levels" id="levels"></div>
       <div class="side-foot">
-        <div class="label">Ассеты</div>
+        <div class="side-head tight"><span class="label">Ассеты</span><button class="icon" id="btnAddAsset" title="Добавить файлы в папку ассетов" aria-label="Добавить ассеты">+</button></div>
+        <input type="file" id="assetFiles" multiple hidden>
         <div class="assets" id="assets"></div>
+        <div class="muted small" id="assetsDir"></div>
       </div>
     </aside>
 
@@ -117,6 +120,37 @@
         </div>
       </section>
 
+      <!-- ================= Визуальный редактор ================= -->
+      <section class="tab" id="tab-visual">
+        <div class="toolbar ve-toolbar">
+          <b id="visualTitle">Визуальный</b><span class="muted mono" id="visualPath"></span>
+          <span class="grow"></span>
+          <button class="primary small" id="btnVisualSave">Сохранить task.html · Ctrl+S</button>
+          <a class="btn" href="#editor">→ Код</a>
+        </div>
+        <div class="toolbar ve-tools">
+          <select id="veBlock" title="Стиль блока"><option value="p">Абзац</option><option value="h2">Заголовок H2</option><option value="h3">Заголовок H3</option><option value="h4">Заголовок H4</option><option value="blockquote">Цитата</option><option value="pre">Моно (pre)</option><option value="div">Блок (div)</option></select>
+          <div class="seg"><button data-cmd="bold" title="Жирный · Ctrl+B"><b>Ж</b></button><button data-cmd="italic" title="Курсив · Ctrl+I"><i>К</i></button><button data-cmd="underline" title="Подчёркнутый · Ctrl+U"><u>Ч</u></button><button data-cmd="strikeThrough" title="Зачёркнутый"><s>З</s></button></div>
+          <div class="seg"><button data-cmd="insertUnorderedList" title="Маркированный список">• список</button><button data-cmd="insertOrderedList" title="Нумерованный список">1. список</button></div>
+          <div class="seg"><button data-cmd="justifyLeft" title="По левому краю">⇤</button><button data-cmd="justifyCenter" title="По центру">↔</button><button data-cmd="justifyRight" title="По правому краю">⇥</button></div>
+          <div class="seg"><button id="veLink" title="Ссылка">Ссылка</button><button data-cmd="unlink" title="Убрать ссылку">✕ ссылка</button></div>
+          <div class="seg"><button id="veImage" title="Картинка из ассетов">Картинка</button><button data-cmd="insertHorizontalRule" title="Горизонтальная линия">— линия</button></div>
+          <div class="seg"><button data-cmd="removeFormat" title="Очистить форматирование">Очистить</button><button data-cmd="undo" title="Отменить · Ctrl+Z">↶</button><button data-cmd="redo" title="Повторить · Ctrl+Y">↷</button></div>
+          <span class="grow"></span>
+          <span class="muted" id="veBlocks"></span>
+        </div>
+        <div class="ve-pop" id="vePop" hidden>
+          <span class="label" id="vePopTitle"></span>
+          <select id="vePopAsset" hidden></select>
+          <input id="vePopUrl" class="mono" placeholder="https://… или {{имя ассета}}">
+          <button class="primary small" id="vePopOk">Вставить</button><button class="small" id="vePopCancel">Отмена</button>
+        </div>
+        <div class="ve-body">
+          <div class="frame-wrap"><iframe id="visualFrame" title="Визуальный редактор"></iframe></div>
+        </div>
+        <div class="editor-foot"><span class="muted">Визуальный редактор пересобирает HTML: отступы и форматирование исходника не сохраняются. &lt;script&gt;, &lt;style&gt; и комментарии показаны блоками ⚙ и сохраняются как есть; удалите блок — удалится код.</span></div>
+      </section>
+
       <!-- ================= Превью ================= -->
       <section class="tab" id="tab-preview">
         <div class="toolbar">
@@ -128,7 +162,7 @@
           <label class="check"><input type="checkbox" data-po="hints" checked> подсказки</label>
           <label class="check"><input type="checkbox" data-po="penalties" checked> штрафные</label>
           <label class="check"><input type="checkbox" data-po="bonuses" checked> бонусы</label>
-          <label class="check"><input type="checkbox" data-po="fog"> скрипты/туман</label>
+          <label class="check"><input type="checkbox" data-po="fog" checked> скрипты (JS)</label>
           <button id="btnPreviewReload">Обновить</button>
           <a class="btn" href="#emu">Открыть в эмуляторе</a>
         </div>

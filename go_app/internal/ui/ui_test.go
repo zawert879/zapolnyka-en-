@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,22 +22,38 @@ import (
 type fakeActions struct{ calls []string }
 
 func (f *fakeActions) ScanGames() []string { return []string{"testdata/game/game.yml"} }
-func (f *fakeActions) Login() string        { return "tester" }
+func (f *fakeActions) Login() string       { return "tester" }
 func (f *fakeActions) Go(gamePath string, levels []int, log io.Writer) error {
 	f.calls = append(f.calls, fmt.Sprintf("go %v", levels))
 	fmt.Fprintf(log, "▶ Уровень 1\n✔ уровень 1 завершён\n")
 	return nil
 }
-func (f *fakeActions) Assets(gamePath string, log io.Writer) error   { fmt.Fprintln(log, "assets ok"); return nil }
-func (f *fakeActions) Validate(gamePath string, log io.Writer) error { fmt.Fprintln(log, "validate ok"); return nil }
-func (f *fakeActions) Check(gamePath string, log io.Writer) error    { return fmt.Errorf("нет сети") }
+func (f *fakeActions) Assets(gamePath string, log io.Writer) error {
+	fmt.Fprintln(log, "assets ok")
+	return nil
+}
+func (f *fakeActions) Validate(gamePath string, log io.Writer) error {
+	fmt.Fprintln(log, "validate ok")
+	return nil
+}
+func (f *fakeActions) Check(gamePath string, log io.Writer) error {
+	return fmt.Errorf("нет сети")
+}
 func (f *fakeActions) Snapshot(gamePath, name, send string, pid, pact int, log io.Writer) error {
 	return nil
 }
-func (f *fakeActions) Auth(login, password string) error                     { f.calls = append(f.calls, "auth "+login); return nil }
-func (f *fakeActions) NewGame(name, domain string, gameID int) (string, error) { return "data/" + name + "/game.yml", nil }
-func (f *fakeActions) NewLevel(gamePath, dir string, num int) error           { f.calls = append(f.calls, "level "+dir); return nil }
-func (f *fakeActions) SaveLastGame(gamePath string)                          {}
+func (f *fakeActions) Auth(login, password string) error {
+	f.calls = append(f.calls, "auth "+login)
+	return nil
+}
+func (f *fakeActions) NewGame(name, domain string, gameID int) (string, error) {
+	return "data/" + name + "/game.yml", nil
+}
+func (f *fakeActions) NewLevel(gamePath, dir string, num int) error {
+	f.calls = append(f.calls, "level "+dir)
+	return nil
+}
+func (f *fakeActions) SaveLastGame(gamePath string) {}
 
 func copyFixture(t *testing.T) string {
 	t.Helper()
@@ -231,5 +249,94 @@ func TestJobsAndPreview(t *testing.T) {
 	}
 	if code, _ := e.do(t, "POST", "/api/ui/level/new", map[string]any{"dir": "../x", "number": 9}, false); code != 400 {
 		t.Fatalf("dir traversal must be rejected")
+	}
+}
+
+func TestDisabledLevelsAndAssets(t *testing.T) {
+	e := newEnv(t)
+	gamePath := e.game
+	// Уровень 4 — закомментирован в game.yml.
+	_ = os.MkdirAll(filepath.Join(filepath.Dir(gamePath), "4"), 0o755)
+	_ = os.WriteFile(filepath.Join(filepath.Dir(gamePath), "4", "conf.yml"), []byte("level: 4\nname: Четвёртый\nbody: task.html\n"), 0o644)
+	_ = os.WriteFile(filepath.Join(filepath.Dir(gamePath), "4", "task.html"), []byte("<b>four</b>"), 0o644)
+	raw, _ := os.ReadFile(gamePath)
+	_ = os.WriteFile(gamePath, append(raw, []byte("  # - 4/conf.yml\n")...), 0o644)
+
+	_, body := e.do(t, "GET", "/api/ui/state", nil, false)
+	var st stateResponse
+	_ = json.Unmarshal([]byte(body), &st)
+	if len(st.Levels) != 4 || !st.Levels[3].Disabled || st.Levels[3].Number != 4 || st.Levels[3].ConfRel != "4/conf.yml" || st.AssetsDir == "" || st.Engine == "" {
+		t.Fatalf("state with disabled: %+v", st)
+	}
+	code, body := e.do(t, "GET", "/api/ui/level/4", nil, false)
+	var d LevelData
+	_ = json.Unmarshal([]byte(body), &d)
+	if code != 200 || !d.Disabled || d.Body != "<b>four</b>" {
+		t.Fatalf("disabled level data: %d %+v", code, d)
+	}
+	// Эмулятор видит выключенный уровень.
+	if code, body := e.do(t, "GET", "/play/4", nil, false); code >= 400 || strings.Contains(body, "не найден") {
+		t.Fatalf("emu goto disabled: %d", code)
+	}
+	// Включить → в game.yml строка раскомментирована, комментарии целы.
+	if code, body := e.do(t, "POST", "/api/ui/level/enabled", map[string]any{"conf": "4/conf.yml", "enabled": true}, false); code != 200 {
+		t.Fatalf("enable: %d %s", code, body)
+	}
+	raw, _ = os.ReadFile(gamePath)
+	if !strings.Contains(string(raw), "\n  - 4/conf.yml\n") {
+		t.Fatalf("game.yml after enable:\n%s", raw)
+	}
+	_, body = e.do(t, "GET", "/api/ui/state", nil, false)
+	var st2 stateResponse // свежая структура: omitempty-поля не перезаписываются при повторном Unmarshal
+	_ = json.Unmarshal([]byte(body), &st2)
+	if st2.Levels[3].Disabled {
+		t.Fatalf("still disabled: %+v", st2.Levels[3])
+	}
+	if code, _ := e.do(t, "POST", "/api/ui/level/enabled", map[string]any{"conf": "1/conf.yml", "enabled": false}, false); code != 200 {
+		t.Fatalf("disable 1")
+	}
+	raw, _ = os.ReadFile(gamePath)
+	if !strings.Contains(string(raw), "# - 1/conf.yml") {
+		t.Fatalf("game.yml after disable:\n%s", raw)
+	}
+
+	// Ассеты: загрузка multipart и удаление.
+	var mp bytes.Buffer
+	mw := multipart.NewWriter(&mp)
+	fw, _ := mw.CreateFormFile("files", "new pic.png")
+	_, _ = fw.Write([]byte("PNG"))
+	fw, _ = mw.CreateFormFile("files", "../evil.txt")
+	_, _ = fw.Write([]byte("x"))
+	_ = mw.Close()
+	req, _ := http.NewRequest("POST", e.ts.URL+"/api/ui/assets", &mp)
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rb, _ := io.ReadAll(resp.Body)
+	_ = resp.Body.Close()
+	if resp.StatusCode != 200 || !strings.Contains(string(rb), "new pic.png") || !strings.Contains(string(rb), "evil.txt") {
+		t.Fatalf("upload: %d %s", resp.StatusCode, rb)
+	}
+	if _, err := os.Stat(filepath.Join(st.AssetsDir, "evil.txt")); err != nil {
+		t.Fatalf("path traversal must be reduced to base name: %v", err)
+	}
+	if code, _ := e.do(t, "DELETE", "/api/ui/assets/"+url.PathEscape("new pic.png"), nil, false); code != 200 {
+		t.Fatalf("delete asset")
+	}
+	if _, err := os.Stat(filepath.Join(st.AssetsDir, "new pic.png")); err == nil {
+		t.Fatalf("asset not removed")
+	}
+	if code, _ := e.do(t, "DELETE", "/api/ui/assets/.manifest.json", nil, false); code != 400 {
+		t.Fatalf("hidden files must be rejected")
+	}
+	// Превью по умолчанию оставляет <script>.
+	_ = os.WriteFile(filepath.Join(filepath.Dir(gamePath), "1", "task.html"), []byte("<p>Level one body</p><script>document.title='x'</script>"), 0o644)
+	if _, body := e.do(t, "GET", "/ui/preview/1", nil, false); !strings.Contains(body, "<script>document.title='x'</script>") {
+		t.Fatalf("preview must keep scripts by default")
+	}
+	if _, body := e.do(t, "GET", "/ui/preview/1?fog=0", nil, false); strings.Contains(body, "document.title") {
+		t.Fatalf("fog=0 must strip scripts")
 	}
 }

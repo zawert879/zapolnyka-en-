@@ -18,18 +18,18 @@ type PreviewOptions struct {
 	Hints     bool // все подсказки как показанные
 	Penalties bool // штрафные подсказки как открытые
 	Bonuses   bool // бонусы как выполненные (с help)
-	Fog       bool // оставить <script> из тела (туман); иначе скрипты вырезаются
+	Fog       bool // выполнять <script> из тела (туман, мини-игры); false — скрипты вырезаются
 }
 
-// DefaultPreview — всё включено, кроме скриптов.
+// DefaultPreview — всё включено, скрипты тоже (как в игре).
 func DefaultPreview() PreviewOptions {
-	return PreviewOptions{Task: true, Sectors: true, Hints: true, Penalties: true, Bonuses: true}
+	return PreviewOptions{Task: true, Sectors: true, Hints: true, Penalties: true, Bonuses: true, Fog: true}
 }
 
 // PreviewCheck — результат проверки контента уровня для панели превью.
 type PreviewCheck struct {
-	Level    string `json:"level"` // "ok" | "warn" | "error"
-	Text     string `json:"text"`
+	Level string `json:"level"` // "ok" | "warn" | "error"
+	Text  string `json:"text"`
 }
 
 var scriptTagRe = regexp.MustCompile(`(?is)<script\b[^>]*>.*?</script>`)
@@ -139,7 +139,7 @@ func (s *Server) previewChecks(l *loaded, n int, v *View) []PreviewCheck {
 		out = append(out, PreviewCheck{"ok", "CSS подключён через @import"})
 	}
 	if strings.Contains(strings.ToLower(body), "<script") {
-		out = append(out, PreviewCheck{"ok", "В теле есть <script> — в превью скрипты выключены, в эмуляторе и игре выполняются"})
+		out = append(out, PreviewCheck{"ok", "В теле есть <script> — выполняется в превью (галка «скрипты»), эмуляторе и игре"})
 	}
 	plain := strings.ToLower(stripTags(scriptTagRe.ReplaceAllString(commentRe.ReplaceAllString(body, ""), "")))
 	var spoilers []string

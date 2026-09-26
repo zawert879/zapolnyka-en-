@@ -34,6 +34,7 @@ type LevelInfo struct {
 	Sectors  int    `json:"sectors"`
 	Bonuses  int    `json:"bonuses"`
 	HasBody  bool   `json:"hasBody"`
+	Disabled bool   `json:"disabled,omitempty"` // закомментирован в game.yml: не заливается
 	Error    string `json:"error,omitempty"`
 }
 
@@ -54,13 +55,15 @@ type LevelFiles struct {
 
 // LevelData — всё для вкладок «Коды» и «Редактор».
 type LevelData struct {
-	Number int            `json:"number"`
-	Files  LevelFiles     `json:"files"`
-	Conf   *config.Level  `json:"conf"`
-	Codes  []config.Code  `json:"codes"`
-	Body   string         `json:"body"`
-	Raw    map[string]string `json:"raw"` // сырые тексты: conf, codes, body
-	Error  string         `json:"error,omitempty"`
+	Number   int               `json:"number"`
+	ConfRel  string            `json:"confRel"`            // путь conf относительно папки игры (ключ для вкл/выкл)
+	Disabled bool              `json:"disabled,omitempty"` // закомментирован в game.yml
+	Files    LevelFiles        `json:"files"`
+	Conf     *config.Level     `json:"conf"`
+	Codes    []config.Code     `json:"codes"`
+	Body     string            `json:"body"`
+	Raw      map[string]string `json:"raw"` // сырые тексты: conf, codes, body
+	Error    string            `json:"error,omitempty"`
 }
 
 // gameDir — папка игры.
@@ -87,9 +90,26 @@ func listLevels(gamePath string) (*config.Game, []LevelInfo, error) {
 		return nil, nil, err
 	}
 	var out []LevelInfo
+	entries := make([]struct {
+		rel      string
+		disabled bool
+	}, 0, len(game.Levels)+len(game.Disabled))
 	for _, rel := range game.Levels {
+		entries = append(entries, struct {
+			rel      string
+			disabled bool
+		}{rel, false})
+	}
+	for _, rel := range game.Disabled {
+		entries = append(entries, struct {
+			rel      string
+			disabled bool
+		}{rel, true})
+	}
+	for _, e := range entries {
+		rel := e.rel
 		confPath := filepath.Join(gameDir(gamePath), rel)
-		info := LevelInfo{Dir: filepath.ToSlash(filepath.Dir(rel)), ConfRel: filepath.ToSlash(rel)}
+		info := LevelInfo{Dir: filepath.ToSlash(filepath.Dir(rel)), ConfRel: filepath.ToSlash(rel), Disabled: e.disabled}
 		lvl, err := config.LoadLevel(confPath)
 		if err != nil {
 			info.Error = err.Error()
@@ -152,7 +172,8 @@ func loadLevel(gamePath string, n int) (*LevelData, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, rel := range game.Levels {
+	// Включённые уровни имеют приоритет над выключенными с тем же номером.
+	for _, rel := range append(append([]string{}, game.Levels...), game.Disabled...) {
 		confPath := filepath.Join(gameDir(gamePath), rel)
 		lvl, err := config.LoadLevel(confPath)
 		if err != nil || lvl.Level != n {
@@ -160,6 +181,8 @@ func loadLevel(gamePath string, n int) (*LevelData, error) {
 		}
 		levelDir := filepath.Dir(confPath)
 		d := &LevelData{Number: n, Conf: lvl, Raw: map[string]string{}, Codes: []config.Code{}}
+		d.ConfRel = filepath.ToSlash(rel)
+		d.Disabled = !containsStr(game.Levels, rel)
 		d.Files.Dir = filepath.ToSlash(levelDir)
 		d.Files.Conf = filepath.ToSlash(confPath)
 		if raw, err := os.ReadFile(confPath); err == nil {
@@ -190,6 +213,15 @@ func loadLevel(gamePath string, n int) (*LevelData, error) {
 		return d, nil
 	}
 	return nil, fmt.Errorf("уровень %d не найден в %s", n, gamePath)
+}
+
+func containsStr(list []string, s string) bool {
+	for _, x := range list {
+		if x == s {
+			return true
+		}
+	}
+	return false
 }
 
 // writeFileAtomic пишет файл через временный рядом.

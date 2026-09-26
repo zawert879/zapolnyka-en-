@@ -98,6 +98,10 @@ type Game struct {
 	AssetsDir     string   `yaml:"assetsDir,omitempty"     json:"assetsDir,omitempty"` // папка с ассетами (css/js/картинки) относительно game-файла; по умолчанию "assets"
 	DefaultFormat string   `yaml:"defaultFormat,omitempty" json:"defaultFormat,omitempty"`
 	Delays        Delays   `yaml:"delays,omitempty"        json:"delays,omitempty"`
+
+	// Disabled — закомментированные элементы levels (см. gamefile.go): не заливаются,
+	// но доступны интерфейсу и эмулятору. Заполняется LoadGame, в файл не пишется.
+	Disabled []string `yaml:"-" json:"-"`
 }
 
 // PreparedLevel holds all data needed to upload one level.
@@ -105,4 +109,7 @@ type PreparedLevel struct {
 	Conf  *Level
 	Codes []Code
 	Body  string
+
+	ConfRel  string // путь conf-файла относительно папки игры, как в game.yml
+	Disabled bool   // уровень закомментирован в game.yml (только LoadAllWithDisabled)
 }

@@ -266,7 +266,7 @@ type loaded struct {
 }
 
 func (s *Server) load() (*loaded, error) {
-	conf, prepared, err := config.LoadAll(s.gamePath())
+	conf, prepared, err := config.LoadAllWithDisabled(s.gamePath())
 	if err != nil {
 		return nil, err
 	}

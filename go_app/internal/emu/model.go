@@ -109,19 +109,20 @@ type HistoryView struct {
 
 // LevelNav — уровень в списке панели.
 type LevelNav struct {
-	Number  int    `json:"number"`
-	Name    string `json:"name"`
-	Passed  bool   `json:"passed"`
-	Current bool   `json:"current"`
-	Started bool   `json:"started"`
+	Number   int    `json:"number"`
+	Name     string `json:"name"`
+	Passed   bool   `json:"passed"`
+	Current  bool   `json:"current"`
+	Started  bool   `json:"started"`
+	Disabled bool   `json:"disabled,omitempty"` // закомментирован в game.yml (не заливается)
 }
 
 // Request — то, что зависит от конкретного запроса, а не от состояния:
 // результат только что введённого кода, запрос подтверждения штрафной подсказки,
 // перенесённые с прошлого уровня записи истории (ответ на POST, прошедший уровень).
 type Request struct {
-	AnswerValue   string            // значение в поле ответа (неверный ответ остаётся в поле)
-	Notice        string            // «Ответ или код верный/неверный»
+	AnswerValue   string // значение в поле ответа (неверный ответ остаётся в поле)
+	Notice        string // «Ответ или код верный/неверный»
 	NoticeCorrect bool
 	JustNow       map[int]bool      // ActionId записей этого запроса
 	Carry         []encx.CodeAction // записи прошлого уровня, показанные на странице нового
@@ -219,7 +220,7 @@ type View struct {
 
 	// отрендеренные блоки (render.go)
 	HistoryHTML, TimerHTML, SectorsHTML, TaskBlockHTML template.HTML
-	HelpsHTML, PenaltiesHTML, BonusesHTML, PanelHTML    template.HTML
+	HelpsHTML, PenaltiesHTML, BonusesHTML, PanelHTML   template.HTML
 
 	Codes   []CodeRow
 	Levels  []LevelNav
@@ -395,14 +396,14 @@ func BuildView(g *Game, n int, gs *GameState, now time.Time, rw *Rewriter, env E
 		PlayPath: PlayPath(g.Conf.GameID), Rnd: randRnd(),
 		LangHrefEN: langHref(PlayPath(g.Conf.GameID), req.RawQuery, "en"),
 		LangHrefRU: langHref(PlayPath(g.Conf.GameID), req.RawQuery, "ru"),
-		Number: n, LevelID: levelID(n), LevelName: deref(p.Conf.Name),
+		Number:     n, LevelID: levelID(n), LevelName: deref(p.Conf.Name),
 		LevelNameHTML: template.HTML(HTMLEncode(deref(p.Conf.Name))),
 		LevelsTotal:   g.Max(), Prev: g.Prev(n), Next: g.Next(n), IsLast: g.Next(n) == 0,
-		AnswerAttr:   template.HTMLAttr(`value="` + HTMLEncode(req.AnswerValue) + `"`),
-		Elapsed:      elapsedSec, ElapsedText: fmtClock(elapsed),
-		Paused:       ls.Paused, AutoAdvance: gs.AutoAdvance, Passed: ls.Passed, PassedBy: ls.PassedBy,
-		Timeout:      derefInt(p.Conf.Autopass), TimeoutAward: derefInt(p.Conf.AutopassPenalty),
-		Notice:       req.Notice, NoticeCorrect: req.NoticeCorrect, ConfirmIndex: req.ConfirmIndex,
+		AnswerAttr: template.HTMLAttr(`value="` + HTMLEncode(req.AnswerValue) + `"`),
+		Elapsed:    elapsedSec, ElapsedText: fmtClock(elapsed),
+		Paused: ls.Paused, AutoAdvance: gs.AutoAdvance, Passed: ls.Passed, PassedBy: ls.PassedBy,
+		Timeout: derefInt(p.Conf.Autopass), TimeoutAward: derefInt(p.Conf.AutopassPenalty),
+		Notice: req.Notice, NoticeCorrect: req.NoticeCorrect, ConfirmIndex: req.ConfirmIndex,
 	}
 	if v.Timeout > 0 {
 		v.TimeoutRemain = v.Timeout - elapsedSec
@@ -503,7 +504,7 @@ func BuildView(g *Game, n int, gs *GameState, now time.Time, rw *Rewriter, env E
 	// Список уровней для панели.
 	for _, num := range g.Numbers() {
 		lp, _ := g.Level(num)
-		nav := LevelNav{Number: num, Name: deref(lp.Conf.Name), Current: num == n}
+		nav := LevelNav{Number: num, Name: deref(lp.Conf.Name), Current: num == n, Disabled: lp.Disabled}
 		if st, ok := gs.Levels[num]; ok {
 			nav.Started = true
 			nav.Passed = st.Passed

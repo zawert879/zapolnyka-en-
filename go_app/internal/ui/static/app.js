@@ -1,4 +1,4 @@
-// app.js — веб-интерфейс zapolnyaka: вкладки Команды / Коды / Редактор / Превью / Эмулятор.
+// app.js — веб-интерфейс zapolnyaka: вкладки Команды / Коды / Редактор / Визуальный / Превью / Эмулятор.
 // Одна страница без сборки: состояние в S, данные через /api/ui/*, эмулятор — в iframe.
 (function () {
   'use strict';
@@ -57,19 +57,31 @@
   function renderLevels() {
     const box = $('#levels');
     box.innerHTML = S.state.levels.map((l) => `
-      <div class="level${l.number === S.level ? ' active' : ''}" data-level="${l.number}" title="${esc(l.error || l.dir)}">
-        <input type="checkbox" data-sel="${l.number}"${S.selected.has(l.number) ? ' checked' : ''} aria-label="Выбрать уровень ${l.number}" ${S.tab === 'commands' ? '' : 'hidden'}>
-        <span class="num">${String(l.number).padStart(2, '0')}</span>
+      <div class="level${l.number === S.level && S.level ? ' active' : ''}${l.disabled ? ' disabled' : ''}" data-level="${l.number}" data-conf="${esc(l.conf)}" title="${esc(l.error || (l.disabled ? 'выключен в game.yml (закомментирован) — не заливается' : l.dir))}">
+        <input type="checkbox" data-sel="${l.number}"${S.selected.has(l.number) ? ' checked' : ''} aria-label="Выбрать уровень ${l.number}" ${S.tab === 'commands' && !l.disabled ? '' : 'hidden'}>
+        <span class="num">${l.number ? String(l.number).padStart(2, '0') : '??'}</span>
         <span class="name">${esc(l.name || l.dir)}</span>
         <span class="meta">${l.codes ? l.codes + ' код.' : ''}</span>
+        <span class="sw${l.disabled ? '' : ' on'}" data-toggle="${l.disabled ? 1 : 0}" title="${l.disabled ? 'Включить (раскомментировать в game.yml)' : 'Выключить (закомментировать в game.yml)'}"></span>
         <span class="st${l.error ? ' err' : ''}"></span>
       </div>`).join('') || '<div class="muted" style="padding:8px">В игре нет уровней — добавьте «+».</div>';
     $$('.level', box).forEach((el) => el.addEventListener('click', (e) => {
       if (e.target.matches('input[data-sel]')) { const n = +e.target.dataset.sel; if (e.target.checked) S.selected.add(n); else S.selected.delete(n); renderSelectedChip(); return; }
+      if (e.target.matches('.sw')) { toggleLevel(el.dataset.conf, e.target.dataset.toggle === '1'); return; }
       selectLevel(+el.dataset.level);
     }));
     renderSelectedChip();
   }
+
+  async function toggleLevel(conf, enable) {
+    try {
+      await api('POST', '/api/ui/level/enabled', { conf, enabled: enable });
+      toast((enable ? 'Включён: ' : 'Выключен: ') + conf + ' (game.yml)', 'ok');
+      await loadState();
+      if (S.tab === 'emu') renderEmu();
+    } catch (e) { toast(String(e.message || e), 'err'); }
+  }
+  const enabledCount = () => (S.state ? S.state.levels.filter((l) => !l.disabled).length : 0);
 
   function renderSelectedChip() {
     const arr = Array.from(S.selected).sort((a, b) => a - b);
@@ -77,10 +89,29 @@
   }
 
   function renderAssets() {
-    $('#assets').innerHTML = S.state.assets.map((a) => `<div><span>${esc(a.name)}</span><span class="${a.uploaded ? 'up' : 'no'}">${a.uploaded ? 'залит' : 'не залит'}</span></div>`).join('') || '<div class="muted">папка ассетов пуста</div>';
+    $('#assets').innerHTML = S.state.assets.map((a) => `<div title="${esc(a.name)} · ${a.size} байт${a.uploaded ? ' · на сервере ' + esc(a.uploaded) : ''}"><span>${esc(a.name)}</span><span class="${a.uploaded ? 'up' : 'no'}">${a.uploaded ? 'залит' : 'не залит'}</span><span class="del" data-del="${esc(a.name)}" title="Удалить файл из папки ассетов">✕</span></div>`).join('') || '<div class="muted">папка ассетов пуста — «+» добавит файлы</div>';
+    $('#assetsDir').textContent = S.state.assetsDir || '';
+    $$('#assets .del').forEach((b) => b.addEventListener('click', async () => {
+      if (!confirm('Удалить файл «' + b.dataset.del + '» из папки ассетов?')) return;
+      try { await api('DELETE', '/api/ui/assets/' + encodeURIComponent(b.dataset.del)); toast('Удалён: ' + b.dataset.del, 'ok'); await loadState(); }
+      catch (e) { toast(String(e.message || e), 'err'); }
+    }));
     $('#assetButtons').innerHTML = S.state.assets.map((a) => `<button class="mono small" data-insert="{{${esc(a.name)}}}">{{${esc(a.name)}}}</button>`).join('') || '<span class="muted">нет ассетов</span>';
     $$('#assetButtons button').forEach((b) => b.addEventListener('click', () => insertAtCursor(b.dataset.insert)));
   }
+  $('#btnAddAsset').addEventListener('click', () => $('#assetFiles').click());
+  $('#assetFiles').addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []); if (!files.length) return;
+    const fd = new FormData(); files.forEach((f) => fd.append('files', f, f.name));
+    try {
+      const r = await fetch('/api/ui/assets', { method: 'POST', body: fd });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || r.statusText);
+      toast('Добавлено: ' + data.saved.join(', ') + ' — для игры выполните «Залить ассеты»', 'ok');
+      await loadState();
+    } catch (err) { toast(String(err.message || err), 'err'); }
+    e.target.value = '';
+  });
 
   async function selectLevel(n) {
     if (S.codesDirty || Object.values(S.rawDirty).some(Boolean) || S.confDirty) {
@@ -116,15 +147,17 @@
 
   // ---------------------------------------------------------------- вкладки
   function setTab(tab) {
+    if (S.tab === 'visual' && tab !== 'visual') veFlush();
     S.tab = tab;
     $$('#tabs a').forEach((a) => a.classList.toggle('active', a.dataset.tab === tab));
     $$('.tab').forEach((s) => s.classList.toggle('active', s.id === 'tab-' + tab));
-    $$('#levels input[data-sel]').forEach((i) => { i.hidden = tab !== 'commands'; });
+    $$('#levels input[data-sel]').forEach((i) => { i.hidden = tab !== 'commands' || i.closest('.level').classList.contains('disabled'); });
     refreshTab();
   }
   function refreshTab() {
     if (S.tab === 'codes') renderCodes();
     if (S.tab === 'editor') renderEditor();
+    if (S.tab === 'visual') renderVisual();
     if (S.tab === 'preview') renderPreview();
     if (S.tab === 'emu') renderEmu();
   }
@@ -158,7 +191,7 @@
       S.jobFrom = r.total;
       $('#jobTitle').textContent = r.job.title;
       const done = (log.textContent.match(/✔ уровень \d+ завершён/g) || []).length;
-      const total = (S.selected.size && $('#onlySelected').checked) ? S.selected.size : (S.state ? S.state.levels.length : 0);
+      const total = (S.selected.size && $('#onlySelected').checked) ? S.selected.size : enabledCount();
       if (r.job.cmd === 'go' && total) $('#jobProgress').style.width = Math.min(100, Math.round(done / total * 100)) + '%';
       if (r.job.done) {
         $('#jobProgress').style.width = '100%';
@@ -344,16 +377,19 @@
     ed.dispatchEvent(new Event('input'));
   }
   $$('.filetabs button[data-file]').forEach((b) => b.addEventListener('click', () => { S.file = b.dataset.file; $$('.filetabs button[data-file]').forEach((x) => x.classList.toggle('active', x === b)); ed.value = S.raw[S.file] || ''; renderEditor(); }));
-  async function saveRaw() {
-    if (!S.level) return;
+  async function saveFile(which, text) {
+    if (!S.level) return false;
     try {
-      await api('PUT', `/api/ui/level/${S.level}/raw/${S.file}`, ed.value, true);
-      S.rawDirty[S.file] = false; toast(({ body: 'task.html', conf: 'conf.yml', codes: 'codes.yml' })[S.file] + ' сохранён', 'ok');
-      const keep = ed.value; await loadState(); await loadLevel(); S.raw[S.file] = keep; renderEditor();
-    } catch (e) { toast(String(e.message || e), 'err'); }
+      await api('PUT', `/api/ui/level/${S.level}/raw/${which}`, text, true);
+      S.rawDirty[which] = false; toast(({ body: 'task.html', conf: 'conf.yml', codes: 'codes.yml' })[which] + ' сохранён', 'ok');
+      await loadState(); await loadLevel(); S.raw[which] = text;
+      if (S.tab === 'editor') renderEditor();
+      return true;
+    } catch (e) { toast(String(e.message || e), 'err'); return false; }
   }
+  const saveRaw = () => saveFile(S.file, ed.value);
   $('#btnEditorSave').addEventListener('click', saveRaw);
-  document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (S.tab === 'editor') saveRaw(); else if (S.tab === 'codes') $('#btnCodesSave').click(); } });
+  document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (S.tab === 'editor') saveRaw(); else if (S.tab === 'visual') veSave(); else if (S.tab === 'codes') $('#btnCodesSave').click(); } });
 
   // conf-форма
   function renderConf() {
@@ -386,6 +422,111 @@
     } catch (e) { toast(String(e.message || e), 'err'); }
   });
   $('#btnConfReload').addEventListener('click', async () => { S.confDirty = false; await loadLevel(); renderConf(); });
+
+  // ---------------------------------------------------------------- визуальный редактор
+  // task.html показывается в iframe (srcdoc, тот же origin) с CSS движка и <style> уровня;
+  // <script>/<style>/комментарии вырезаются в защищённые блоки-плейсхолдеры и при
+  // сохранении возвращаются на место как есть. {{ассет}} ↔ /assets/ассет.
+  const VE = { frame: $('#visualFrame'), doc: null, root: null, blocks: [], loadedSrc: null, dirty: false, timer: null, range: null, pop: null };
+  const veAssetsFwd = (s) => s.replace(/\{\{\s*([^{}]+?)\s*\}\}/g, (m, n) => '/assets/' + encodeURIComponent(n));
+  const veAssetsBack = (s) => s.replace(/\/assets\/([^"'()\s<>]+)/g, (m, n) => { try { return '{{' + decodeURIComponent(n) + '}}'; } catch (e) { return m; } });
+  const veProtectRe = /<!--[\s\S]*?-->|<script\b[\s\S]*?<\/script\s*>|<style\b[\s\S]*?<\/style\s*>/gi;
+
+  function veProtect(html) {
+    const blocks = [];
+    const out = html.replace(veProtectRe, (m) => {
+      const kind = m.startsWith('<!--') ? 'комментарий' : /^<script/i.test(m) ? 'script' : 'style';
+      const i = blocks.push({ kind, text: m }) - 1;
+      return `<span class="ve-block" contenteditable="false" data-ve="${i}" title="${kind}: сохраняется как есть; удалите блок — удалится код">⚙ ${kind} · ${m.split('\n').length} стр.</span>`;
+    });
+    return { html: out, blocks };
+  }
+
+  function renderVisual() {
+    const d = S.data;
+    $('#visualTitle').textContent = 'Визуальный · уровень ' + (S.level || '—');
+    $('#visualPath').textContent = d ? (d.files.body || d.files.dir + '/task.html') : '';
+    if (!S.level) { VE.frame.srcdoc = '<p style="font-family:sans-serif;color:#888;padding:20px">Выберите уровень.</p>'; VE.root = null; return; }
+    const src = S.raw.body || '';
+    if (VE.loadedSrc === src && VE.root) return;
+    VE.loadedSrc = src; VE.dirty = false;
+    const { html, blocks } = veProtect(src);
+    VE.blocks = blocks;
+    const kinds = blocks.map((b) => b.kind);
+    $('#veBlocks').textContent = blocks.length ? '⚙ блоков: ' + blocks.length + ' (' + Array.from(new Set(kinds)).join(', ') + ')' : '';
+    const st = S.state, eb = st.engineBase, ver = st.engineVer;
+    const styles = blocks.filter((b) => b.kind === 'style').map((b) => veAssetsFwd(b.text)).join('\n');
+    VE.frame.srcdoc = `<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<link href="${eb}/css/v2/en/engines/engine.css?ver=${ver}" rel="stylesheet">
+<link href="${eb}/css/v2/en/engines/real.css?ver=${ver}" rel="stylesheet">
+<link href="${eb}/css/v2/en/engines/engine_adaptive.css?ver=${ver}" rel="stylesheet">
+<style>html,body{min-width:0;margin:0;min-height:100%}.container{padding:0}.content{margin-left:0;padding:12px 16px}#ve{outline:none;min-height:70vh}#ve:empty::before{content:"Начните печатать или вставьте текст…";color:#777}
+.ve-block{display:inline-block;padding:1px 8px;margin:2px 0;border:1px dashed #e0c97f;border-radius:6px;background:rgba(224,201,127,.14);color:#e0c97f;font:12px/1.5 monospace;cursor:default;user-select:none}</style>
+${styles}
+</head><body><div class="container"><div class="content"><div class="task"><div id="ve" contenteditable="true">${veAssetsFwd(html)}</div></div></div></div></body></html>`;
+  }
+  VE.frame.addEventListener('load', () => {
+    VE.doc = VE.frame.contentDocument; VE.root = VE.doc && VE.doc.getElementById('ve');
+    if (!VE.root) return;
+    VE.root.addEventListener('input', () => { VE.dirty = true; clearTimeout(VE.timer); VE.timer = setTimeout(veFlush, 250); });
+    VE.root.addEventListener('paste', (e) => {
+      const t = (e.clipboardData || window.clipboardData).getData('text/plain'); if (!t) return;
+      e.preventDefault(); VE.doc.execCommand('insertText', false, t);
+    });
+    VE.doc.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); veSave(); } });
+    VE.doc.addEventListener('selectionchange', () => { const s = VE.doc.getSelection(); if (s && s.rangeCount && VE.root.contains(s.anchorNode)) { VE.range = s.getRangeAt(0).cloneRange(); veSyncBlockSelect(); } });
+  });
+  function veSerialize() {
+    if (!VE.root) return S.raw.body || '';
+    let html = VE.root.innerHTML;
+    html = html.replace(/<span[^>]*\bdata-ve="(\d+)"[^>]*>[\s\S]*?<\/span>/g, (m, i) => (VE.blocks[+i] ? VE.blocks[+i].text : ''));
+    return veAssetsBack(html);
+  }
+  function veFlush() {
+    // Только после реальных правок: браузер нормализует HTML, и без этого флага
+    // простое открытие вкладки помечало бы файл изменённым.
+    if (!VE.dirty || !VE.root || !S.level) return;
+    const text = veSerialize();
+    if (text === VE.loadedSrc) return;
+    S.raw.body = text; VE.loadedSrc = text;
+    S.rawDirty.body = text !== (S.data && S.data.raw ? S.data.raw.body || '' : '');
+    updateDirty();
+  }
+  async function veSave() { clearTimeout(VE.timer); veFlush(); if (await saveFile('body', S.raw.body || '')) VE.loadedSrc = S.raw.body; }
+  $('#btnVisualSave').addEventListener('click', veSave);
+  function veRestore() { if (!VE.doc) return; VE.frame.contentWindow.focus(); const s = VE.doc.getSelection(); if (VE.range && s) { s.removeAllRanges(); s.addRange(VE.range); } }
+  function veExec(cmd, val) { if (!VE.doc) return; veRestore(); VE.doc.execCommand(cmd, false, val); VE.root.dispatchEvent(new Event('input')); }
+  $$('.ve-tools [data-cmd]').forEach((b) => { b.addEventListener('mousedown', (e) => e.preventDefault()); b.addEventListener('click', () => veExec(b.dataset.cmd)); });
+  $('#veBlock').addEventListener('change', (e) => veExec('formatBlock', '<' + e.target.value + '>'));
+  function veSyncBlockSelect() {
+    let n = VE.doc.getSelection().anchorNode; if (!n) return;
+    if (n.nodeType === 3) n = n.parentNode;
+    while (n && n !== VE.root && !/^(P|H[1-6]|BLOCKQUOTE|PRE|DIV)$/.test(n.tagName)) n = n.parentNode;
+    const tag = n && n !== VE.root ? n.tagName.toLowerCase() : 'p';
+    const sel = $('#veBlock'); if (Array.from(sel.options).some((o) => o.value === tag)) sel.value = tag;
+  }
+  function vePopOpen(kind) {
+    VE.pop = kind;
+    const pop = $('#vePop'); pop.hidden = false;
+    $('#vePopTitle').textContent = kind === 'link' ? 'Ссылка' : 'Картинка';
+    const sel = $('#vePopAsset');
+    sel.hidden = false;
+    sel.innerHTML = '<option value="">— ассет —</option>' + S.state.assets.map((a) => `<option value="{{${esc(a.name)}}}">{{${esc(a.name)}}}</option>`).join('');
+    $('#vePopUrl').value = ''; $('#vePopUrl').placeholder = kind === 'link' ? 'https://… или {{файл}}' : 'https://…/картинка.jpg или {{картинка.jpg}}';
+    $('#vePopUrl').focus();
+  }
+  $('#veLink').addEventListener('mousedown', (e) => e.preventDefault()); $('#veLink').addEventListener('click', () => vePopOpen('link'));
+  $('#veImage').addEventListener('mousedown', (e) => e.preventDefault()); $('#veImage').addEventListener('click', () => vePopOpen('image'));
+  $('#vePopAsset').addEventListener('change', (e) => { if (e.target.value) $('#vePopUrl').value = e.target.value; });
+  $('#vePopCancel').addEventListener('click', () => { $('#vePop').hidden = true; veRestore(); });
+  $('#vePopUrl').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#vePopOk').click(); if (e.key === 'Escape') $('#vePopCancel').click(); });
+  $('#vePopOk').addEventListener('click', () => {
+    const url = $('#vePopUrl').value.trim(); if (!url) return;
+    $('#vePop').hidden = true;
+    const href = veAssetsFwd(url);
+    if (VE.pop === 'link') veExec('createLink', href);
+    else veExec('insertHTML', `<img src="${esc(href)}" alt="">`);
+  });
 
   // ---------------------------------------------------------------- превью
   function previewURL() {

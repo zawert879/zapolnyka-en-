@@ -39,6 +39,11 @@ func LoadGame(path string) (*Game, error) {
 	if g.GameID == 0 {
 		return nil, fmt.Errorf("game %s: gameId is required", path)
 	}
+	if isYAMLPath(path) {
+		if data, err := os.ReadFile(path); err == nil {
+			g.Disabled = DisabledLevels(data)
+		}
+	}
 	return &g, nil
 }
 
@@ -120,6 +125,18 @@ func codeLines(path string) []int {
 // gameDir is the base directory (directory of the game file).
 // If isDev, uses devLevel instead of level where available.
 func LoadAll(gamePath string) (*Game, []PreparedLevel, error) {
+	return loadAll(gamePath, false)
+}
+
+// LoadAllWithDisabled — как LoadAll, но добавляет и выключенные (закомментированные)
+// уровни с флагом Disabled, в порядке файла. Ошибки в файлах выключенного уровня не
+// считаются фатальными: такой уровень просто пропускается (интерфейс покажет ошибку
+// в списке уровней).
+func LoadAllWithDisabled(gamePath string) (*Game, []PreparedLevel, error) {
+	return loadAll(gamePath, true)
+}
+
+func loadAll(gamePath string, withDisabled bool) (*Game, []PreparedLevel, error) {
 	game, err := LoadGame(gamePath)
 	if err != nil {
 		return nil, nil, err
@@ -128,37 +145,55 @@ func LoadAll(gamePath string) (*Game, []PreparedLevel, error) {
 
 	var prepared []PreparedLevel
 	for _, relPath := range game.Levels {
-		confPath := filepath.Join(gameDir, relPath)
-		level, err := LoadLevel(confPath)
+		p, err := loadPrepared(gameDir, relPath)
 		if err != nil {
 			return nil, nil, err
 		}
-		levelDir := filepath.Dir(confPath)
-		p := PreparedLevel{Conf: level}
-
-		// Load codes
-		if level.Codes != nil {
-			codesPath := filepath.Join(levelDir, *level.Codes)
-			codes, err := LoadCodes(codesPath)
-			if err != nil {
-				return nil, nil, err
-			}
-			p.Codes = codes
-		}
-
-		// Load body
-		if level.Body != nil {
-			bodyPath := filepath.Join(levelDir, *level.Body)
-			data, err := os.ReadFile(bodyPath)
-			if err != nil {
-				return nil, nil, fmt.Errorf("read body %s: %w", bodyPath, err)
-			}
-			p.Body = string(data)
-		}
-
 		prepared = append(prepared, p)
 	}
+	if withDisabled {
+		for _, relPath := range game.Disabled {
+			p, err := loadPrepared(gameDir, relPath)
+			if err != nil {
+				continue
+			}
+			p.Disabled = true
+			prepared = append(prepared, p)
+		}
+	}
 	return game, prepared, nil
+}
+
+// loadPrepared читает conf, codes и тело одного уровня.
+func loadPrepared(gameDir, relPath string) (PreparedLevel, error) {
+	confPath := filepath.Join(gameDir, relPath)
+	level, err := LoadLevel(confPath)
+	if err != nil {
+		return PreparedLevel{}, err
+	}
+	levelDir := filepath.Dir(confPath)
+	p := PreparedLevel{Conf: level, ConfRel: filepath.ToSlash(relPath)}
+
+	// Load codes
+	if level.Codes != nil {
+		codesPath := filepath.Join(levelDir, *level.Codes)
+		codes, err := LoadCodes(codesPath)
+		if err != nil {
+			return PreparedLevel{}, err
+		}
+		p.Codes = codes
+	}
+
+	// Load body
+	if level.Body != nil {
+		bodyPath := filepath.Join(levelDir, *level.Body)
+		data, err := os.ReadFile(bodyPath)
+		if err != nil {
+			return PreparedLevel{}, fmt.Errorf("read body %s: %w", bodyPath, err)
+		}
+		p.Body = string(data)
+	}
+	return p, nil
 }
 
 // DefaultFormat returns the file extension to use for new level files.

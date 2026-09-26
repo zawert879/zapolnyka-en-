@@ -86,7 +86,7 @@
   var elapsed = 0;
   function render() {
     var levelOpts = P.levels.map(function (l) {
-      var mark = l.passed ? ' ✓' : (l.started ? ' ·' : '');
+      var mark = (l.passed ? ' ✓' : (l.started ? ' ·' : '')) + (l.disabled ? ' [выкл]' : '');
       return '<option value="' + l.number + '"' + (l.current ? ' selected' : '') + '>' + l.number + (l.name ? ' — ' + esc(l.name) : '') + mark + '</option>';
     }).join('');
 

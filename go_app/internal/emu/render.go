@@ -19,7 +19,9 @@ const EngineVer = "1.88.0.0"
 func PlayPath(gid int) string { return fmt.Sprintf("/gameengines/encounter/play/%d/", gid) }
 
 // randRnd — параметр ?rnd= у ссылки «Обновить» (вида 0,84232806546722).
-func randRnd() string { return "0," + strconv.FormatInt(10000000000000+rand.Int63n(90000000000000), 10) }
+func randRnd() string {
+	return "0," + strconv.FormatInt(10000000000000+rand.Int63n(90000000000000), 10)
+}
 
 // randTimerID — id таймера вида time8895328 (7–8 цифр).
 func randTimerID() string { return "time" + strconv.Itoa(1000000+rand.Intn(99000000)) }
@@ -116,7 +118,9 @@ func ruDuration(sec int) string {
 	return strings.Join(parts, " ")
 }
 
-func sectorsWord(n int) string { return plural(n, "сектор", "сектора", "секторов") }
+func sectorsWord(n int) string {
+	return plural(n, "сектор", "сектора", "секторов")
+}
 func bonusesWord(n int) string { return plural(n, "бонус", "бонуса", "бонусов") }
 
 // timerScript — обратный отсчёт движка: <span class="bold_off" id="timeN">текст</span>
