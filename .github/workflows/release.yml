@@ -50,8 +50,11 @@ jobs:
             -ver-major "${MAJOR:-0}" -ver-minor "${MINOR:-0}" -ver-patch "${PATCH:-0}" \
             -file-version "$VER" -product-version "$VER" \
             -o resource_windows_amd64.syso versioninfo.json
+          cp resource_windows_amd64.syso app/resource_windows_amd64.syso
 
       # No -s -w: keeping the symbol table also lowers the heuristic FP rate.
+      # Two binaries: консольный zapolnyaka (CLI/TUI/ui/emu) и оконный
+      # zapolnyaka-app (двойной клик → окно приложения; на Windows без консоли).
       - name: Build
         working-directory: go_app
         env:
@@ -61,6 +64,10 @@ jobs:
         run: |
           go build -trimpath -ldflags="-X main.version=${{ github.ref_name }}" \
             -o ../dist/zapolnyaka-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }} .
+          GUI=""
+          if [ "${{ matrix.os }}" = "windows" ]; then GUI="-H windowsgui "; fi
+          go build -trimpath -ldflags="${GUI}-X main.version=${{ github.ref_name }}" \
+            -o ../dist/zapolnyaka-app-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }} ./app
 
       # Optional Windows Authenticode signing — the definitive fix for the FP and
       # for SmartScreen. No-op until you add repo secrets WINDOWS_CERT_BASE64
@@ -85,7 +92,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: zapolnyaka-${{ matrix.os }}-${{ matrix.arch }}
-          path: dist/zapolnyaka-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }}
+          path: dist/*
 
   release:
     needs: build
