@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"zapolnyaka/internal/assets"
 	"zapolnyaka/internal/config"
 	"zapolnyaka/internal/zapolnyaka"
 	"zapolnyaka/pkg/logger"
@@ -23,11 +24,11 @@ func RunGo(gamePath string) error {
 	}
 
 	// Rewrite {{asset}} placeholders in level content to their uploaded URLs.
-	manifest, err := loadManifest(manifestPath(assetsDirFor(gamePath, game)))
+	manifest, err := assets.LoadManifest(assets.ManifestPath(assets.DirFor(gamePath, game)))
 	if err != nil {
 		return fmt.Errorf("load asset manifest: %w", err)
 	}
-	if err := substituteAssets(prepared, manifest, game.GameID); err != nil {
+	if err := assets.Substitute(prepared, assets.D1Resolver(manifest, game.GameID)); err != nil {
 		return err
 	}
 
@@ -40,6 +41,17 @@ func RunGo(gamePath string) error {
 	logger.Println("🔑 Авторизация...")
 	if err := z.Auth(); err != nil {
 		return fmt.Errorf("auth: %w", err)
+	}
+
+	// Досоздать уровни, если конфиг ссылается на номера больше, чем есть в игре.
+	maxLevel := 0
+	for _, p := range prepared {
+		if p.Conf.Level > maxLevel {
+			maxLevel = p.Conf.Level
+		}
+	}
+	if err := z.EnsureLevels(maxLevel); err != nil {
+		return fmt.Errorf("ensure levels: %w", err)
 	}
 
 	for _, p := range prepared {

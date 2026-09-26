@@ -5,6 +5,8 @@
 // code submission, bonus codes, penalty hints, and game discovery.
 package encx
 
+import "encoding/json"
+
 // LoginResponse is the response from the /login/signin endpoint.
 type LoginResponse struct {
 	Error                int      `json:"Error"`
@@ -117,12 +119,56 @@ type Help struct {
 
 // Sector represents a sector within a level.
 type Sector struct {
-	SectorId   int    `json:"SectorId"`
-	Order      int    `json:"Order"`
-	Name       string `json:"Name"`
-	IsAnswered bool   `json:"IsAnswered"`
-	Answer     string `json:"Answer"`
+	SectorId   int          `json:"SectorId"`
+	Order      int          `json:"Order"`
+	Name       string       `json:"Name"`
+	IsAnswered bool         `json:"IsAnswered"`
+	Answer     SectorAnswer `json:"Answer"`
 }
+
+// SectorAnswer — ответ по сектору. Движок отдаёт "" для незакрытого сектора и
+// объект {Answer, Login, UserId, …} для закрытого; принимаем оба варианта.
+type SectorAnswer struct {
+	Answer   string `json:"Answer"`
+	Login    string `json:"Login"`
+	UserId   int    `json:"UserId"`
+	Raw      json.RawMessage `json:"-"`
+}
+
+// UnmarshalJSON принимает строку или объект.
+func (a *SectorAnswer) UnmarshalJSON(b []byte) error {
+	a.Raw = append(a.Raw[:0], b...)
+	if len(b) > 0 && b[0] == '"' {
+		var s string
+		if err := json.Unmarshal(b, &s); err != nil {
+			return err
+		}
+		a.Answer = s
+		return nil
+	}
+	if string(b) == "null" {
+		return nil
+	}
+	type plain SectorAnswer
+	var p plain
+	if err := json.Unmarshal(b, &p); err != nil {
+		return err
+	}
+	*a = SectorAnswer(p)
+	a.Raw = append(json.RawMessage(nil), b...)
+	return nil
+}
+
+// MarshalJSON отдаёт исходное представление, если оно было, иначе строку.
+func (a SectorAnswer) MarshalJSON() ([]byte, error) {
+	if len(a.Raw) > 0 {
+		return a.Raw, nil
+	}
+	return json.Marshal(a.Answer)
+}
+
+// String — текст ответа.
+func (a SectorAnswer) String() string { return a.Answer }
 
 // Bonus represents a bonus task within a level.
 type Bonus struct {
@@ -132,7 +178,7 @@ type Bonus struct {
 	Task           string `json:"Task"`
 	Help           string `json:"Help"`
 	IsAnswered     bool   `json:"IsAnswered"`
-	Answer         string `json:"Answer"`
+	Answer         SectorAnswer `json:"Answer"` // "" или объект {Answer, Login, …}, как у сектора
 	Expired        bool   `json:"Expired"`
 	SecondsToStart int    `json:"SecondsToStart"`
 	SecondsLeft    int    `json:"SecondsLeft"`

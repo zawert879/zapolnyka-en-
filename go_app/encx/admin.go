@@ -1159,16 +1159,20 @@ func stripTags(s string) string {
 // AdminSetSectorsToClose sets the sector completion condition for a level.
 // required <= 0 means "all sectors required"; required > 0 means "at least N sectors".
 func (c *Client) AdminSetSectorsToClose(ctx context.Context, gameId, levelNum, required int) error {
-	u := fmt.Sprintf("%s/Administration/Games/LevelEditor.aspx?gid=%d&level=%d&swanswers=1",
+	// Форма «Условие прохождения» на LevelEditor.aspx: POST на тот же URL страницы
+	// с полями rbSectorCompleteType (1 — все, 2 — N штук), txtRequiredSectorsCount
+	// и скрытым action=upsecsett (без него сервер молча игнорирует настройку).
+	u := fmt.Sprintf("%s/Administration/Games/LevelEditor.aspx?gid=%d&level=%d",
 		c.baseURL(), gameId, levelNum)
 	form := url.Values{}
+	form.Set("action", "upsecsett")
 	if required <= 0 {
 		form.Set("rbSectorCompleteType", "1")
+		form.Set("txtRequiredSectorsCount", "0")
 	} else {
 		form.Set("rbSectorCompleteType", "2")
 		form.Set("txtRequiredSectorsCount", strconv.Itoa(required))
 	}
-	form.Set("pnlSettings_SectorsCompletionSettings_ctl00_btnSave", "Сохранить")
 	_, err := c.doPost(ctx, u, form)
 	if err != nil {
 		return fmt.Errorf("encx: admin set sectors to close: %w", err)

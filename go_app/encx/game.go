@@ -15,7 +15,22 @@ import (
 // GetGameModel retrieves the current game state by posting to the game engine.
 // Additional form values can be passed to perform actions (send codes, etc.).
 func (c *Client) GetGameModel(ctx context.Context, gameId int, formValues ...url.Values) (*GameModel, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/gameengines/encounter/play/%d", c.baseURL(), gameId))
+	body, err := c.GetGameJSON(ctx, gameId, formValues...)
+	if err != nil {
+		return nil, err
+	}
+	var model GameModel
+	if err := json.Unmarshal(body, &model); err != nil {
+		return nil, fmt.Errorf("encx: decode game model: %w", err)
+	}
+	return &model, nil
+}
+
+// GetGameJSON — как GetGameModel, но возвращает сырой JSON сервера без декодирования.
+func (c *Client) GetGameJSON(ctx context.Context, gameId int, formValues ...url.Values) ([]byte, error) {
+	// Завершающий слэш обязателен: без него сервер отвечает 302 на /play/{id}/,
+	// а редиректы клиент не следует (ответ «Object moved» вместо JSON).
+	u, err := url.Parse(fmt.Sprintf("%s/gameengines/encounter/play/%d/", c.baseURL(), gameId))
 	if err != nil {
 		return nil, fmt.Errorf("encx: parse game URL: %w", err)
 	}
@@ -49,15 +64,17 @@ func (c *Client) GetGameModel(ctx context.Context, gameId int, formValues ...url
 	}
 
 	if len(body) > 0 && body[0] == '<' {
-		return nil, fmt.Errorf("encx: session expired or access denied (server returned HTML instead of JSON; try re-login)")
+		return nil, fmt.Errorf("encx: session expired or access denied (HTTP %d, Location=%q, body starts %q; try re-login)",
+			resp.StatusCode, resp.Header.Get("Location"), truncate(string(body), 120))
 	}
+	return body, nil
+}
 
-	var model GameModel
-	if err := json.Unmarshal(body, &model); err != nil {
-		return nil, fmt.Errorf("encx: decode game model: %w", err)
+func truncate(s string, n int) string {
+	if len(s) <= n {
+		return s
 	}
-
-	return &model, nil
+	return s[:n] + "…"
 }
 
 // SendCode submits a level code answer.
@@ -81,7 +98,7 @@ func (c *Client) SendBonusCode(ctx context.Context, gameId, levelId, levelNumber
 // GetPenaltyHint requests a penalty hint by its ID.
 // This uses a GET request with pid and pact=1 as query parameters.
 func (c *Client) GetPenaltyHint(ctx context.Context, gameId, penaltyId int) (*GameModel, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/gameengines/encounter/play/%d", c.baseURL(), gameId))
+	u, err := url.Parse(fmt.Sprintf("%s/gameengines/encounter/play/%d/", c.baseURL(), gameId))
 	if err != nil {
 		return nil, fmt.Errorf("encx: parse hint URL: %w", err)
 	}

@@ -1,0 +1,4 @@
+# Побайтовые файлы эмулятора: без конвертации переводов строк (шаблон движка — CRLF, как отдаёт en.cx)
+go_app/internal/emu/templates/play.html -text
+go_app/internal/emu/static/engine/** -text
+go_app/internal/emu/testdata/** -text

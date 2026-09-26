@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -126,6 +127,54 @@ func (c *Client) mobileBaseURL() string {
 
 func (c *Client) setHeaders(req *http.Request) {
 	req.Header.Set("User-Agent", c.userAgent)
+}
+
+// PostPage отправляет urlencoded-форму на rawURL как браузер (с cookie jar) и
+// возвращает HTML ответа. Если сервер ответил редиректом, следует за ним одним GET.
+// status — код ответа на сам POST (200 — страница отрендерена сразу, 302 — PRG).
+func (c *Client) PostPage(ctx context.Context, rawURL string, form url.Values) (html string, status int, err error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, rawURL, strings.NewReader(form.Encode()))
+	if err != nil {
+		return "", 0, fmt.Errorf("encx: create POST request: %w", err)
+	}
+	c.setHeaders(req)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Referer", rawURL)
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", 0, fmt.Errorf("encx: POST %s: %w", rawURL, err)
+	}
+	body, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return "", resp.StatusCode, fmt.Errorf("encx: read response: %w", err)
+	}
+	status = resp.StatusCode
+	if loc := resp.Header.Get("Location"); status >= 300 && status < 400 && loc != "" {
+		next, err := resp.Request.URL.Parse(loc)
+		if err != nil {
+			return string(body), status, nil
+		}
+		page, err := c.GetPage(ctx, next.String())
+		if err != nil {
+			return "", status, err
+		}
+		return page, status, nil
+	}
+	return string(body), status, nil
+}
+
+// SetUserAgent меняет User-Agent для последующих запросов.
+func (c *Client) SetUserAgent(ua string) { c.userAgent = ua }
+
+// SetCookie кладёт cookie для домена клиента в cookie jar (например, view-mode=desktop).
+func (c *Client) SetCookie(name, value string) error {
+	u, err := url.Parse(c.baseURL())
+	if err != nil {
+		return err
+	}
+	c.httpClient.Jar.SetCookies(u, []*http.Cookie{{Name: name, Value: value, Path: "/"}})
+	return nil
 }
 
 func (c *Client) debugf(format string, args ...any) {
