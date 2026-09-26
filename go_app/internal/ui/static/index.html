@@ -101,8 +101,8 @@
               <button class="primary small" id="btnEditorSave">Сохранить · Ctrl+S</button>
             </div>
             <div class="assetbar"><span class="label">Вставить ассет</span><div id="assetButtons" class="row"></div></div>
-            <div class="editor-wrap"><pre class="gutter" id="gutter"></pre><textarea id="editor" spellcheck="false" wrap="off"></textarea></div>
-            <div class="editor-foot"><span id="editorHint" class="muted"></span><span class="grow"></span><span class="muted mono" id="editorPos"></span></div>
+            <div class="editor-wrap"><div id="editor"></div></div>
+            <div class="editor-foot"><span id="editorHint" class="muted"></span><span class="grow"></span><span class="muted">Ctrl+Space — подсказки · {{ — ассеты · Ctrl+F — поиск</span><span class="muted mono" id="editorPos"></span></div>
           </div>
         </div>
       </section>
@@ -209,6 +209,8 @@
   </footer>
 </div>
 <div class="toast" id="toast" hidden></div>
+<script src="/ui/static/vendor/ace/ace.js"></script>
+<script src="/ui/static/vendor/ace/ext-language_tools.js"></script>
 <script src="/ui/static/app.js"></script>
 </body>
 </html>

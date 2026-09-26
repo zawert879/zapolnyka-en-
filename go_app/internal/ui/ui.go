@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -60,7 +61,7 @@ func Mount(mux *http.ServeMux, deps Deps) *UI {
 	u := &UI{deps: deps, jobs: NewJobs()}
 	mux.HandleFunc("GET /ui", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/ui/", http.StatusFound) })
 	mux.HandleFunc("GET /ui/{$}", u.handleIndex)
-	mux.HandleFunc("GET /ui/static/{file}", u.handleStatic)
+	mux.HandleFunc("GET /ui/static/{path...}", u.handleStatic)
 	mux.HandleFunc("GET /ui/preview/{n}", u.handlePreview)
 	mux.HandleFunc("GET /api/ui/state", u.handleState)
 	mux.HandleFunc("POST /api/ui/game", u.handleSelectGame)
@@ -95,14 +96,20 @@ func (u *UI) handleIndex(w http.ResponseWriter, r *http.Request) {
 	http.ServeFileFS(w, r, u.staticFS(), "index.html")
 }
 
+// handleStatic отдаёт файлы из static/, включая вложенные (vendor/ace/…). Скрытые
+// файлы и выход из папки запрещены; vendor кэшируется, свои файлы — нет.
 func (u *UI) handleStatic(w http.ResponseWriter, r *http.Request) {
-	file := r.PathValue("file")
-	if strings.Contains(file, "/") || strings.HasPrefix(file, ".") {
+	p := path.Clean("/" + r.PathValue("path"))
+	if p == "/" || strings.Contains(p, "/.") {
 		http.NotFound(w, r)
 		return
 	}
-	w.Header().Set("Cache-Control", "no-store")
-	http.ServeFileFS(w, r, u.staticFS(), file)
+	if strings.HasPrefix(p, "/vendor/") {
+		w.Header().Set("Cache-Control", "public, max-age=86400")
+	} else {
+		w.Header().Set("Cache-Control", "no-store")
+	}
+	http.ServeFileFS(w, r, u.staticFS(), strings.TrimPrefix(p, "/"))
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

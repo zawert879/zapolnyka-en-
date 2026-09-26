@@ -348,35 +348,112 @@
     } catch (e) { toast('Эмулятор: ' + String(e.message || e) + ' (сохраните codes.yml — эмулятор читает файлы)', 'err'); }
   }
 
-  // ---------------------------------------------------------------- редактор
-  const ed = $('#editor'), gutter = $('#gutter');
+  // ---------------------------------------------------------------- редактор (Ace)
+  // Три сессии — по одной на файл (своя история отмены), режимы html/yaml, подсветка,
+  // автодополнение (теги и атрибуты — из режима html, ключи YAML и типы кодов —
+  // свои, {{ассеты}} — во всех файлах). Файлы Ace — static/vendor/ace, офлайн.
+  ace.config.set('basePath', '/ui/static/vendor/ace');
+  const Range = ace.require('ace/range').Range;
+  const langTools = ace.require('ace/ext/language_tools');
+  const E = ace.edit('editor', {
+    theme: 'ace/theme/one_dark', fontFamily: 'JetBrains Mono, Consolas, Cascadia Mono, monospace', fontSize: '13px',
+    showPrintMargin: false, tabSize: 2, useSoftTabs: true, wrap: false, highlightActiveLine: true, scrollPastEnd: 0.2,
+    enableBasicAutocompletion: true, enableLiveAutocompletion: true, enableSnippets: true, fixedWidthGutter: true,
+  });
+  const MODES = { body: 'ace/mode/html', conf: 'ace/mode/yaml', codes: 'ace/mode/yaml' };
+  const sessions = {};
+  let edSyncing = false;
+  function edSession(file) {
+    if (!sessions[file]) {
+      const s = ace.createEditSession(S.raw[file] || '', MODES[file]);
+      s.setTabSize(2); s.setUseSoftTabs(true); s.setUseWrapMode(false);
+      s.on('change', () => {
+        if (edSyncing) return;
+        const v = s.getValue();
+        S.raw[file] = v; S.rawDirty[file] = v !== ((S.data && S.data.raw && S.data.raw[file]) || ''); updateDirty();
+      });
+      sessions[file] = s;
+    }
+    return sessions[file];
+  }
+  // edSet кладёт текст в сессию без пометки «изменено» (синхронизация с S.raw).
+  function edSet(file, text) {
+    const s = edSession(file);
+    if (s.getValue() === text) return;
+    edSyncing = true;
+    try { s.setValue(text); s.selection.moveCursorFileStart(); s.selection.clearSelection(); } finally { edSyncing = false; }
+  }
+  const edValue = () => E.getValue();
   function renderEditor() {
     const d = S.data;
     const paths = d ? { body: d.files.body || (d.files.dir + '/task.html'), conf: d.files.conf, codes: d.files.codes } : {};
     $('#editorPath').textContent = paths[S.file] || '';
-    if (document.activeElement !== ed) ed.value = S.raw[S.file] || '';
-    updateGutter();
+    ['body', 'conf', 'codes'].forEach((f) => edSet(f, S.raw[f] || ''));
+    if (E.session !== edSession(S.file)) E.setSession(edSession(S.file));
+    E.setReadOnly(!S.level);
+    E.resize(true);
+    updatePos();
     $('#editorHint').textContent = { body: 'HTML тела задания. CSS — через <style>@import url("{{design.css}}")</style>: голый <link> движок вырежет.', conf: 'YAML настроек уровня; проверяется при сохранении. Удобнее — вкладка «Уровень».', codes: 'YAML кодов; проверяется при сохранении. Удобнее — вкладка «Коды».' }[S.file];
   }
-  function updateGutter() {
-    const n = (ed.value.match(/\n/g) || []).length + 1;
-    let s = ''; for (let i = 1; i <= n; i++) s += i + '\n';
-    gutter.textContent = s; gutter.scrollTop = ed.scrollTop;
-  }
-  ed.addEventListener('input', () => { S.raw[S.file] = ed.value; S.rawDirty[S.file] = ed.value !== (S.data && S.data.raw ? S.data.raw[S.file] || '' : ''); updateDirty(); updateGutter(); });
-  ed.addEventListener('scroll', () => { gutter.scrollTop = ed.scrollTop; });
-  ed.addEventListener('keyup', updatePos); ed.addEventListener('click', updatePos);
-  ed.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab') { e.preventDefault(); insertAtCursor('  '); }
+  function updatePos() { const p = E.getCursorPosition(); $('#editorPos').textContent = `стр. ${p.row + 1}, кол. ${p.column + 1}`; }
+  E.on('changeSelection', updatePos);
+  function insertAtCursor(text) { E.insert(text); E.focus(); }
+  $$('.filetabs button[data-file]').forEach((b) => b.addEventListener('click', () => { S.file = b.dataset.file; $$('.filetabs button[data-file]').forEach((x) => x.classList.toggle('active', x === b)); renderEditor(); E.focus(); }));
+
+  // --- автодополнение: {{ассеты}} во всех файлах
+  const assetCompleter = {
+    getCompletions(editor, session, pos, prefix, cb) {
+      const line = session.getLine(pos.row).slice(0, pos.column);
+      if (!/\{\{\s*[^{}]*$/.test(line)) return cb(null, []);
+      cb(null, (S.state ? S.state.assets : []).map((a) => ({ caption: '{{' + a.name + '}}', value: a.name, meta: a.uploaded ? 'ассет' : 'ассет (не залит)', score: 2000, name: a.name, completer: assetCompleter })));
+    },
+    insertMatch(editor, data) {
+      const pos = editor.getCursorPosition(), line = editor.session.getLine(pos.row).slice(0, pos.column);
+      const m = /\{\{\s*([^{}]*)$/.exec(line);
+      if (m) editor.session.replace(new Range(pos.row, pos.column - m[1].length, pos.row, pos.column), '');
+      const after = editor.session.getLine(pos.row).slice(editor.getCursorPosition().column);
+      editor.insert(data.name + (after.startsWith('}}') ? '' : '}}'));
+    },
+  };
+  // --- автодополнение: ключи conf.yml / codes.yml и типы кодов
+  const CONF_KEYS = [
+    ['level', 'номер уровня (обязательно)'], ['name', 'название уровня в админке'], ['comment', 'комментарий к уровню в админке'],
+    ['codes', 'файл кодов, напр. codes.yml'], ['body', 'файл тела задания, напр. task.html'], ['clean', 'true — очистить уровень перед заливкой'],
+    ['autopass', 'автопереход через N секунд (0 — выкл)'], ['autopassPenalty', 'штраф при автопереходе, сек'],
+    ['sectorsToClose', 'условие прохождения: сколько секторов закрыть (по умолчанию все)'],
+    ['hints', 'обычные подсказки: список {time, text}'], ['penaltyHints', 'штрафные подсказки: список {time, text, penalty, comment}'],
+    ['time', 'секунда уровня, когда подсказка откроется'], ['text', 'текст подсказки (HTML, {{ассеты}})'],
+    ['penalty', 'штраф за штрафную подсказку, сек'],
+  ];
+  const CODE_KEYS = [
+    ['type', 'сектор | бонус | штраф | секторбонус | секторштраф'], ['answers', 'список ответов (кодов)'],
+    ['sectorName', 'имя сектора — видно игроку сразу'], ['bonusName', 'имя бонуса — видно игроку сразу'],
+    ['time', 'время бонуса/штрафа, сек (обязательно для бонусных типов)'], ['task', 'задание бонуса — видно до ввода'],
+    ['help', 'текст после ввода кода (HTML, <script>, {{ассеты}})'], ['levels', 'уровни бонуса: "1-10", ">10", "2,4,6-8", "*"'],
+  ];
+  const CODE_TYPES = ['сектор', 'бонус', 'штраф', 'секторбонус', 'секторштраф'];
+  const yamlCompleter = {
+    getCompletions(editor, session, pos, prefix, cb) {
+      if (S.file !== 'conf' && S.file !== 'codes') return cb(null, []);
+      const line = session.getLine(pos.row), before = line.slice(0, pos.column - prefix.length);
+      if (S.file === 'codes' && /^\s*(-\s+)?type:\s*$/.test(before)) {
+        return cb(null, CODE_TYPES.map((t) => ({ caption: t, value: t, meta: 'тип кода', score: 1500 })));
+      }
+      if (!/^\s*(-\s+)?$/.test(before)) return cb(null, []);
+      const keys = S.file === 'conf' ? CONF_KEYS : CODE_KEYS;
+      cb(null, keys.map(([k, doc]) => ({ caption: k, value: k + ': ', meta: 'ключ', score: 1000, docHTML: '<b>' + k + '</b> — ' + esc(doc) })));
+    },
+  };
+  // Слова из текущего файла — только в HTML: в YAML они дублируют подсказки ключей.
+  const localWordsCompleter = { getCompletions(editor, session, pos, prefix, cb) { if (S.file !== 'body') return cb(null, []); langTools.textCompleter.getCompletions(editor, session, pos, prefix, cb); } };
+  E.completers = [assetCompleter, yamlCompleter, langTools.snippetCompleter, langTools.keyWordCompleter, localWordsCompleter];
+  // «{{» сразу открывает список ассетов
+  E.commands.on('afterExec', (e) => {
+    if (e.command.name !== 'insertstring' || e.args !== '{') return;
+    const pos = E.getCursorPosition();
+    if (/\{\{$/.test(E.session.getLine(pos.row).slice(0, pos.column))) E.execCommand('startAutocomplete');
   });
-  function updatePos() { const before = ed.value.slice(0, ed.selectionStart); const line = (before.match(/\n/g) || []).length + 1; const col = before.length - before.lastIndexOf('\n'); $('#editorPos').textContent = `стр. ${line}, кол. ${col}`; }
-  function insertAtCursor(text) {
-    const s = ed.selectionStart, e = ed.selectionEnd;
-    ed.value = ed.value.slice(0, s) + text + ed.value.slice(e);
-    ed.selectionStart = ed.selectionEnd = s + text.length; ed.focus();
-    ed.dispatchEvent(new Event('input'));
-  }
-  $$('.filetabs button[data-file]').forEach((b) => b.addEventListener('click', () => { S.file = b.dataset.file; $$('.filetabs button[data-file]').forEach((x) => x.classList.toggle('active', x === b)); ed.value = S.raw[S.file] || ''; renderEditor(); }));
+
   async function saveFile(which, text) {
     if (!S.level) return false;
     try {
@@ -387,7 +464,7 @@
       return true;
     } catch (e) { toast(String(e.message || e), 'err'); return false; }
   }
-  const saveRaw = () => saveFile(S.file, ed.value);
+  const saveRaw = () => saveFile(S.file, edValue());
   $('#btnEditorSave').addEventListener('click', saveRaw);
   document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (S.tab === 'editor') saveRaw(); else if (S.tab === 'visual') veSave(); else if (S.tab === 'codes') $('#btnCodesSave').click(); else if (S.tab === 'level') $('#btnConfSave').click(); } });
 
@@ -421,7 +498,7 @@
       const c = Object.assign({}, S.conf);
       c.hints = (c.hints || []).filter((h) => h.text); c.penaltyHints = (c.penaltyHints || []).filter((h) => h.text);
       await api('PUT', `/api/ui/level/${S.level}/conf`, c);
-      S.confDirty = false; toast('conf.yml сохранён', 'ok'); await loadState(); await loadLevel(); if (S.file === 'conf') ed.value = S.raw.conf; renderConf();
+      S.confDirty = false; toast('conf.yml сохранён', 'ok'); await loadState(); await loadLevel(); renderConf(); if (S.tab === 'editor') renderEditor();
     } catch (e) { toast(String(e.message || e), 'err'); }
   });
   $('#btnConfReload').addEventListener('click', async () => { S.confDirty = false; await loadLevel(); renderConf(); });

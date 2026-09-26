@@ -2,3 +2,4 @@
 go_app/internal/emu/templates/play.html -text
 go_app/internal/emu/static/engine/** -text
 go_app/internal/emu/testdata/** -text
+go_app/internal/ui/static/vendor/** -text

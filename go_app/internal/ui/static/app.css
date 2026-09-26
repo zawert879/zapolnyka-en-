@@ -128,8 +128,17 @@ table.codes .ans{font-family:var(--mono);font-size:12px;color:#c9cdd6}
 .filetabs button.dirty::after{content:" ●";color:var(--yellow)}
 .filetabs .primary{border-radius:8px;margin-left:8px;margin-bottom:6px}
 .editor-wrap{flex:1;min-height:0;display:flex;background:var(--bg)}
-.gutter{margin:0;padding:12px 8px 12px 12px;width:52px;text-align:right;color:#4a4f5a;font-family:var(--mono);font-size:13px;line-height:1.6;overflow:hidden;user-select:none;border-right:1px solid var(--line)}
-#editor{flex:1;min-width:0;height:auto;margin:0;padding:12px 14px;border:0;border-radius:0;background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.6;resize:none;white-space:pre;overflow:auto;tab-size:2}
+#editor{flex:1;min-width:0;min-height:0}
+#editor.ace_editor{background:var(--bg);font-family:var(--mono);font-size:13px;line-height:1.6}
+#editor .ace_gutter{background:var(--side);color:#5b616d;border-right:1px solid var(--line)}
+#editor .ace_gutter-active-line{background:#1d1f24}
+#editor .ace_marker-layer .ace_active-line{background:#16181d}
+#editor .ace_print-margin{display:none}
+.ace_editor.ace_autocomplete{background:var(--panel2)!important;border:1px solid var(--line)!important;color:var(--text)!important;box-shadow:0 8px 24px rgba(0,0,0,.5)!important;font-family:var(--mono)!important;font-size:12.5px!important}
+.ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line{background:#2b4a34!important}
+.ace_editor.ace_autocomplete .ace_completion-highlight{color:var(--green)!important;text-shadow:none!important}
+.ace_editor.ace_autocomplete .ace_completion-meta{color:var(--muted)!important;opacity:1!important}
+.ace_tooltip.ace_doc-tooltip{background:var(--panel2)!important;border:1px solid var(--line)!important;color:var(--text)!important;font-size:12.5px!important}
 .editor-foot{display:flex;gap:16px;padding:6px 14px;border-top:1px solid var(--line);background:var(--side);font-size:12px}
 .assetbar{display:flex;align-items:center;gap:10px;padding:6px 12px;border-bottom:1px solid var(--line);background:var(--side);flex-wrap:wrap}
 .assetbar .row{gap:6px}

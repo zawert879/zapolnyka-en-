@@ -128,6 +128,13 @@ func TestStateAndLevel(t *testing.T) {
 	if code != 200 || !strings.Contains(body, "zapolnyaka") {
 		t.Fatalf("ui page: %d", code)
 	}
+	// Вложенная статика (Ace) отдаётся, скрытые файлы — нет.
+	if code, body := e.do(t, "GET", "/ui/static/vendor/ace/ace.js", nil, false); code != 200 || !strings.Contains(body, "ace") {
+		t.Fatalf("vendor static: %d", code)
+	}
+	if code, _ := e.do(t, "GET", "/ui/static/vendor/ace/.hidden", nil, false); code != 404 {
+		t.Fatalf("hidden static must be 404, got %d", code)
+	}
 	code, body = e.do(t, "GET", "/api/ui/state", nil, false)
 	if code != 200 {
 		t.Fatalf("state: %d %s", code, body)
