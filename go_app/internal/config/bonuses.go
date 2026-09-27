@@ -12,10 +12,15 @@ type BonusRef struct {
 // в порядке создания: собственные бонусы уровня плюс бонусы других уровней, чья
 // спецификация `levels` покрывает levelNum. Бонус с заданным `levels` играет только
 // там, где сказано в спецификации — собственный уровень не подразумевается.
+// Выключенный уровень (Disabled) не заливается, поэтому его бонусы на других
+// уровнях не появляются; на нём самом (превью/эмулятор) они видны как раньше.
 func BonusesForLevel(prepared []PreparedLevel, levelNum int) []BonusRef {
 	var out []BonusRef
 	for _, p := range prepared {
 		if p.Conf == nil {
+			continue
+		}
+		if p.Disabled && p.Conf.Level != levelNum {
 			continue
 		}
 		for i, c := range p.Codes {
