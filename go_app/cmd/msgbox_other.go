@@ -1,4 +1,4 @@
-//go:build !windows
+//go:build !windows && !darwin
 
 package cmd
 
@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-// MessageBox на не-Windows пишет сообщение в stderr.
+// MessageBox на Linux и прочих пишет сообщение в stderr.
 func MessageBox(title, text string) {
 	fmt.Fprintf(os.Stderr, "%s: %s\n", title, text)
 }

@@ -11,7 +11,8 @@ permissions:
 jobs:
   build:
     name: Build ${{ matrix.os }}/${{ matrix.arch }}
-    runs-on: ubuntu-latest
+    # macOS собирается на macOS-раннере: Zapolnyaka.app подписывается codesign.
+    runs-on: ${{ matrix.os == 'darwin' && 'macos-latest' || 'ubuntu-latest' }}
     strategy:
       matrix:
         include:
@@ -68,6 +69,22 @@ jobs:
           if [ "${{ matrix.os }}" = "windows" ]; then GUI="-H windowsgui "; fi
           go build -trimpath -ldflags="${GUI}-X main.version=${{ github.ref_name }}" \
             -o ../dist/zapolnyaka-app-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }} ./app
+
+      # macOS: оконный бинарь уходит в релиз только внутри Zapolnyaka.app —
+      # голый бинарь по двойному клику открывается через Терминал.
+      - name: Package Zapolnyaka.app
+        if: matrix.os == 'darwin'
+        working-directory: go_app
+        run: |
+          BIN=../dist/zapolnyaka-app-darwin-${{ matrix.arch }}
+          mkdir -p ../pkg
+          packaging/macos/make_app.sh "$BIN" "${{ github.ref_name }}" ../pkg
+          codesign --verify --deep --strict ../pkg/Zapolnyaka.app
+          # Без xattr: иначе в zip попадут AppleDouble-файлы ._*, и после
+          # распаковки не через Finder (unzip) подпись бандла ломается.
+          ditto -c -k --norsrc --noextattr --noacl --keepParent \
+            ../pkg/Zapolnyaka.app ../dist/Zapolnyaka-macos-${{ matrix.arch }}.zip
+          rm "$BIN"
 
       # Optional Windows Authenticode signing — the definitive fix for the FP and
       # for SmartScreen. No-op until you add repo secrets WINDOWS_CERT_BASE64

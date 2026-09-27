@@ -154,3 +154,5 @@ go_app/testrun/
 ййййййййййй
 .zapolnyaka.json
 zapolnyaka.log
+# Состояние эмулятора (рядом с game.yml)
+.emu-state.json

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>Zapolnyaka</string>
+	<key>CFBundleDisplayName</key>
+	<string>Zapolnyaka</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.github.zawert879.zapolnyaka</string>
+	<key>CFBundleExecutable</key>
+	<string>zapolnyaka-app</string>
+	<key>CFBundleIconFile</key>
+	<string>icon</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>__VERSION__</string>
+	<key>CFBundleVersion</key>
+	<string>__VERSION__</string>
+	<!-- Своего окна у процесса нет (окно — Chrome/Edge), поэтому без значка в Dock:
+	     иначе он прыгал бы и числился «не отвечает». -->
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+</dict>
+</plist>

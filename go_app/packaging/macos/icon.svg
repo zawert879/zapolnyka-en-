@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Тот же знак, что favicon веб-интерфейса; поля и скругление — по сетке иконок macOS. -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="#35a85a"/>
+  <text x="512" y="682" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="490" fill="#0b1a10">Z</text>
+</svg>

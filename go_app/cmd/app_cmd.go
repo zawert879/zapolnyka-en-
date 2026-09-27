@@ -64,9 +64,11 @@ func RunApp(gamePath string, o AppOptions, version string) error {
 		"--disable-extensions", "--disable-background-mode", "--disable-features=Translate,msEdgeStartupBoost",
 	}
 	c := exec.Command(browser, args...)
+	started := quitWithLastWindow(c)
 	if err := c.Start(); err != nil {
 		return fmt.Errorf("запуск окна (%s): %w", browser, err)
 	}
+	started()
 	logger.Printf("app: окно %s pid=%d, профиль %s\n", filepath.Base(browser), c.Process.Pid, profile)
 	fmt.Println(emuInfoStyle.Render(fmt.Sprintf("  🪟 Окно: %s · закрытие окна завершает приложение", filepath.Base(browser))))
 

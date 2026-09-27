@@ -21,6 +21,8 @@ Go-версия — самодостаточный бинарь без зави�
 | macOS (Apple Silicon) | `zapolnyaka-darwin-arm64` |
 | Linux 64-bit | `zapolnyaka-linux-amd64` |
 
+Оконное приложение (двойной клик, без терминала) — отдельные файлы, см. [`zapolnyaka-app`](#zapolnyaka-app--оконное-приложение-только-go-версия): `zapolnyaka-app-windows-amd64.exe`, `Zapolnyaka-macos-arm64.zip` / `Zapolnyaka-macos-amd64.zip`, `zapolnyaka-app-linux-amd64`.
+
 На macOS/Linux после скачивания сделай файл исполняемым:
 
 ```bash
@@ -146,7 +148,14 @@ zapolnyaka-app.exe                          # игра: последняя из 
 zapolnyaka-app.exe data/myGame/game.yml --offline
 zapolnyaka.exe app [game.yml]               # то же из консольного бинаря
 ```
-Положите exe рядом с папкой `data/` (и `.zapolnyaka.json` с кредами). Если Edge/Chrome не найден, откроется системный браузер, а приложение живёт до Ctrl+C; ошибки старта показываются окном сообщения и пишутся в `zapolnyaka.log`.
+**Где приложение ищет игры** (если путь к `game.yml` не указан): сначала в папке с программой, потом в текущей, потом в `~/zapolnyaka-en` (`C:\Users\<имя>\zapolnyaka-en` на Windows). Берётся первая, где есть `data/<игра>/game.yml`; там же живут `.zapolnyaka.json` с кредами и `zapolnyaka.log`. Если игр нет нигде — окно с сообщением, куда их положить. Если Edge/Chrome не найден, откроется системный браузер, а приложение живёт до Ctrl+C; ошибки старта показываются окном сообщения и пишутся в `zapolnyaka.log`.
+
+**macOS — `Zapolnyaka.app`.** Скачай `Zapolnyaka-macos-arm64.zip` (Apple Silicon) или `-amd64` (Intel), распакуй двойным кликом и положи `Zapolnyaka.app` рядом с папкой `data/` — или куда угодно (например, в «Программы»), а игры — в `~/zapolnyaka-en/data/`. Приложение не подписано сертификатом Apple, поэтому первый запуск macOS заблокирует: «Системные настройки → Конфиденциальность и безопасность → Всё равно открыть» (один раз) или в терминале:
+
+```bash
+xattr -dr com.apple.quarantine Zapolnyaka.app
+```
+Значка в Dock у самого приложения нет — окно принадлежит Chrome/Edge (отдельный значок браузера); закрытие окна завершает приложение. Собрать `.app` локально: `cd go_app && go build -o ../dist/zapolnyaka-app ./app && packaging/macos/make_app.sh ../dist/zapolnyaka-app dev ../dist`.
 
 ### `ui <game>` — веб-интерфейс (только Go-версия)
 
