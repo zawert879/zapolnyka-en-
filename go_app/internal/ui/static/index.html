@@ -76,10 +76,12 @@
         <div class="warn" id="codesWarn" hidden></div>
         <div class="split">
           <div class="panel grow">
-            <table class="codes" id="codesTable">
-              <thead><tr><th>#</th><th>Тип</th><th>Сектор</th><th>Бонус</th><th>Ответы</th><th>Время</th><th>Уровни</th><th></th></tr></thead>
-              <tbody></tbody>
-            </table>
+            <div class="scroll">
+              <table class="codes" id="codesTable">
+                <thead><tr><th>#</th><th>Тип</th><th>Сектор</th><th>Бонус</th><th>Ответы</th><th>Время</th><th>Уровни</th><th></th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
             <div class="row addrow">
               <button class="dashed" data-add="сектор">+ сектор</button><button class="dashed" data-add="бонус">+ бонус</button><button class="dashed" data-add="штраф">+ штраф</button><button class="dashed" data-add="секторбонус">+ секторбонус</button><button class="dashed" data-add="секторштраф">+ секторштраф</button>
               <span class="muted grow right">порядок строк = порядок создания в админке</span>
