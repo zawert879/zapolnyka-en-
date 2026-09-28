@@ -121,9 +121,7 @@ func runCLI() {
 		if path == "" {
 			path = cmd.DefaultGamePath()
 		}
-		if path == "" {
-			cliDie("Укажите путь: zapolnyaka.exe app data/myGame/game.yml")
-		}
+		// игр нет — окно откроется без игры, её можно создать в интерфейсе
 		err = cmd.ActionApp(path, cmd.AppOptions{Port: *port, Offline: *offline}, version)
 
 	case "snapshot":

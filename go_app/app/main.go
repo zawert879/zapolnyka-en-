@@ -9,7 +9,6 @@ package main
 import (
 	"flag"
 	"os"
-	"path/filepath"
 	"strings"
 	"zapolnyaka/cmd"
 	"zapolnyaka/pkg/logger"
@@ -30,12 +29,17 @@ func main() {
 	_ = fs.Parse(args)
 
 	// Игра не указана — рабочей становится папка, где игры есть (см.
-	// cmd.FindWorkDir). С явным путём всё остаётся относительно текущей папки.
+	// cmd.FindWorkDir); если игр нет нигде — cmd.NewWorkDir, и интерфейс
+	// откроется без игры с формой «Создать игру» (data/ появится при создании).
+	// С явным путём всё остаётся относительно текущей папки.
 	if gamePath == "" {
-		dir, places, ok := cmd.FindWorkDir()
+		dir, _, ok := cmd.FindWorkDir()
 		if !ok {
-			cmd.MessageBox("zapolnyaka", noGamesMessage(places))
-			os.Exit(1)
+			var err error
+			if dir, err = cmd.NewWorkDir(); err != nil {
+				cmd.MessageBox("zapolnyaka", "Не удалось подготовить рабочую папку: "+err.Error())
+				os.Exit(1)
+			}
 		}
 		if err := os.Chdir(dir); err != nil {
 			cmd.MessageBox("zapolnyaka", "Ошибка: "+err.Error())
@@ -54,16 +58,4 @@ func main() {
 		cmd.MessageBox("zapolnyaka", "Ошибка: "+err.Error()+"\n\nПодробности в zapolnyaka.log")
 		os.Exit(1)
 	}
-}
-
-// noGamesMessage — что показать, когда игр нет ни в одной из папок places.
-func noGamesMessage(places []string) string {
-	game := filepath.Join("data", "<игра>")
-	var b strings.Builder
-	b.WriteString("Не найдено ни одной игры.\n\nПоложите папку " + game + " с game.yml в одну из папок:\n")
-	for _, p := range places {
-		b.WriteString("  • " + p + "\n")
-	}
-	b.WriteString("\nили укажите путь к game.yml аргументом и запустите снова.")
-	return b.String()
 }

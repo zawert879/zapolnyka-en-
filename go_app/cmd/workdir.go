@@ -31,6 +31,48 @@ func FindWorkDir() (dir string, places []string, ok bool) {
 	return "", places, false
 }
 
+// NewWorkDir — рабочая папка для первого запуска, когда игр нет нигде: папка
+// программы, если туда можно писать (переносная установка рядом с бинарём), иначе
+// ~/zapolnyaka-en (бандл в /Applications, карантин macOS, Program Files). data/
+// в ней появится, когда в интерфейсе создадут первую игру.
+func NewWorkDir() (string, error) {
+	exe := exeDir()
+	if exe != "" && !isSystemAppDir(exe) && writable(exe) {
+		return exe, nil
+	}
+	home := homeWorkDir()
+	if home == "" {
+		return "", os.ErrNotExist
+	}
+	return home, os.MkdirAll(home, 0o755)
+}
+
+// isSystemAppDir — общие папки программ, где заводить data/ не стоит.
+func isSystemAppDir(dir string) bool {
+	d := filepath.ToSlash(dir)
+	if d == "/Applications" || strings.HasPrefix(d, "/Applications/") {
+		return true
+	}
+	for _, env := range []string{"ProgramFiles", "ProgramFiles(x86)"} {
+		if pf := os.Getenv(env); pf != "" && strings.HasPrefix(strings.ToLower(d), strings.ToLower(filepath.ToSlash(pf))) {
+			return true
+		}
+	}
+	return false
+}
+
+// writable — можно ли создавать файлы в dir.
+func writable(dir string) bool {
+	f, err := os.CreateTemp(dir, ".zapolnyaka-write-*")
+	if err != nil {
+		return false
+	}
+	name := f.Name()
+	_ = f.Close()
+	_ = os.Remove(name)
+	return true
+}
+
 // pickWorkDir — первая из папок, в которой есть игра.
 func pickWorkDir(candidates ...string) (string, bool) {
 	for _, d := range candidates {

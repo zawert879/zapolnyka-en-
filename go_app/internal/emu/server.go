@@ -37,6 +37,9 @@ type Options struct {
 	Login    string           // логин игрока в истории ответов
 	Now      func() time.Time // источник времени (тесты)
 	Logf     func(format string, args ...any)
+	// NoGameOK — пустой GamePath допустим: сервер стартует без игры (веб-интерфейс,
+	// где игру ещё предстоит создать); игра подключается через SetGame.
+	NoGameOK bool
 }
 
 // Server — HTTP-сервер эмулятора. Play-страница живёт по тому же пути, что и в
@@ -97,19 +100,21 @@ type templates struct {
 
 // New создаёт сервер: загружает состояние, парсит шаблоны, настраивает маршруты.
 func New(opts Options) (*Server, error) {
-	if opts.GamePath == "" {
+	if opts.GamePath == "" && !opts.NoGameOK {
 		return nil, errors.New("emu: не задан путь к game.yml")
 	}
-	abs, err := filepath.Abs(opts.GamePath)
-	if err != nil {
-		return nil, err
+	if opts.GamePath != "" {
+		abs, err := filepath.Abs(opts.GamePath)
+		if err != nil {
+			return nil, err
+		}
+		opts.GamePath = abs
 	}
-	opts.GamePath = abs
 	if opts.Addr == "" {
 		opts.Addr = "127.0.0.1:8090"
 	}
-	if opts.DataDir == "" {
-		opts.DataDir = filepath.Dir(abs)
+	if opts.DataDir == "" && opts.GamePath != "" {
+		opts.DataDir = filepath.Dir(opts.GamePath)
 	}
 	if opts.Now == nil {
 		opts.Now = time.Now
@@ -122,12 +127,15 @@ func New(opts Options) (*Server, error) {
 			opts.DevDir = filepath.Dir(file)
 		}
 	}
-	conf, err := config.LoadGame(opts.GamePath)
-	if err != nil {
-		return nil, err
+	gid, statePath := 0, ""
+	if opts.GamePath != "" {
+		conf, err := config.LoadGame(opts.GamePath)
+		if err != nil {
+			return nil, err
+		}
+		gid, statePath = conf.GameID, filepath.Join(opts.DataDir, ".emu-state.json")
 	}
-
-	store, err := NewStore(filepath.Join(opts.DataDir, ".emu-state.json"), opts.Now)
+	store, err := NewStore(statePath, opts.Now) // без игры — состояние только в памяти
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +146,7 @@ func New(opts Options) (*Server, error) {
 	if opts.Login != "" {
 		env.Login = opts.Login
 	}
-	s := &Server{opts: opts, store: store, gid: conf.GameID, env: env}
+	s := &Server{opts: opts, store: store, gid: gid, env: env}
 	if !opts.Dev {
 		t, err := parseTemplates(embedded)
 		if err != nil {

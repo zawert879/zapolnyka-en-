@@ -72,6 +72,7 @@ func StartUI(gamePath string, o EmuOptions, version string) (string, func(), <-c
 		Offline:  o.Offline,
 		Login:    LoadHistory().Login,
 		Logf:     logger.Printf,
+		NoGameOK: true, // игр ещё нет — интерфейс откроется с формой «Создать игру»
 	})
 	if err != nil {
 		return "", nil, nil, err
