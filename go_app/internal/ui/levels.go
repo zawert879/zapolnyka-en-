@@ -51,6 +51,7 @@ type LevelFiles struct {
 	Conf  string `json:"conf"`
 	Codes string `json:"codes,omitempty"`
 	Body  string `json:"body,omitempty"`
+	Notes string `json:"notes"` // заметки автора; файла может ещё не быть
 }
 
 // LevelData — всё для вкладок «Коды» и «Редактор».
@@ -62,7 +63,7 @@ type LevelData struct {
 	Conf     *config.Level     `json:"conf"`
 	Codes    []config.Code     `json:"codes"`
 	Body     string            `json:"body"`
-	Raw      map[string]string `json:"raw"` // сырые тексты: conf, codes, body
+	Raw      map[string]string `json:"raw"` // сырые тексты: conf, codes, body, notes
 	Error    string            `json:"error,omitempty"`
 }
 
@@ -210,6 +211,12 @@ func loadLevel(gamePath string, n int) (*LevelData, error) {
 				d.Raw["body"] = string(raw)
 			}
 		}
+		np := filepath.Join(levelDir, NotesFile)
+		d.Files.Notes = filepath.ToSlash(np)
+		d.Raw["notes"] = ""
+		if raw, err := os.ReadFile(np); err == nil {
+			d.Raw["notes"] = string(raw)
+		}
 		return d, nil
 	}
 	return nil, fmt.Errorf("уровень %d не найден в %s", n, gamePath)
@@ -335,8 +342,11 @@ func saveConf(gamePath string, n int, conf *config.Level) error {
 	return writeFileAtomic(d.Files.Conf, append([]byte(header), data...))
 }
 
-// saveRaw записывает сырой текст одного из файлов уровня ("conf" | "codes" | "body")
-// и проверяет результат штатным загрузчиком.
+// NotesFile — заметки автора в папке уровня (на en.cx не заливаются).
+const NotesFile = "notes.md"
+
+// saveRaw записывает сырой текст одного из файлов уровня ("conf" | "codes" | "body" |
+// "notes") и проверяет conf/codes штатным загрузчиком. Пустые заметки файл не создают.
 func saveRaw(gamePath string, n int, which, text string) error {
 	d, err := loadLevel(gamePath, n)
 	if err != nil {
@@ -353,6 +363,11 @@ func saveRaw(gamePath string, n int, which, text string) error {
 		if path == "" {
 			path = filepath.Join(d.Files.Dir, "task.html")
 		}
+	case "notes":
+		path = d.Files.Notes
+		if _, err := os.Stat(path); os.IsNotExist(err) && text == "" {
+			return nil
+		}
 	default:
 		return fmt.Errorf("неизвестный файл %q", which)
 	}
@@ -362,7 +377,7 @@ func saveRaw(gamePath string, n int, which, text string) error {
 	if !insideGame(gamePath, path) {
 		return fmt.Errorf("файл вне папки игры")
 	}
-	if which != "body" {
+	if which == "conf" || which == "codes" {
 		tmp := path + ".check" + filepath.Ext(path)
 		if err := os.WriteFile(tmp, []byte(text), 0o644); err != nil {
 			return err

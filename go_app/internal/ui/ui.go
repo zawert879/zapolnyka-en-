@@ -80,6 +80,15 @@ func Mount(mux *http.ServeMux, deps Deps) *UI {
 	mux.HandleFunc("POST /api/ui/level/enabled", u.handleLevelEnabled)
 	mux.HandleFunc("POST /api/ui/assets", u.handleAssetUpload)
 	mux.HandleFunc("DELETE /api/ui/assets/{name}", u.handleAssetDelete)
+	mux.HandleFunc("GET /api/ui/files", u.handleFiles)
+	mux.HandleFunc("GET /api/ui/file", u.handleFileGet)
+	mux.HandleFunc("PUT /api/ui/file", u.handleFilePut)
+	mux.HandleFunc("DELETE /api/ui/file", u.handleFileDelete)
+	mux.HandleFunc("POST /api/ui/files/upload", u.handleFilesUpload)
+	mux.HandleFunc("POST /api/ui/files/mkdir", u.handleMkdir)
+	mux.HandleFunc("POST /api/ui/files/rename", u.handleRename)
+	mux.HandleFunc("POST /api/ui/files/to-assets", u.handleToAssets)
+	mux.HandleFunc("GET /ui/fs/{path...}", u.handleFS)
 	return u
 }
 
@@ -170,13 +179,18 @@ func (u *UI) handleState(w http.ResponseWriter, r *http.Request) {
 		resp.Games = append(resp.Games, info)
 	}
 	game, levels, err := listLevels(cur)
-	if err != nil {
+	if cur == "" {
+		// игра ещё не создана: фронт покажет «Создать игру»
+	} else if err != nil {
 		resp.Error = err.Error()
 	} else {
 		resp.Game = &GameInfo{Path: filepath.ToSlash(cur), Title: game.Title, Domain: game.Domain, GameID: game.GameID, Levels: len(game.Levels), Current: true}
 		resp.Levels = levels
 		resp.Assets = listAssets(cur, game)
 		resp.AssetsDir = filepath.ToSlash(assets.DirFor(cur, game))
+	}
+	if resp.Games == nil {
+		resp.Games = []GameInfo{}
 	}
 	if resp.Levels == nil {
 		resp.Levels = []LevelInfo{}

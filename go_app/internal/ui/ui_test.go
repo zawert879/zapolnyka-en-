@@ -347,3 +347,37 @@ func TestDisabledLevelsAndAssets(t *testing.T) {
 		t.Fatalf("fog=0 must strip scripts")
 	}
 }
+
+// Первый запуск: игр нет — интерфейс работает без игры, игру можно подключить.
+func TestNoGameStart(t *testing.T) {
+	srv, err := emu.New(emu.Options{NoGameOK: true, Login: "tester"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	Mount(srv.Mux(), Deps{Emu: srv, Actions: &fakeActions{}, Version: "test"})
+	ts := httptest.NewServer(srv.Handler())
+	t.Cleanup(ts.Close)
+	e := &env{ts: ts}
+	code, body := e.do(t, "GET", "/api/ui/state", nil, false)
+	var st stateResponse
+	_ = json.Unmarshal([]byte(body), &st)
+	if code != 200 || st.Game != nil || st.Error != "" || st.Levels == nil {
+		t.Fatalf("state without game: %d %s", code, body)
+	}
+	if code, _ := e.do(t, "GET", "/api/ui/files?scope=game", nil, false); code != 400 {
+		t.Fatalf("files without game must fail, got %d", code)
+	}
+	if code, _ := e.do(t, "GET", "/ui/fs/x.png", nil, false); code != 404 {
+		t.Fatalf("fs without game must 404")
+	}
+	game := copyFixture(t)
+	if code, body := e.do(t, "POST", "/api/ui/game", map[string]any{"path": game}, false); code != 200 {
+		t.Fatalf("select game: %s", body)
+	}
+	_, body = e.do(t, "GET", "/api/ui/state", nil, false)
+	var st2 stateResponse
+	_ = json.Unmarshal([]byte(body), &st2)
+	if st2.Game == nil || len(st2.Levels) != 3 {
+		t.Fatalf("state after select: %s", body)
+	}
+}

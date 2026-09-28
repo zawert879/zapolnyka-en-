@@ -58,7 +58,7 @@
             <div class="row"><input id="snapName" class="mono" placeholder="имя, напр. L15-mid"><input id="snapSend" class="mono" placeholder="ввести код (необязательно)"><input id="snapPid" class="mono short" placeholder="pid"><button data-run="snapshot">snapshot</button></div></div>
           <div class="card"><div class="card-h">Авторизация</div><div class="muted">Логин и пароль en.cx хранятся в .zapolnyaka.json.</div>
             <div class="col"><input id="authLoginInput" placeholder="логин" autocomplete="username"><input id="authPassInput" type="password" placeholder="пароль" autocomplete="current-password"><button id="btnAuth">auth</button></div></div>
-          <div class="card"><div class="card-h">Создать игру</div><div class="muted">Новый game.yml в data/&lt;имя&gt;/.</div>
+          <div class="card" id="cardNewGame"><div class="card-h">Создать игру</div><div class="muted">Новый game.yml в data/&lt;имя&gt;/.</div>
             <div class="col"><input id="ngName" placeholder="имя папки"><input id="ngDomain" placeholder="домен, напр. tech.en.cx"><input id="ngGid" class="mono" placeholder="gameId"><button id="btnNewGame">game</button></div></div>
         </div>
         <div class="console">
@@ -96,14 +96,33 @@
         <div class="split full">
           <div class="editor-col">
             <div class="filetabs">
-              <button data-file="body" class="active">task.html</button><button data-file="conf">conf.yml</button><button data-file="codes">codes.yml</button>
+              <button data-file="body" class="active">task.html</button><button data-file="conf">conf.yml</button><button data-file="codes">codes.yml</button><button data-file="notes" title="Заметки автора к уровню — на en.cx не заливаются. Файл появится при первой правке">notes.md</button>
+              <span class="opentabs" id="openTabs"></span>
               <span class="muted mono grow right" id="editorPath"></span>
               <button class="primary small" id="btnEditorSave">Сохранить · Ctrl+S</button>
+              <button class="small" id="btnExplorer" title="Показать/скрыть файлы">Файлы</button>
             </div>
-            <div class="assetbar"><span class="label">Вставить ассет</span><div id="assetButtons" class="row"></div></div>
-            <div class="editor-wrap"><div id="editor"></div></div>
-            <div class="editor-foot"><span id="editorHint" class="muted"></span><span class="grow"></span><span class="muted">Ctrl+Space — подсказки · {{ — ассеты · Ctrl+F — поиск</span><span class="muted mono" id="editorPos"></span></div>
+            <div class="assetbar" id="assetbar"><span class="label">Вставить ассет</span><div id="assetButtons" class="row"></div></div>
+            <div class="editor-wrap">
+              <div id="editor"></div>
+              <div id="mdeditor" hidden></div>
+              <div id="imgview" class="imgview" hidden></div>
+            </div>
+            <div class="editor-foot"><span id="editorHint" class="muted"></span><span class="grow"></span><span class="muted" id="editorKeys">Ctrl+Space — подсказки · {{ — ассеты · Ctrl+F — поиск</span><span class="muted mono" id="editorPos"></span></div>
           </div>
+          <aside class="explorer" id="explorer">
+            <div class="ex-sec" data-scope="level">
+              <div class="ex-head"><span class="label" id="exLevelTitle">Уровень</span><span class="ex-btns"><button class="icon" data-exact="newfile" title="Новый файл">+</button><button class="icon" data-exact="newdir" title="Новая папка">▣</button><button class="icon" data-exact="upload" title="Загрузить файлы">⇪</button></span></div>
+              <div class="ex-tree" id="exTree-level"></div>
+            </div>
+            <div class="ex-sec" data-scope="game">
+              <div class="ex-head"><span class="label" title="Общая папка игры notes/ рядом с game.yml — на en.cx не заливается">Игра · notes/</span><span class="ex-btns"><button class="icon" data-exact="newfile" title="Новый файл">+</button><button class="icon" data-exact="newdir" title="Новая папка">▣</button><button class="icon" data-exact="upload" title="Загрузить файлы">⇪</button></span></div>
+              <div class="ex-tree" id="exTree-game"></div>
+            </div>
+            <div class="ex-foot muted">Тащи файл или ассет в заметку · файлы с диска — сюда или в заметку · ⋯ — действия</div>
+            <input type="file" id="exFiles" multiple hidden>
+            <div class="ex-menu" id="exMenu" hidden></div>
+          </aside>
         </div>
       </section>
 
@@ -211,6 +230,7 @@
 <div class="toast" id="toast" hidden></div>
 <script src="/ui/static/vendor/ace/ace.js"></script>
 <script src="/ui/static/vendor/ace/ext-language_tools.js"></script>
+<script src="/ui/static/vendor/mdedit/mdedit.js"></script>
 <script src="/ui/static/app.js"></script>
 </body>
 </html>

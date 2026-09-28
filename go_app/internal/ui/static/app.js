@@ -10,7 +10,8 @@
   const S = {
     state: null, level: 0, data: null, tab: 'commands',
     selected: new Set(), codes: [], codesDirty: false, sel: -1,
-    file: 'body', raw: {}, rawDirty: {}, conf: null, confDirty: false,
+    file: 'body', raw: {}, rawDirty: {}, orig: {}, open: [], mdKey: null, conf: null, confDirty: false,
+    ex: { level: null, game: null, loadedFor: -1 }, exOpen: new Set(),
     job: null, jobFrom: 0, jobTimer: null, previewVW: '1280',
   };
 
@@ -40,6 +41,8 @@
     const st = S.state;
     const sel = $('#gameSelect');
     sel.innerHTML = st.games.map((g) => `<option value="${esc(g.path)}"${g.current ? ' selected' : ''}>${esc(g.title || g.path)} · ${esc(g.domain)} · #${g.gameId} · ${esc(g.path)}</option>`).join('');
+    if (!st.game) sel.innerHTML = '<option value="">— игры нет: создайте на вкладке «Команды» —</option>' + sel.innerHTML;
+    $('#cardNewGame').classList.toggle('attention', !st.game);
     if (!st.games.some((g) => g.current) && st.game) sel.insertAdjacentHTML('afterbegin', `<option value="${esc(st.game.path)}" selected>${esc(st.game.title || st.game.path)} · ${esc(st.game.domain)} · #${st.game.gameId}</option>`);
     $('#authLogin').textContent = st.login || 'нет логина';
     $('#authDot').className = 'dot' + (st.login ? ' on' : '');
@@ -64,7 +67,7 @@
         <span class="meta">${l.codes ? l.codes + ' код.' : ''}</span>
         <span class="sw${l.disabled ? '' : ' on'}" data-toggle="${l.disabled ? 1 : 0}" title="${l.disabled ? 'Включить (раскомментировать в game.yml)' : 'Выключить (закомментировать в game.yml)'}"></span>
         <span class="st${l.error ? ' err' : ''}"></span>
-      </div>`).join('') || '<div class="muted" style="padding:8px">В игре нет уровней — добавьте «+».</div>';
+      </div>`).join('') || `<div class="muted" style="padding:8px">${S.state.game ? 'В игре нет уровней — добавьте «+».' : 'Игры ещё нет — создайте её в карточке «Создать игру» на вкладке «Команды».'}</div>`;
     $$('.level', box).forEach((el) => el.addEventListener('click', (e) => {
       if (e.target.matches('input[data-sel]')) { const n = +e.target.dataset.sel; if (e.target.checked) S.selected.add(n); else S.selected.delete(n); renderSelectedChip(); return; }
       if (e.target.matches('.sw')) { toggleLevel(el.dataset.conf, e.target.dataset.toggle === '1'); return; }
@@ -89,7 +92,7 @@
   }
 
   function renderAssets() {
-    $('#assets').innerHTML = S.state.assets.map((a) => `<div title="${esc(a.name)} · ${a.size} байт${a.uploaded ? ' · на сервере ' + esc(a.uploaded) : ''}"><span>${esc(a.name)}</span><span class="${a.uploaded ? 'up' : 'no'}">${a.uploaded ? 'залит' : 'не залит'}</span><span class="del" data-del="${esc(a.name)}" title="Удалить файл из папки ассетов">✕</span></div>`).join('') || '<div class="muted">папка ассетов пуста — «+» добавит файлы</div>';
+    $('#assets').innerHTML = S.state.assets.map((a) => `<div draggable="true" data-asset="${esc(a.name)}" title="${esc(a.name)} · ${a.size} байт${a.uploaded ? ' · на сервере ' + esc(a.uploaded) : ''}"><span>${esc(a.name)}</span><span class="${a.uploaded ? 'up' : 'no'}">${a.uploaded ? 'залит' : 'не залит'}</span><span class="del" data-del="${esc(a.name)}" title="Удалить файл из папки ассетов">✕</span></div>`).join('') || '<div class="muted">папка ассетов пуста — «+» добавит файлы</div>';
     $('#assetsDir').textContent = S.state.assetsDir || '';
     $$('#assets .del').forEach((b) => b.addEventListener('click', async () => {
       if (!confirm('Удалить файл «' + b.dataset.del + '» из папки ассетов?')) return;
@@ -97,7 +100,10 @@
       catch (e) { toast(String(e.message || e), 'err'); }
     }));
     $('#assetButtons').innerHTML = S.state.assets.map((a) => `<button class="mono small" data-insert="{{${esc(a.name)}}}">{{${esc(a.name)}}}</button>`).join('') || '<span class="muted">нет ассетов</span>';
-    $$('#assetButtons button').forEach((b) => b.addEventListener('click', () => insertAtCursor(b.dataset.insert)));
+    $$('#assetButtons button').forEach((b) => b.addEventListener('click', () => {
+      const name = b.dataset.insert.slice(2, -2);
+      insertAtCursor(keyKind(S.file) === 'md' ? assetLink(name) : b.dataset.insert);
+    }));
   }
   $('#btnAddAsset').addEventListener('click', () => $('#assetFiles').click());
   $('#assetFiles').addEventListener('change', async (e) => {
@@ -114,10 +120,19 @@
   });
 
   async function selectLevel(n) {
-    if (S.codesDirty || Object.values(S.rawDirty).some(Boolean) || S.confDirty) {
+    await flushAutosave();
+    const levelDirty = Object.keys(S.rawDirty).some((k) => S.rawDirty[k] && !(keyInfo(k) && keyInfo(k).scope === 'game'));
+    if (S.codesDirty || levelDirty || S.confDirty) {
       if (!confirm('Есть несохранённые изменения. Переключить уровень и потерять их?')) return;
     }
-    S.level = n; S.codesDirty = false; S.rawDirty = {}; S.confDirty = false; S.sel = -1;
+    const gameDirty = {};
+    Object.keys(S.rawDirty).forEach((k) => { if (keyInfo(k) && keyInfo(k).scope === 'game') gameDirty[k] = S.rawDirty[k]; });
+    S.level = n; S.codesDirty = false; S.rawDirty = gameDirty; S.confDirty = false; S.sel = -1;
+    // вкладки файлов прежнего уровня закрываются, notes/ игры остаются открытыми
+    S.open.filter((o) => o.scope === 'level').forEach((o) => { delete S.raw[o.key]; delete S.orig[o.key]; dropSession(o.key); MD.forget(o.key); });
+    S.open = S.open.filter((o) => o.scope !== 'level');
+    MD.forget('notes');
+    if (keyInfo(S.file) && !S.open.some((o) => o.key === S.file)) S.file = 'notes';
     renderLevels();
     await loadLevel();
     refreshTab();
@@ -128,7 +143,10 @@
     try {
       S.data = await api('GET', '/api/ui/level/' + S.level);
       S.codes = JSON.parse(JSON.stringify(S.data.codes || []));
-      S.raw = Object.assign({ body: '', conf: '', codes: '' }, S.data.raw || {});
+      // открытые файлы обозревателя и несохранённые правки не затираются
+      const keep = {};
+      Object.keys(S.raw).forEach((k) => { if (keyInfo(k) || S.rawDirty[k]) keep[k] = S.raw[k]; });
+      S.raw = Object.assign({ body: '', conf: '', codes: '', notes: '' }, S.data.raw || {}, keep);
       S.conf = JSON.parse(JSON.stringify(S.data.conf || {}));
       if (S.data.error) toast('Ошибка в файлах уровня: ' + S.data.error, 'err');
     } catch (e) { S.data = null; toast(String(e.message || e), 'err'); }
@@ -139,10 +157,11 @@
     const d = [];
     if (S.codesDirty) d.push('codes.yml');
     if (S.confDirty) d.push('conf.yml');
-    Object.keys(S.rawDirty).forEach((k) => { if (S.rawDirty[k]) d.push({ body: 'task.html', conf: 'conf.yml', codes: 'codes.yml' }[k]); });
+    Object.keys(S.rawDirty).forEach((k) => { if (S.rawDirty[k] && !MDAUTO.timers[k]) d.push(keyName(k)); });
     $('#stDirty').textContent = d.length ? 'не сохранено: ' + Array.from(new Set(d)).join(', ') : '';
     $('#stDirty').className = d.length ? 'dirty' : '';
     $$('.filetabs button[data-file]').forEach((b) => b.classList.toggle('dirty', !!S.rawDirty[b.dataset.file]));
+    $$('#openTabs [data-open]').forEach((b) => b.classList.toggle('dirty', !!S.rawDirty[b.dataset.open]));
   }
 
   // ---------------------------------------------------------------- вкладки
@@ -231,6 +250,7 @@
     catch (e) { toast(String(e.message || e), 'err'); }
   });
   $('#gameSelect').addEventListener('change', async (e) => {
+    if (!e.target.value) return;
     try { await api('POST', '/api/ui/game', { path: e.target.value }); S.level = 0; S.selected.clear(); await loadState(); await loadLevel(); refreshTab(); }
     catch (err) { toast(String(err.message || err), 'err'); }
   });
@@ -348,10 +368,13 @@
     } catch (e) { toast('Эмулятор: ' + String(e.message || e) + ' (сохраните codes.yml — эмулятор читает файлы)', 'err'); }
   }
 
-  // ---------------------------------------------------------------- редактор (Ace)
-  // Три сессии — по одной на файл (своя история отмены), режимы html/yaml, подсветка,
-  // автодополнение (теги и атрибуты — из режима html, ключи YAML и типы кодов —
-  // свои, {{ассеты}} — во всех файлах). Файлы Ace — static/vendor/ace, офлайн.
+  // ---------------------------------------------------------------- редактор (Ace + md)
+  // Файлы редактора — ключи: стандартные body | conf | codes | notes и открытые из
+  // обозревателя «f:<scope>:<путь>» (scope: level — папка уровня, game — notes/ игры).
+  // Текстовые файлы — в Ace (по сессии на файл: своя история отмены; режим по
+  // расширению; автодополнение: теги из режима html, ключи YAML и типы кодов — свои,
+  // {{ассеты}} — везде). .md — в CodeMirror 6 с Live Preview (static/vendor/mdedit,
+  // исходники — ../mdedit) и автосохранением. Картинки — просмотрщик.
   ace.config.set('basePath', '/ui/static/vendor/ace');
   const Range = ace.require('ace/range').Range;
   const langTools = ace.require('ace/ext/language_tools');
@@ -360,45 +383,146 @@
     showPrintMargin: false, tabSize: 2, useSoftTabs: true, wrap: false, highlightActiveLine: true, scrollPastEnd: 0.2,
     enableBasicAutocompletion: true, enableLiveAutocompletion: true, enableSnippets: true, fixedWidthGutter: true,
   });
-  const MODES = { body: 'ace/mode/html', conf: 'ace/mode/yaml', codes: 'ace/mode/yaml' };
+  const STD = { body: 'task.html', conf: 'conf.yml', codes: 'codes.yml', notes: 'notes.md' };
+  const isStd = (k) => Object.prototype.hasOwnProperty.call(STD, k);
+  const extOf = (p) => { const m = /\.([^./]+)$/.exec(p || ''); return m ? m[1].toLowerCase() : ''; };
+  const IMG_EXT = /^(png|jpe?g|gif|webp|svg|bmp|ico|avif)$/;
+  const ACE_MODES = { html: 'html', htm: 'html', yml: 'yaml', yaml: 'yaml', json: 'json', css: 'css', js: 'javascript', mjs: 'javascript' };
+  // keyInfo: {scope, path} для файла из обозревателя.
+  const keyInfo = (k) => { const m = /^f:(level|game):(.*)$/.exec(k); return m ? { scope: m[1], path: m[2] } : null; };
+  const fileKey = (scope, path) => 'f:' + scope + ':' + path;
+  const stdPath = (k) => { const d = S.data; if (!d) return ''; return { body: d.files.body || (d.files.dir + '/task.html'), conf: d.files.conf, codes: d.files.codes, notes: d.files.notes }[k] || ''; };
+  const keyName = (k) => (isStd(k) ? (stdPath(k).split('/').pop() || STD[k]) : (keyInfo(k) || { path: k }).path.split('/').pop());
+  const keyFile = (k) => (isStd(k) ? stdPath(k) || STD[k] : keyInfo(k).path);
+  const keyKind = (k) => { const e = extOf(keyFile(k)); return e === 'md' || e === 'markdown' ? 'md' : IMG_EXT.test(e) ? 'image' : 'text'; };
+  const origOf = (k) => (isStd(k) ? ((S.data && S.data.raw && S.data.raw[k]) || '') : (S.orig[k] || ''));
   const sessions = {};
   let edSyncing = false;
-  function edSession(file) {
-    if (!sessions[file]) {
-      const s = ace.createEditSession(S.raw[file] || '', MODES[file]);
+  function edSession(key) {
+    if (!sessions[key]) {
+      const s = ace.createEditSession(S.raw[key] || '', 'ace/mode/' + (ACE_MODES[extOf(keyFile(key))] || 'text'));
       s.setTabSize(2); s.setUseSoftTabs(true); s.setUseWrapMode(false);
       s.on('change', () => {
         if (edSyncing) return;
         const v = s.getValue();
-        S.raw[file] = v; S.rawDirty[file] = v !== ((S.data && S.data.raw && S.data.raw[file]) || ''); updateDirty();
+        S.raw[key] = v; S.rawDirty[key] = v !== origOf(key); updateDirty();
       });
-      sessions[file] = s;
+      sessions[key] = s;
     }
-    return sessions[file];
+    return sessions[key];
   }
   // edSet кладёт текст в сессию без пометки «изменено» (синхронизация с S.raw).
-  function edSet(file, text) {
-    const s = edSession(file);
+  function edSet(key, text) {
+    const s = edSession(key);
     if (s.getValue() === text) return;
     edSyncing = true;
     try { s.setValue(text); s.selection.moveCursorFileStart(); s.selection.clearSelection(); } finally { edSyncing = false; }
   }
-  const edValue = () => E.getValue();
+  function dropSession(key) { if (sessions[key]) { sessions[key].destroy && sessions[key].destroy(); delete sessions[key]; } }
+
+  // --- md-редактор (CodeMirror 6, Live Preview)
+  const MD = window.MdEdit.create($('#mdeditor'), {
+    placeholder: 'Заметки автора: идеи, ответы, ссылки. Картинки и ассеты — перетащи сюда или вставь из буфера (Ctrl+V).',
+    resolve: (url, wiki) => mdResolve(url, wiki),
+    onOpenLink: (href, wiki) => mdOpenLink(href, wiki),
+    onChange: (text) => {
+      const key = S.mdKey; if (!key) return;
+      S.raw[key] = text; S.rawDirty[key] = text !== origOf(key); updateDirty();
+      mdAutosave(key);
+    },
+    onDrop: (dt) => mdDrop(dt),
+    onPasteFiles: (files) => mdPasteFiles(files),
+  });
+  const MDAUTO = { timers: {} };
+  // mdAutosave: md-файлы сохраняются сами через 800 мс после правки (notes.md
+  // появляется на диске при первой правке, простое открытие файл не создаёт).
+  function mdAutosave(key) {
+    clearTimeout(MDAUTO.timers[key]);
+    MDAUTO.timers[key] = setTimeout(() => { delete MDAUTO.timers[key]; if (S.rawDirty[key]) saveFile(key, S.raw[key] || '', true); }, 800);
+  }
+  async function flushAutosave(keepalive) {
+    const keys = Object.keys(MDAUTO.timers);
+    keys.forEach((k) => clearTimeout(MDAUTO.timers[k]));
+    MDAUTO.timers = {};
+    await Promise.all(keys.filter((k) => S.rawDirty[k]).map((k) => saveFile(k, S.raw[k] || '', true, keepalive)));
+  }
+  window.addEventListener('pagehide', () => { flushAutosave(true); });
+
+  function currentText() { const k = keyKind(S.file); return k === 'md' ? MD.getDoc() : k === 'image' ? null : E.getValue(); }
+  const edValue = currentText;
+
   function renderEditor() {
-    const d = S.data;
-    const paths = d ? { body: d.files.body || (d.files.dir + '/task.html'), conf: d.files.conf, codes: d.files.codes } : {};
-    $('#editorPath').textContent = paths[S.file] || '';
-    ['body', 'conf', 'codes'].forEach((f) => edSet(f, S.raw[f] || ''));
-    if (E.session !== edSession(S.file)) E.setSession(edSession(S.file));
-    E.setReadOnly(!S.level);
-    E.resize(true);
-    updatePos();
-    $('#editorHint').textContent = { body: 'HTML тела задания. CSS — через <style>@import url("{{design.css}}")</style>: голый <link> движок вырежет.', conf: 'YAML настроек уровня; проверяется при сохранении. Удобнее — вкладка «Уровень».', codes: 'YAML кодов; проверяется при сохранении. Удобнее — вкладка «Коды».' }[S.file];
+    if (!isStd(S.file) && !S.open.some((o) => o.key === S.file)) S.file = 'body';
+    const key = S.file, kind = keyKind(key);
+    renderFileTabs();
+    $('#editor').hidden = kind !== 'text';
+    $('#mdeditor').hidden = kind !== 'md';
+    $('#imgview').hidden = kind !== 'image';
+    $('#assetbar').hidden = kind === 'image';
+    $('#btnEditorSave').hidden = kind === 'image';
+    $('#editorKeys').textContent = kind === 'md' ? 'Live Preview · Ctrl/Cmd+клик — открыть ссылку · автосохранение' : kind === 'text' ? 'Ctrl+Space — подсказки · {{ — ассеты · Ctrl+F — поиск' : '';
+    const info = keyInfo(key);
+    // путь обрезается слева (direction:rtl), LRM не даёт bidi переставить «/» в конец
+    $('#editorPath').textContent = '\u200E' + (isStd(key) ? stdPath(key) : ((S.ex[info.scope] && S.ex[info.scope].root) || '') + '/' + info.path) + '\u200E';
+    const noLevel = isStd(key) && !S.level;
+    if (kind === 'text') {
+      ['body', 'conf', 'codes'].forEach((f) => edSet(f, S.raw[f] || ''));
+      if (E.session !== edSession(key)) E.setSession(edSession(key));
+      E.setReadOnly(noLevel);
+      E.resize(true);
+      updatePos();
+    } else if (kind === 'md') {
+      S.mdKey = null; // пока открываем — изменения не наши
+      MD.open(key, S.raw[key] || '');
+      S.mdKey = key;
+      MD.setReadOnly(noLevel);
+      $('#editorPos').textContent = '';
+    } else {
+      renderImageView(info);
+    }
+    $('#editorHint').textContent = ({
+      body: 'HTML тела задания. CSS — через <style>@import url("{{design.css}}")</style>: голый <link> движок вырежет.',
+      conf: 'YAML настроек уровня; проверяется при сохранении. Удобнее — вкладка «Уровень».',
+      codes: 'YAML кодов; проверяется при сохранении. Удобнее — вкладка «Коды».',
+      notes: 'Заметки автора к уровню — только для тебя, на en.cx не заливаются.',
+    })[key] || (info && info.scope === 'game' ? 'Общая папка игры notes/ — на en.cx не заливается.' : 'Файл папки уровня — на en.cx не заливается (для задания — «⋯ → в ассеты»).');
+    ensureExplorer();
+  }
+  function renderImageView(info) {
+    const src = fsURL(gameRel(info.scope, info.path));
+    const ent = exEntry(info.scope, info.path);
+    $('#imgview').innerHTML = `<div class="imgview-pic"><img src="${esc(src)}" alt=""></div>
+      <div class="imgview-foot"><span class="mono">${esc(info.path)}</span><span class="muted">${ent ? fmtSize(ent.size) : ''}</span><span class="grow"></span>
+      <a class="btn" href="${esc(src)}" target="_blank">Открыть</a><button class="small" data-toassets>В ассеты</button></div>`;
+    $('#imgview [data-toassets]').addEventListener('click', () => exToAssets(info.scope, info.path));
+  }
+  function renderFileTabs() {
+    $$('.filetabs button[data-file]').forEach((b) => { b.classList.toggle('active', b.dataset.file === S.file); b.disabled = !S.level; });
+    $('#openTabs').innerHTML = S.open.map((o) => `<button data-open="${esc(o.key)}" class="${o.key === S.file ? 'active' : ''}${S.rawDirty[o.key] ? ' dirty' : ''}" title="${esc((o.scope === 'game' ? 'notes/' : '') + o.path)}"><span class="nm">${esc(o.path.split('/').pop())}</span><span class="x" data-close="${esc(o.key)}" title="Закрыть">✕</span></button>`).join('');
+    $$('#openTabs [data-open]').forEach((b) => b.addEventListener('click', (e) => {
+      if (e.target.dataset.close) { closeFile(e.target.dataset.close); return; }
+      switchFile(b.dataset.open);
+    }));
+  }
+  function switchFile(key) {
+    S.file = key; renderEditor();
+    const k = keyKind(key); if (k === 'md') MD.focus(); else if (k === 'text') E.focus();
+  }
+  async function closeFile(key) {
+    if (MDAUTO.timers[key]) await flushAutosave();
+    if (S.rawDirty[key] && !confirm('Файл «' + keyName(key) + '» не сохранён. Закрыть без сохранения?')) return;
+    S.open = S.open.filter((o) => o.key !== key);
+    delete S.raw[key]; delete S.rawDirty[key]; delete S.orig[key]; dropSession(key); MD.forget(key);
+    if (S.file === key) S.file = S.open.length ? S.open[S.open.length - 1].key : 'body';
+    updateDirty(); renderEditor();
   }
   function updatePos() { const p = E.getCursorPosition(); $('#editorPos').textContent = `стр. ${p.row + 1}, кол. ${p.column + 1}`; }
   E.on('changeSelection', updatePos);
-  function insertAtCursor(text) { E.insert(text); E.focus(); }
-  $$('.filetabs button[data-file]').forEach((b) => b.addEventListener('click', () => { S.file = b.dataset.file; $$('.filetabs button[data-file]').forEach((x) => x.classList.toggle('active', x === b)); renderEditor(); E.focus(); }));
+  function insertAtCursor(text) {
+    if (keyKind(S.file) === 'md') { MD.insert(text); return; }
+    E.insert(text); E.focus();
+  }
+  $$('.filetabs button[data-file]').forEach((b) => b.addEventListener('click', () => switchFile(b.dataset.file)));
 
   // --- автодополнение: {{ассеты}} во всех файлах
   const assetCompleter = {
@@ -454,19 +578,433 @@
     if (/\{\{$/.test(E.session.getLine(pos.row).slice(0, pos.column))) E.execCommand('startAutocomplete');
   });
 
-  async function saveFile(which, text) {
-    if (!S.level) return false;
+  // saveFile сохраняет файл редактора. quiet — автосохранение: без тоста и без
+  // перечитывания уровня (чтобы не сбить набор текста).
+  async function saveFile(key, text, quiet, keepalive) {
+    const info = keyInfo(key);
+    if (isStd(key) && !S.level) return false;
+    const level = S.level;
     try {
-      await api('PUT', `/api/ui/level/${S.level}/raw/${which}`, text, true);
-      S.rawDirty[which] = false; toast(({ body: 'task.html', conf: 'conf.yml', codes: 'codes.yml' })[which] + ' сохранён', 'ok');
-      await loadState(); await loadLevel(); S.raw[which] = text;
-      if (S.tab === 'editor') renderEditor();
+      const url = info ? `/api/ui/file?scope=${info.scope}&n=${level || 0}&path=${encodeURIComponent(info.path)}` : `/api/ui/level/${level}/raw/${key}`;
+      if (keepalive) { fetch(url, { method: 'PUT', body: text, keepalive: true, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }); return true; }
+      const existed = info ? !!exEntry(info.scope, info.path) : !!origOf(key);
+      await api('PUT', url, text, true);
+      if (level !== S.level && (isStd(key) || info.scope === 'level')) return true; // уровень сменили, пока сохраняли
+      if (isStd(key)) { if (S.data) S.data.raw[key] = text; } else S.orig[key] = text;
+      S.rawDirty[key] = (S.raw[key] == null ? text : S.raw[key]) !== text;
+      updateDirty();
+      if (!existed && (text || info)) loadExplorer();
+      if (quiet) return true;
+      toast(keyName(key) + ' сохранён', 'ok');
+      if (key === 'body' || key === 'conf' || key === 'codes') {
+        await loadState(); await loadLevel(); S.raw[key] = text;
+        if (S.tab === 'editor') renderEditor();
+      }
       return true;
-    } catch (e) { toast(String(e.message || e), 'err'); return false; }
+    } catch (e) { toast(keyName(key) + ': ' + String(e.message || e), 'err'); return false; }
   }
-  const saveRaw = () => saveFile(S.file, edValue());
+  const saveRaw = () => { const t = currentText(); if (t != null) saveFile(S.file, t); };
   $('#btnEditorSave').addEventListener('click', saveRaw);
   document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (S.tab === 'editor') saveRaw(); else if (S.tab === 'visual') veSave(); else if (S.tab === 'codes') $('#btnCodesSave').click(); else if (S.tab === 'level') $('#btnConfSave').click(); } });
+
+  // ---------------------------------------------------------------- файловый обозреватель
+  // Два корня: level — папка уровня, game — notes/ рядом с game.yml. Пути в API —
+  // относительно корня; для картинок в md — относительно папки игры (/ui/fs/…).
+  const fmtSize = (n) => (n < 1024 ? n + ' Б' : n < 1048576 ? (n / 1024).toFixed(0) + ' КБ' : (n / 1048576).toFixed(1) + ' МБ');
+  const joinPath = (...parts) => {
+    const out = [];
+    parts.join('/').split('/').forEach((seg) => { if (!seg || seg === '.') return; if (seg === '..') out.pop(); else out.push(seg); });
+    return out.join('/');
+  };
+  const dirOf = (p) => p.split('/').slice(0, -1).join('/');
+  const fsURL = (rel) => '/ui/fs/' + rel.split('/').map(encodeURIComponent).join('/');
+  const gameRel = (scope, path) => joinPath((S.ex[scope] && S.ex[scope].rel) || (scope === 'game' ? 'notes' : ''), path);
+  const exEntry = (scope, path) => (S.ex[scope] ? S.ex[scope].entries.find((e) => e.path === path) : null);
+  // scopeOf: путь от папки игры → {scope, path} или null (вне корней).
+  function scopeOf(rel) {
+    for (const scope of ['level', 'game']) {
+      const r = S.ex[scope]; if (!r) continue;
+      if (scope === 'level' && !S.level) continue;
+      if (r.rel === '') return { scope, path: rel };
+      if (rel === r.rel || rel.startsWith(r.rel + '/')) return { scope, path: rel.slice(r.rel.length + 1) };
+    }
+    return null;
+  }
+  // relLink — путь от папки fromDir до to (оба — от папки игры), для md-ссылок.
+  function relLink(fromDir, to) {
+    const a = fromDir ? fromDir.split('/') : [], b = to.split('/');
+    let i = 0; while (i < a.length && i < b.length - 1 && a[i] === b[i]) i++;
+    return '../'.repeat(a.length - i) + b.slice(i).join('/');
+  }
+  const mdURL = (p) => p.replace(/ /g, '%20').replace(/\(/g, '%28').replace(/\)/g, '%29');
+  // mdDir — папка текущего md-файла (от папки игры).
+  function mdDir() {
+    const k = S.mdKey || S.file;
+    if (k === 'notes') return (S.ex.level && S.ex.level.rel) || '';
+    const info = keyInfo(k); return info ? dirOf(gameRel(info.scope, info.path)) : '';
+  }
+  function allFiles() {
+    const out = [];
+    ['level', 'game'].forEach((scope) => { const r = S.ex[scope]; if (r && (scope !== 'level' || S.level)) r.entries.forEach((e) => { if (!e.dir) out.push(joinPath(r.rel, e.path)); }); });
+    return out;
+  }
+  // findWiki — цель [[вики-ссылки]] как в Obsidian: рядом с заметкой, от корня
+  // уровня, от notes/, затем по имени файла где угодно.
+  function findWiki(target) {
+    const files = allFiles(), has = (p) => files.includes(p);
+    target = target.replace(/^\/+/, '');
+    const cands = [joinPath(mdDir(), target), joinPath((S.ex.level && S.ex.level.rel) || '', target), joinPath('notes', target)];
+    for (const c of cands) if (has(c)) return c;
+    const base = target.split('/').pop();
+    return files.find((f) => f.split('/').pop() === base) || null;
+  }
+  function mdResolve(url, wiki) {
+    if (!url) return '';
+    const asset = /^\{\{\s*([^{}]+?)\s*\}\}$/.exec(url);
+    if (asset) return '/assets/' + encodeURIComponent(asset[1]);
+    if (/^(https?:|data:|blob:|\/\/)/i.test(url)) return url;
+    let p = url.split('#')[0];
+    try { p = decodeURIComponent(p); } catch (e) { /* как есть */ }
+    if (wiki) { const f = findWiki(p); return f ? fsURL(f) : ''; }
+    return fsURL(p.startsWith('/') ? joinPath(p) : joinPath(mdDir(), p));
+  }
+  async function mdOpenLink(href, wiki) {
+    if (!href) return;
+    if (/^(https?:|mailto:)/i.test(href)) { window.open(href, '_blank', 'noopener'); return; }
+    let p = href.split('#')[0];
+    try { p = decodeURIComponent(p); } catch (e) { /* как есть */ }
+    let rel;
+    if (wiki) {
+      rel = findWiki(p) || (extOf(p) ? null : findWiki(p + '.md'));
+      if (!rel) { // новая заметка рядом с текущей — файл появится при первой правке
+        rel = joinPath(mdDir(), extOf(p) ? p : p + '.md');
+        const sc = scopeOf(rel);
+        if (!sc) { toast('Не найдено: ' + p, 'err'); return; }
+        const key = fileKey(sc.scope, sc.path);
+        if (!S.open.some((o) => o.key === key)) { S.open.push({ key, scope: sc.scope, path: sc.path }); S.raw[key] = ''; S.orig[key] = ''; }
+        switchFile(key);
+        return;
+      }
+    } else rel = p.startsWith('/') ? joinPath(p) : joinPath(mdDir(), p);
+    const sc = scopeOf(rel);
+    if (sc && exEntry(sc.scope, sc.path)) openExFile(sc.scope, sc.path);
+    else window.open(fsURL(rel), '_blank', 'noopener');
+  }
+  // linkFor — md-ссылка на файл обозревателя из текущей заметки.
+  function linkFor(scope, path) {
+    const rel = relLink(mdDir(), gameRel(scope, path)), name = path.split('/').pop();
+    return IMG_EXT.test(extOf(path)) ? `![](${mdURL(rel)})` : `[${name}](${mdURL(rel)})`;
+  }
+  const assetLink = (name) => (IMG_EXT.test(extOf(name)) ? `![]({{${name}}})` : `{{${name}}}`);
+  // mdTarget — куда класть файлы, брошенные в заметку: в её папку.
+  function mdTarget() {
+    const k = S.mdKey || S.file;
+    if (k === 'notes') return { scope: 'level', dir: '' };
+    const info = keyInfo(k); return info ? { scope: info.scope, dir: dirOf(info.path) } : null;
+  }
+  function mdDrop(dt) {
+    if (!dt) return null;
+    const zf = dt.getData('application/x-zp-file');
+    if (zf) { const f = JSON.parse(zf); return f.dir ? null : linkFor(f.scope, f.path); }
+    const za = dt.getData('application/x-zp-asset');
+    if (za) return assetLink(za);
+    if (dt.files && dt.files.length) return mdUploadAndLink([...dt.files]);
+    return null;
+  }
+  function mdPasteFiles(files) {
+    const imgs = files.filter((f) => /^image\//.test(f.type));
+    if (!imgs.length) return null;
+    const d = new Date(), pad = (n) => String(n).padStart(2, '0');
+    const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    return mdUploadAndLink(imgs.map((f) => ({ file: f, name: f.name && f.name !== 'image.png' ? f.name : `Pasted image ${stamp}.${(f.type.split('/')[1] || 'png').replace('jpeg', 'jpg').replace('svg+xml', 'svg')}` })));
+  }
+  async function mdUploadAndLink(files) {
+    const t = mdTarget();
+    if (!t) return null;
+    const saved = await exUpload(t.scope, t.dir, files);
+    return saved.map((p) => linkFor(t.scope, p)).join('\n');
+  }
+
+  async function loadExplorer() {
+    const want = S.level;
+    const get = async (scope) => { try { return await api('GET', `/api/ui/files?scope=${scope}&n=${want || 0}`); } catch (e) { return null; } };
+    const [lv, gm] = await Promise.all([want ? get('level') : null, get('game')]);
+    if (want !== S.level) return;
+    S.ex.level = lv; S.ex.game = gm || { rel: 'notes', root: '', entries: [] }; S.ex.loadedFor = want;
+    renderExplorer();
+    MD.refresh();
+    if (S.tab === 'editor' && keyKind(S.file) === 'image') renderImageView(keyInfo(S.file));
+  }
+  function ensureExplorer() { if (S.ex.loadedFor !== S.level || !S.ex.game) loadExplorer(); else renderExplorer(); }
+
+  function buildTree(entries) {
+    const root = { children: {} };
+    entries.forEach((e) => {
+      const parts = e.path.split('/'); let n = root;
+      parts.forEach((p, i) => { n.children[p] = n.children[p] || { name: p, path: parts.slice(0, i + 1).join('/'), children: {}, entry: null }; n = n.children[p]; });
+      n.entry = e;
+    });
+    return root;
+  }
+  const ROLE = { conf: 'conf', codes: 'коды', body: 'задание', notes: 'заметки' };
+  function renderNode(scope, node, depth) {
+    const kids = Object.values(node.children);
+    const isDir = (n) => (n.entry ? n.entry.dir : true);
+    kids.sort((a, b) => (isDir(b) - isDir(a)) || a.name.localeCompare(b.name, 'ru'));
+    return kids.map((n) => {
+      const dir = isDir(n), e = n.entry || {}, open = S.exOpen.has(scope + ':' + n.path);
+      const key = fileKey(scope, n.path);
+      const active = (e.role && scope === 'level' ? e.role : key) === S.file;
+      const ico = dir ? (open ? '▾' : '▸') : e.kind === 'image' ? '▣' : /\.md$/i.test(n.name) ? '¶' : '·';
+      const row = `<div class="ex-item${dir ? ' dir' : ''}${active ? ' active' : ''}" draggable="true" data-scope="${scope}" data-path="${esc(n.path)}"${dir ? ' data-dir="1"' : ''} data-kind="${esc(e.kind || '')}" data-role="${esc(e.role || '')}" style="padding-left:${6 + depth * 14}px" title="${esc(n.path)}${e.size != null && !dir ? ' · ' + fmtSize(e.size) : ''}">
+        <span class="ex-ico">${ico}</span><span class="ex-name">${esc(n.name)}</span>${e.role ? `<span class="ex-role">${ROLE[e.role]}</span>` : ''}<span class="ex-more" data-more title="Действия">⋯</span></div>`;
+      return row + (dir && open ? renderNode(scope, n, depth + 1) : '');
+    }).join('');
+  }
+  function renderExplorer() {
+    const lv = S.ex.level;
+    $('#exLevelTitle').textContent = S.level ? `Уровень ${S.level}${lv && lv.rel ? ' · ' + lv.rel + '/' : ''}` : 'Уровень не выбран';
+    $('.ex-sec[data-scope="level"] .ex-btns').hidden = !S.level;
+    ['level', 'game'].forEach((scope) => {
+      const r = S.ex[scope], box = $('#exTree-' + scope);
+      if (scope === 'level' && !S.level) { box.innerHTML = ''; return; }
+      box.innerHTML = r && r.entries.length ? renderNode(scope, buildTree(r.entries), 0) : `<div class="muted ex-empty">${scope === 'game' ? 'пусто — общие заметки и картинки игры' : 'пусто'}</div>`;
+    });
+  }
+  function openExFile(scope, path) {
+    const e = exEntry(scope, path);
+    if (scope === 'level' && e && e.role) { switchFile(e.role); return; }
+    const key = fileKey(scope, path);
+    if (S.open.some((o) => o.key === key)) { switchFile(key); return; }
+    const kind = e ? e.kind : 'text';
+    if (kind === 'other') { window.open(fsURL(gameRel(scope, path)), '_blank', 'noopener'); return; }
+    (async () => {
+      if (kind !== 'image') {
+        try { const t = await api('GET', `/api/ui/file?scope=${scope}&n=${S.level || 0}&path=${encodeURIComponent(path)}`); S.raw[key] = t; S.orig[key] = t; }
+        catch (err) { toast(String(err.message || err), 'err'); return; }
+      }
+      S.open.push({ key, scope, path });
+      switchFile(key);
+    })();
+  }
+  // Встроенное поле ввода имени (новый файл / папка / переименование).
+  function exInline(scope, afterEl, depth, initial, onDone) {
+    const box = $('#exTree-' + scope);
+    const row = document.createElement('div');
+    row.className = 'ex-item ex-edit'; row.style.paddingLeft = (6 + depth * 14) + 'px';
+    row.innerHTML = '<input class="mono" spellcheck="false">';
+    const inp = row.firstChild; inp.value = initial;
+    if (afterEl) afterEl.after(row); else box.prepend(row);
+    const dot = initial.lastIndexOf('.');
+    inp.focus(); inp.setSelectionRange(0, dot > 0 ? dot : initial.length);
+    let done = false;
+    const finish = (ok) => { if (done) return; done = true; const v = inp.value.trim(); row.remove(); if (ok && v && v !== initial) onDone(v); else if (!ok || !v) renderExplorer(); };
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } if (e.key === 'Escape') finish(false); });
+    inp.addEventListener('blur', () => finish(true));
+  }
+  function exRowEl(scope, path) { return $$('#exTree-' + scope + ' .ex-item').find((r) => r.dataset.path === path) || null; }
+  function exNew(scope, dir, isDir) {
+    if (dir) S.exOpen.add(scope + ':' + dir);
+    renderExplorer();
+    const parent = dir ? exRowEl(scope, dir) : null;
+    exInline(scope, parent, dir ? dir.split('/').length : 0, isDir ? 'папка' : 'заметка.md', async (name) => {
+      const path = joinPath(dir, name);
+      try {
+        if (isDir) await api('POST', '/api/ui/files/mkdir', { scope, n: S.level, path });
+        else await api('PUT', `/api/ui/file?scope=${scope}&n=${S.level || 0}&path=${encodeURIComponent(path)}`, '', true);
+        await loadExplorer();
+        if (!isDir) openExFile(scope, path);
+      } catch (e) { toast(String(e.message || e), 'err'); renderExplorer(); }
+    });
+  }
+  async function exRename(scope, path) {
+    const el = exRowEl(scope, path); if (!el) return;
+    const depth = path.split('/').length - 1;
+    el.hidden = true;
+    exInline(scope, el, depth, path.split('/').pop(), (name) => exMove(scope, path, joinPath(dirOf(path), name)));
+  }
+  async function exMove(scope, from, to) {
+    if (from === to) return;
+    // сервер перепишет ссылки в заметках — сначала сохраняем все правки в них
+    await flushAutosave();
+    const oldKey = fileKey(scope, from);
+    const unsavedMd = Object.keys(S.rawDirty).filter((k) => S.rawDirty[k] && keyKind(k) === 'md');
+    if (S.rawDirty[oldKey] || unsavedMd.length) { toast('Сначала сохраните: ' + (unsavedMd.length ? unsavedMd.map(keyName).join(', ') : from), 'err'); return; }
+    try {
+      const r = await api('POST', '/api/ui/files/rename', { scope, n: S.level, path: from, to });
+      // открытые вкладки переезжают вместе с файлом (или содержимым папки)
+      S.open.forEach((o) => {
+        if (o.scope !== scope || !(o.path === from || o.path.startsWith(from + '/'))) return;
+        const nk = fileKey(scope, to + o.path.slice(from.length));
+        ['raw', 'orig', 'rawDirty'].forEach((f) => { S[f][nk] = S[f][o.key]; delete S[f][o.key]; });
+        dropSession(o.key); MD.forget(o.key);
+        if (S.file === o.key) S.file = nk;
+        o.key = nk; o.path = to + o.path.slice(from.length);
+      });
+      await loadExplorer();
+      await reloadNotes(r.updated || []);
+      if (r.updated && r.updated.length) toast('Ссылки обновлены: ' + r.updated.join(', '), 'ok');
+      if (S.tab === 'editor') renderEditor();
+    } catch (e) { toast(String(e.message || e), 'err'); renderExplorer(); }
+  }
+  // reloadNotes перечитывает открытые заметки, которые сервер переписал (пути от папки игры).
+  async function reloadNotes(paths) {
+    if (!paths.length) return;
+    const set = new Set(paths);
+    const keys = S.open.filter((o) => set.has(gameRel(o.scope, o.path))).map((o) => o.key);
+    if (S.level && S.ex.level && set.has(joinPath(S.ex.level.rel, stdPath('notes').split('/').pop()))) keys.push('notes');
+    await Promise.all(keys.map(async (k) => {
+      const info = keyInfo(k) || { scope: 'level', path: stdPath('notes').split('/').pop() };
+      try {
+        const t = await api('GET', `/api/ui/file?scope=${info.scope}&n=${S.level || 0}&path=${encodeURIComponent(info.path)}`);
+        S.raw[k] = t; S.rawDirty[k] = false;
+        if (k === 'notes') { if (S.data) S.data.raw.notes = t; } else S.orig[k] = t;
+        MD.forget(k); dropSession(k);
+      } catch (e) { /* файл мог исчезнуть */ }
+    }));
+    updateDirty();
+  }
+  async function exDelete(scope, path, isDir) {
+    if (!confirm(`Удалить ${isDir ? 'папку' : 'файл'} «${path}»${isDir ? ' со всем содержимым' : ''}?`)) return;
+    try {
+      await api('DELETE', `/api/ui/file?scope=${scope}&n=${S.level || 0}&path=${encodeURIComponent(path)}`);
+      S.open.filter((o) => o.scope === scope && (o.path === path || o.path.startsWith(path + '/'))).forEach((o) => { S.rawDirty[o.key] = false; clearTimeout(MDAUTO.timers[o.key]); delete MDAUTO.timers[o.key]; closeFile(o.key); });
+      toast('Удалено: ' + path, 'ok');
+      await loadExplorer();
+    } catch (e) { toast(String(e.message || e), 'err'); }
+  }
+  async function exToAssets(scope, path) {
+    try {
+      const r = await api('POST', '/api/ui/files/to-assets', { scope, n: S.level, path });
+      toast(`Скопировано в ассеты: {{${r.name}}} — для игры выполните «Залить ассеты»`, 'ok');
+      await loadState();
+    } catch (e) { toast(String(e.message || e), 'err'); }
+  }
+  // exUpload — загрузить файлы в папку dir корня scope; items — File или {file, name}.
+  async function exUpload(scope, dir, items) {
+    const fd = new FormData();
+    fd.append('scope', scope); fd.append('n', String(S.level || 0)); fd.append('dir', dir || '');
+    items.forEach((it) => { const f = it.file || it; fd.append('files', f, it.name || f.name); });
+    try {
+      const r = await fetch('/api/ui/files/upload', { method: 'POST', body: fd });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || r.statusText);
+      if (dir) S.exOpen.add(scope + ':' + dir);
+      await loadExplorer();
+      toast('Загружено: ' + data.saved.join(', '), 'ok');
+      return data.saved;
+    } catch (e) { toast(String(e.message || e), 'err'); return []; }
+  }
+  let exUploadTarget = null;
+  $('#exFiles').addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []); e.target.value = '';
+    if (files.length && exUploadTarget) await exUpload(exUploadTarget.scope, exUploadTarget.dir, files);
+  });
+  function exPickUpload(scope, dir) { exUploadTarget = { scope, dir }; $('#exFiles').click(); }
+
+  function exMenu(row, x, y) {
+    const scope = row.dataset.scope, path = row.dataset.path, isDir = !!row.dataset.dir, role = row.dataset.role;
+    const items = isDir
+      ? [['newfile', 'Новый файл здесь'], ['newdir', 'Новая папка здесь'], ['upload', 'Загрузить сюда'], ['rename', 'Переименовать'], ['delete', 'Удалить']]
+      : [['open', 'Открыть'], ['link', 'Вставить ссылку в заметку'], ['toassets', 'В ассеты'], ['raw', 'Открыть в новом окне'], ...(role && role !== 'notes' ? [] : [['rename', 'Переименовать'], ['delete', 'Удалить']])];
+    const m = $('#exMenu');
+    m.innerHTML = items.map(([a, t]) => `<div data-mact="${a}">${t}</div>`).join('');
+    m.hidden = false;
+    const host = $('#explorer').getBoundingClientRect();
+    m.style.left = Math.max(4, Math.min(x - host.left, host.width - 190)) + 'px';
+    m.style.top = (y - host.top + 4) + 'px';
+    m.onclick = (e) => {
+      const a = e.target.dataset.mact; if (!a) return;
+      m.hidden = true;
+      if (a === 'newfile' || a === 'newdir') exNew(scope, path, a === 'newdir');
+      else if (a === 'upload') exPickUpload(scope, path);
+      else if (a === 'rename') exRename(scope, path);
+      else if (a === 'delete') exDelete(scope, path, isDir);
+      else if (a === 'open') openExFile(scope, path);
+      else if (a === 'toassets') exToAssets(scope, path);
+      else if (a === 'raw') window.open(fsURL(gameRel(scope, path)), '_blank', 'noopener');
+      else if (a === 'link') { if (keyKind(S.file) === 'md') MD.insert(linkFor(scope, path)); else toast('Откройте md-заметку', 'err'); }
+    };
+  }
+  document.addEventListener('mousedown', (e) => { if (!e.target.closest('#exMenu')) $('#exMenu').hidden = true; });
+
+  $$('.ex-sec').forEach((sec) => {
+    const scope = sec.dataset.scope;
+    sec.querySelector('.ex-btns').addEventListener('click', (e) => {
+      const a = e.target.closest('[data-exact]'); if (!a) return;
+      if (a.dataset.exact === 'upload') exPickUpload(scope, '');
+      else exNew(scope, '', a.dataset.exact === 'newdir');
+    });
+    const tree = sec.querySelector('.ex-tree');
+    tree.addEventListener('click', (e) => {
+      const row = e.target.closest('.ex-item'); if (!row || row.classList.contains('ex-edit')) return;
+      if (e.target.closest('[data-more]')) { const r = e.target.getBoundingClientRect(); exMenu(row, r.left, r.bottom); return; }
+      if (row.dataset.dir) { const k = scope + ':' + row.dataset.path; if (S.exOpen.has(k)) S.exOpen.delete(k); else S.exOpen.add(k); renderExplorer(); return; }
+      openExFile(scope, row.dataset.path);
+    });
+    tree.addEventListener('contextmenu', (e) => { const row = e.target.closest('.ex-item'); if (!row || row.classList.contains('ex-edit')) return; e.preventDefault(); exMenu(row, e.clientX, e.clientY); });
+    tree.addEventListener('dragstart', (e) => {
+      const row = e.target.closest('.ex-item'); if (!row) return;
+      const f = { scope, path: row.dataset.path, dir: !!row.dataset.dir, kind: row.dataset.kind };
+      e.dataTransfer.setData('application/x-zp-file', JSON.stringify(f));
+      e.dataTransfer.setData('text/plain', f.path);
+      e.dataTransfer.effectAllowed = 'copyMove';
+    });
+    // Сброс на секцию/папку: файлы с диска загружаются, файл из этого же корня переезжает.
+    const dropDir = (e) => { const row = e.target.closest('.ex-item'); if (!row) return ''; return row.dataset.dir ? row.dataset.path : dirOf(row.dataset.path); };
+    sec.addEventListener('dragover', (e) => {
+      const t = e.dataTransfer.types;
+      if (!(t.includes('Files') || t.includes('application/x-zp-file'))) return;
+      if (scope === 'level' && !S.level) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = t.includes('Files') ? 'copy' : 'move';
+      sec.classList.add('drop');
+      $$('.ex-item.drop', sec).forEach((r) => r.classList.remove('drop'));
+      const row = e.target.closest('.ex-item[data-dir]'); if (row) row.classList.add('drop');
+    });
+    sec.addEventListener('dragleave', (e) => { if (!sec.contains(e.relatedTarget)) { sec.classList.remove('drop'); $$('.ex-item.drop', sec).forEach((r) => r.classList.remove('drop')); } });
+    sec.addEventListener('drop', (e) => {
+      sec.classList.remove('drop'); $$('.ex-item.drop', sec).forEach((r) => r.classList.remove('drop'));
+      const dir = dropDir(e);
+      const zf = e.dataTransfer.getData('application/x-zp-file');
+      if (zf) {
+        e.preventDefault();
+        const f = JSON.parse(zf);
+        if (f.scope !== scope) { toast('Переносить можно только внутри одной папки (уровень / notes)', 'err'); return; }
+        const to = joinPath(dir, f.path.split('/').pop());
+        if (to !== f.path && !(f.dir && (dir === f.path || dir.startsWith(f.path + '/')))) exMove(scope, f.path, to);
+        return;
+      }
+      if (e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); exUpload(scope, dir, [...e.dataTransfer.files]); }
+    });
+  });
+  // Ассеты сайдбара можно тащить в заметку и в task.html.
+  $('#assets').addEventListener('dragstart', (e) => {
+    const row = e.target.closest('[data-asset]'); if (!row) return;
+    e.dataTransfer.setData('application/x-zp-asset', row.dataset.asset);
+    e.dataTransfer.setData('text/plain', '{{' + row.dataset.asset + '}}');
+    e.dataTransfer.effectAllowed = 'copy';
+  });
+  // В Ace: ассет → {{имя}}; файл обозревателя — нельзя (на en.cx не заливается).
+  E.container.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    if (dt.types.includes('application/x-zp-file')) {
+      e.preventDefault(); e.stopPropagation();
+      toast('Файлы обозревателя не заливаются на en.cx — сначала «⋯ → В ассеты», потом тащите ассет', 'err');
+      return;
+    }
+    const a = dt.getData('application/x-zp-asset');
+    if (a) {
+      e.preventDefault(); e.stopPropagation();
+      const pos = E.renderer.screenToTextCoordinates(e.clientX, e.clientY);
+      E.session.insert(pos, '{{' + a + '}}'); E.focus();
+    }
+  }, true);
+  $('#btnExplorer').addEventListener('click', () => {
+    const ex = $('#explorer'); ex.hidden = !ex.hidden;
+    try { localStorage.setItem('zp.explorer', ex.hidden ? '0' : '1'); } catch (e) { /* ignore */ }
+    E.resize(true);
+  });
+  try { if (localStorage.getItem('zp.explorer') === '0') $('#explorer').hidden = true; } catch (e) { /* ignore */ }
 
   // conf-форма
   function renderConf() {
@@ -652,7 +1190,7 @@ ${styles}
   // ---------------------------------------------------------------- старт
   (async function init() {
     try { await loadState(); await loadLevel(); } catch (e) { toast(String(e.message || e), 'err'); }
-    setTab((location.hash || '#commands').slice(1));
+    setTab(S.state && !S.state.game ? 'commands' : (location.hash || '#commands').slice(1));
     // если задание уже идёт (страницу перезагрузили) — подхватить лог
     if (S.state && S.state.job && !S.state.job.done) { S.job = S.state.job.id; S.jobFrom = 0; $('#log').textContent = ''; pollJob(); }
     setInterval(async () => { if (S.tab === 'commands' && !S.job) { try { await loadState(); } catch (e) { /* ignore */ } } }, 15000);

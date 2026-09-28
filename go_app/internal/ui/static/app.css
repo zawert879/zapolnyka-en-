@@ -96,7 +96,7 @@ h1{margin:0;font-size:22px;font-weight:800}
 
 .warn{padding:10px 12px;border-radius:10px;background:#2a1f14;border:1px solid #6b4d1f;color:var(--yellow);font-size:13px;white-space:pre-line}
 .split{flex:1;min-height:0;display:flex;gap:14px}
-.split.full{margin:-16px -20px;padding:0}
+.split.full{margin:-16px -20px;padding:0;gap:0}
 .panel{border-radius:12px;border:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:0}
 .panel.grow{flex:1;min-width:0}
 .inspector{width:380px;flex-shrink:0;padding:14px;gap:10px;overflow:auto}
@@ -182,3 +182,55 @@ table.codes .ans{font-family:var(--mono);font-size:12px;color:#c9cdd6}
 .toast.err{border-color:var(--red);color:#ffb4b4}
 .toast.ok{border-color:var(--green)}
 @media (max-width:1100px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.inspector{width:300px}.conf-grid{grid-template-columns:1fr}}
+
+/* ---- md-редактор, просмотр картинок, открытые файлы */
+#mdeditor{flex:1;min-width:0;min-height:0;display:flex}
+#mdeditor .cm-editor{flex:1;min-width:0;height:100%}
+#mdeditor .cm-editor.cm-focused{outline:none}
+.imgview{flex:1;min-width:0;display:flex;flex-direction:column}
+.imgview-pic{flex:1;min-height:0;overflow:auto;display:flex;align-items:center;justify-content:center;padding:16px;background:repeating-conic-gradient(#16171b 0 25%,#1b1c21 0 50%) 0 0/20px 20px}
+.imgview-pic img{max-width:100%;max-height:100%;object-fit:contain}
+.imgview-foot{display:flex;align-items:center;gap:12px;padding:8px 12px;border-top:1px solid var(--line);background:var(--side)}
+.opentabs{display:flex;gap:2px;min-width:0;overflow:hidden}
+.opentabs button{display:inline-flex;align-items:center;gap:6px;max-width:200px}
+.opentabs button .x{color:#6a6f7a;font-size:11px;padding:0 2px}
+.opentabs button .x:hover{color:var(--red)}
+.opentabs button.dirty::after{content:none}
+.opentabs button.dirty .x::before{content:"● ";color:var(--yellow)}
+.filetabs button:disabled{opacity:.4}
+.filetabs #btnExplorer{margin-left:6px;margin-bottom:6px;border-radius:8px;border-color:var(--line);background:var(--panel2);color:var(--text);font-family:var(--sans)}
+
+/* ---- файловый обозреватель */
+.explorer{width:270px;flex-shrink:0;display:flex;flex-direction:column;background:var(--side);min-height:0;position:relative}
+.ex-sec{display:flex;flex-direction:column;min-height:0;flex:1 1 50%;border-bottom:1px solid var(--line)}
+.ex-sec.drop{background:#15241a;box-shadow:inset 0 0 0 1px var(--green)}
+.ex-head{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:10px 10px 6px 12px}
+.ex-head .label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ex-btns{display:flex;gap:2px;flex-shrink:0}
+.ex-btns .icon{width:24px;height:24px;font-size:12px;border-color:transparent;background:transparent;color:var(--muted)}
+.ex-btns .icon:hover{background:var(--panel2);color:var(--text)}
+.ex-tree{flex:1;min-height:0;overflow:auto;padding:0 4px 8px}
+.ex-item{display:flex;align-items:center;gap:6px;height:26px;padding-right:4px;border-radius:6px;cursor:pointer;font-size:12.5px;color:#c9cdd6;user-select:none}
+.ex-item:hover{background:#1c1e23}
+.ex-item.active{background:var(--panel2);color:var(--text)}
+.ex-item.drop{background:#1d3a26}
+.ex-ico{width:12px;text-align:center;color:var(--muted);font-size:11px;flex-shrink:0}
+.ex-item.dir .ex-ico{color:var(--green)}
+.ex-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ex-role{font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.ex-more{visibility:hidden;color:var(--muted);padding:0 4px;border-radius:4px}
+.ex-item:hover .ex-more{visibility:visible}
+.ex-more:hover{background:#2a2d34;color:var(--text)}
+.ex-edit input{flex:1;height:22px;padding:0 6px;border-radius:4px;font-size:12px}
+.ex-empty{padding:4px 12px;font-size:12px}
+.ex-foot{padding:8px 12px;font-size:11px;line-height:1.4}
+.ex-menu{position:absolute;z-index:50;min-width:180px;padding:4px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.ex-menu div{padding:6px 10px;border-radius:6px;font-size:12.5px;cursor:pointer}
+.ex-menu div:hover{background:#2b4a34}
+.assets div[draggable]{cursor:grab}
+.filetabs #editorPath{flex:1 1 0;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;direction:rtl}
+.filetabs > button{flex-shrink:0;white-space:nowrap}
+.opentabs{flex:0 1 auto;overflow-x:auto;scrollbar-width:none}
+.opentabs button{flex-shrink:0}
+.opentabs button .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card.attention{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
